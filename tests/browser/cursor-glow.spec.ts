@@ -54,18 +54,28 @@ test('mouse glow visibly follows the pointer across languages, pages and scrolli
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  for (const locale of ['zh-cn', 'en', 'fr']) {
-    for (const route of ['', 'posts/a-smaller-web/']) {
-      await page.goto(`${live}/${locale}/${route}`);
-      await moveGlow(page, 8, 300);
-      const near = await pixel(page);
-      await moveGlow(page, 1400, 300);
-      const far = await pixel(page);
-      // Verify actual painted pixels, not merely a CSS property changing.
-      expect(near.reduce((sum, value, i) => sum + value - far[i], 0)).toBeGreaterThan(40);
+  for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    await page.emulateMedia({ reducedMotion });
+    for (const locale of ['zh-cn', 'en', 'fr']) {
+      for (const route of ['', 'posts/a-smaller-web/']) {
+        await page.goto(`${live}/${locale}/${route}`);
+        await moveGlow(page, 8, 300);
+        const near = await pixel(page);
+        await moveGlow(page, 1400, 300);
+        const far = await pixel(page);
+        // Compare painted pixels under both preferences, matching the reference
+        // site's direct mouse tracking even when reduced motion is requested.
+        expect(near.reduce((sum, value, i) => sum + value - far[i], 0)).toBeGreaterThan(40);
+      }
     }
   }
+  // Mouse-only event sources must work without requiring pointerType metadata.
+  await page.locator('body').dispatchEvent('mousemove', { clientX: 80, clientY: 200 });
+  await expect
+    .poll(() =>
+      page.locator('.cursor-glow').evaluate((el) => el.style.getPropertyValue('--mouse-x')),
+    )
+    .toBe('80px');
   await page.evaluate(() => window.scrollTo(0, 500));
   await moveGlow(page, 8, 300);
   expect(await page.locator('.cursor-glow').boundingBox()).toEqual({
@@ -81,7 +91,7 @@ test('mouse glow visibly follows the pointer across languages, pages and scrolli
   await expect(page.locator('#search-dialog')).not.toBeVisible();
 });
 
-test('narrow mouse windows retain glow; motion preferences and touch suppress it', async ({
+test('narrow windows and reduced motion retain mouse tracking; touch does not activate glow', async ({
   page,
   browser,
 }) => {
@@ -92,9 +102,9 @@ test('narrow mouse windows retain glow; motion preferences and touch suppress it
   await expect(page.locator('.cursor-glow')).toHaveCSS('opacity', '1');
   await expect(page.locator('.cursor-glow')).toHaveCSS('display', 'block');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator('.cursor-glow')).toBeHidden();
-  await page.mouse.move(80, 400);
-  await expect(page.locator('.cursor-glow')).toHaveAttribute('data-active', 'false');
+  await moveGlow(page, 80, 400);
+  await expect(page.locator('.cursor-glow')).toHaveCSS('display', 'block');
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await moveGlow(page, 8, 300);
   await page
@@ -110,9 +120,7 @@ test('narrow mouse windows retain glow; motion preferences and touch suppress it
   const touchPage = await touchContext.newPage();
   await touchPage.goto(`${live}/fr/`);
   await touchPage.touchscreen.tap(8, 300);
-  await touchPage
-    .locator('body')
-    .dispatchEvent('pointermove', { pointerType: 'touch', clientX: 8, clientY: 300 });
+  await touchPage.locator('body').dispatchEvent('mousemove', { clientX: 8, clientY: 300 });
   await expect(touchPage.locator('.cursor-glow')).toHaveCSS('opacity', '0');
   await touchContext.close();
 });

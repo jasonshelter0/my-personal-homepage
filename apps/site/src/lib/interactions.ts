@@ -1,21 +1,21 @@
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const glow = document.querySelector<HTMLElement>('.cursor-glow');
 let frame = 0;
 let mouseX = 0;
 let mouseY = 0;
+let lastTouch = -Infinity;
 function hideGlow() {
   cancelAnimationFrame(frame);
   frame = 0;
   if (glow) glow.dataset.active = 'false';
 }
 window.addEventListener(
-  'pointermove',
+  'mousemove',
   (event) => {
     if (!glow) return;
-    if (reducedMotion.matches || event.pointerType !== 'mouse') {
-      hideGlow();
-      return;
-    }
+    // Touch browsers may synthesize mouse events after a tap. Actual mouse
+    // tracking remains available regardless of the reduced-motion preference,
+    // matching the reference site without adding any autonomous animation.
+    if (Date.now() - lastTouch < 800) return;
     mouseX = event.clientX;
     mouseY = event.clientY;
     if (frame) return;
@@ -28,13 +28,19 @@ window.addEventListener(
   },
   { passive: true },
 );
+for (const event of ['touchstart', 'touchmove', 'touchend'] as const)
+  window.addEventListener(
+    event,
+    () => {
+      lastTouch = Date.now();
+      hideGlow();
+    },
+    { passive: true },
+  );
 window.addEventListener('pointerout', (event) => {
   if (!event.relatedTarget) hideGlow();
 });
 window.addEventListener('blur', hideGlow);
-reducedMotion.addEventListener('change', (event) => {
-  if (event.matches) hideGlow();
-});
 const nav = [...document.querySelectorAll<HTMLAnchorElement>('[data-nav]')];
 if (nav.length) {
   const sections = nav
