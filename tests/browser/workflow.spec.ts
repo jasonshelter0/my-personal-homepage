@@ -45,16 +45,18 @@ test('complete editorial journey, multilingual static search and responsive layo
     .getByRole('button', { name: /Preview & publish/ })
     .click();
   await expect(page.getByText('Checks passed', { exact: true })).toBeVisible();
+  const createdResponse = page.waitForResponse(
+    (r) => r.url().endsWith('/api/releases') && r.request().method() === 'POST',
+  );
   await page.getByRole('button', { name: /Create release preview/ }).click();
-  await expect(page.getByRole('link', { name: /Open preview/ }).first()).toBeVisible({
+  const created = await (await createdResponse).json();
+  const newReleaseRow = page.locator('.release-row').filter({ hasText: created.id });
+  await expect(newReleaseRow.getByRole('link', { name: /Open preview/ })).toBeVisible({
     timeout: 60000,
   });
   const [preview] = await Promise.all([
     context.waitForEvent('page'),
-    page
-      .getByRole('link', { name: /Open preview/ })
-      .first()
-      .click(),
+    newReleaseRow.getByRole('link', { name: /Open preview/ }).click(),
   ]);
   await preview.waitForLoadState();
   await expect(preview.locator('html')).toHaveAttribute('lang', 'zh-CN');
@@ -75,7 +77,7 @@ test('complete editorial journey, multilingual static search and responsive layo
   await preview.getByRole('searchbox').fill('学习');
   await expect(preview.locator('#search-results a').first()).toBeVisible();
   await preview.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Publish this version', exact: true }).first().click();
+  await newReleaseRow.getByRole('button', { name: 'Publish this version', exact: true }).click();
   await expect(page.getByText('Current live version', { exact: true })).toBeVisible();
   const live = await context.newPage();
   await live.goto('http://127.0.0.1:4523/en/');
@@ -206,7 +208,7 @@ test('author and upload in three languages, publish a new article, restore a pre
   expect((await preview.request.get(`http://127.0.0.1:4522${upload.media.path}`)).status()).toBe(
     200,
   );
-  await page.getByRole('button', { name: 'Publish this version', exact: true }).click();
+  await newReleaseRow.getByRole('button', { name: 'Publish this version', exact: true }).click();
   await expect(
     page.locator('.release-row').first().getByText('Current live version', { exact: true }),
   ).toBeVisible();

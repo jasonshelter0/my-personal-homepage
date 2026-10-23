@@ -1,17 +1,40 @@
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const glow = document.querySelector<HTMLElement>('.cursor-glow');
 let frame = 0;
+let mouseX = 0;
+let mouseY = 0;
+function hideGlow() {
+  cancelAnimationFrame(frame);
+  frame = 0;
+  if (glow) glow.dataset.active = 'false';
+}
 window.addEventListener(
   'pointermove',
   (event) => {
-    if (reducedMotion.matches || event.pointerType !== 'mouse') return;
-    cancelAnimationFrame(frame);
+    if (!glow) return;
+    if (reducedMotion.matches || event.pointerType !== 'mouse') {
+      hideGlow();
+      return;
+    }
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+    if (frame) return;
     frame = requestAnimationFrame(() => {
-      document.documentElement.style.setProperty('--mouse-x', `${event.clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${event.clientY}px`);
+      glow.style.setProperty('--mouse-x', `${mouseX}px`);
+      glow.style.setProperty('--mouse-y', `${mouseY}px`);
+      glow.dataset.active = 'true';
+      frame = 0;
     });
   },
   { passive: true },
 );
+window.addEventListener('pointerout', (event) => {
+  if (!event.relatedTarget) hideGlow();
+});
+window.addEventListener('blur', hideGlow);
+reducedMotion.addEventListener('change', (event) => {
+  if (event.matches) hideGlow();
+});
 const nav = [...document.querySelectorAll<HTMLAnchorElement>('[data-nav]')];
 if (nav.length) {
   const sections = nav

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
+import { findPackageJSON } from 'node:module';
 import { DATA_DIR, ROOT } from '../shared/paths.ts';
 import { validateSnapshot } from '../shared/validation.ts';
 import { referencedMediaIds } from '../shared/media-references.ts';
@@ -119,6 +120,17 @@ function referencedMedia(snapshot: Snapshot) {
   const ids = referencedMediaIds(snapshot);
   return snapshot.media.filter((media) => ids.has(media.id));
 }
+function packageCommand(name: 'astro' | 'pagefind') {
+  // Use each installed package's CLI contract; its internal file layout may change.
+  const manifestPath = findPackageJSON(name, import.meta.url);
+  if (!manifestPath) throw new Error(`Build dependency not installed: ${name}`);
+  const { bin } = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as {
+    bin?: string | Record<string, string>;
+  };
+  const entry = typeof bin === 'string' ? bin : bin?.[name];
+  if (!entry) throw new Error(`Build dependency has no CLI entry: ${name}`);
+  return path.resolve(path.dirname(manifestPath), entry);
+}
 async function buildRelease(release: Release, snapshot: Snapshot) {
   const folder = path.dirname(metaPath(release.id));
   try {
@@ -131,12 +143,7 @@ async function buildRelease(release: Release, snapshot: Snapshot) {
     };
     await run(
       process.execPath,
-      [
-        path.join(ROOT, 'node_modules/astro/astro.js'),
-        'build',
-        '--root',
-        path.join(ROOT, 'apps/site'),
-      ],
+      [packageCommand('astro'), 'build', '--root', path.join(ROOT, 'apps/site')],
       env,
       path.join(folder, 'build.log'),
     );
@@ -151,7 +158,7 @@ async function buildRelease(release: Release, snapshot: Snapshot) {
     }
     await run(
       process.execPath,
-      [path.join(ROOT, 'node_modules/pagefind/lib/runner/bin.cjs'), '--site', output],
+      [packageCommand('pagefind'), '--site', output],
       env,
       path.join(folder, 'build.log'),
     );

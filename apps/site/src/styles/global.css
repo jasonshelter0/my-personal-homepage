@@ -116,12 +116,16 @@ img {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 30;
+  opacity: 0;
   background: radial-gradient(
-    650px circle at var(--mouse-x, 50%) var(--mouse-y, 30%),
-    color-mix(in srgb, var(--accent) 6%, transparent),
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 30%),
+    color-mix(in srgb, var(--accent) 16%, transparent),
     transparent 80%
   );
+}
+.cursor-glow[data-active='true'] {
+  opacity: 1;
 }
 .site-shell {
   max-width: 1200px;
@@ -1009,9 +1013,6 @@ dialog::backdrop {
   .search-dialog {
     margin-top: 7vh;
     max-height: 85vh;
-  }
-  .cursor-glow {
-    display: none;
   }
 }
 @media (max-width: 420px) {
