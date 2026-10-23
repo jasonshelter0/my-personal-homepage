@@ -1,0 +1,28 @@
+---
+import { LOCALES, copy, href, snapshot } from '../lib/data';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang={snapshot.settings.defaultLocale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>404 — Folio</title>
+  </head>
+  <body>
+    <main class="not-found">
+      <p class="eyebrow">404</p>
+      {LOCALES.map((locale) => (
+        <section lang={locale}>
+          <h1>{copy[locale].notFound}</h1>
+          <p>{copy[locale].notFoundBody}</p>
+          <a class="text-link" href={href(locale)}>
+            {copy[locale].returnHome} ↗
+          </a>
+        </section>
+      ))}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+node_modules
+.folio
+apps/*/dist
+apps/site/.astro
+package-lock.json
+playwright-report
+test-results

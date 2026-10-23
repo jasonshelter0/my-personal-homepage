@@ -1,0 +1,50 @@
+{
+  "name": "folio-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "start": "tsx server/index.ts",
+    "build:admin": "vite build --config apps/admin/vite.config.ts",
+    "build:site": "astro build --root apps/site && pagefind --site apps/site/dist",
+    "build": "npm run build:admin && npm run build:site",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "setup": "npm run build:admin && tsx scripts/setup.ts",
+    "export": "tsx scripts/export.ts",
+    "start:env": "node --env-file=.env --import tsx server/index.ts",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "astro": "^5.16.0",
+    "express": "^5.1.0",
+    "marked": "^16.4.0",
+    "multer": "^2.0.2",
+    "pagefind": "^1.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sanitize-html": "^2.17.0",
+    "sharp": "^0.34.5",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/sanitize-html": "^2.16.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vite": "^6.4.0"
+  }
+}

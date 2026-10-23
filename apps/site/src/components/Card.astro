@@ -1,0 +1,47 @@
+---
+import { entryHref, media, dateLabel, copy, type Entry, type Locale } from '../lib/data';
+import Icon from './Icon.astro';
+const {
+  entry,
+  locale,
+  wide = false,
+} = Astro.props as { entry: Entry; locale: Locale; wide?: boolean };
+const content = entry.translations[locale],
+  cover = media(entry.coverId),
+  t = copy[locale];
+---
+
+<article class:list={['content-card', entry.type, { 'wide-card': wide }]}>
+  <div class="card-aside">
+    {entry.type === 'experience' ? (
+      <span class="period">{entry.period}</span>
+    ) : cover ? (
+      <img
+        src={cover.path}
+        alt={cover.alt[locale]}
+        width={cover.width || 600}
+        height={cover.height || 400}
+        loading="lazy"
+      />
+    ) : (
+      <span class="card-year">{entry.date?.slice(0, 4) || '—'}</span>
+    )}
+  </div>
+  <div class="card-body">
+    <h3>
+      <a href={entryHref(locale, entry)}>
+        {content.title}
+        <Icon size={16} />
+      </a>
+    </h3>
+    {entry.type === 'post' && <time datetime={entry.date}>{dateLabel(entry.date, locale)}</time>}
+    <p>{content.summary}</p>
+    {entry.tags.length > 0 && (
+      <ul class="tags" aria-label={t.tags}>
+        {entry.tags.map((tag) => (
+          <li>{tag}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+</article>

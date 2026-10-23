@@ -1,0 +1,31 @@
+---
+import { media, copy, type Locale } from '../lib/data';
+const {
+  id,
+  locale,
+  compact = false,
+} = Astro.props as { id: string | null; locale: Locale; compact?: boolean };
+const item = media(id);
+---
+
+{item && (
+  <figure class:list={['editorial-image', { 'compact-image': compact }]}>
+    <button
+      class="image-button"
+      type="button"
+      data-image={item.path}
+      data-caption={item.caption[locale]}
+      aria-label={`${copy[locale].openImage}: ${item.alt[locale]}`}
+    >
+      <img
+        src={item.path}
+        alt={item.alt[locale]}
+        width={item.width || 1200}
+        height={item.height || 800}
+        loading="lazy"
+        decoding="async"
+      />
+    </button>
+    {!compact && item.caption[locale] && <figcaption>{item.caption[locale]}</figcaption>}
+  </figure>
+)}

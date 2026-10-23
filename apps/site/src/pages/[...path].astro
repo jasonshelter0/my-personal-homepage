@@ -1,0 +1,225 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Picture from '../components/Picture.astro';
+import Icon from '../components/Icon.astro';
+import {
+  snapshot,
+  entries,
+  LOCALES,
+  localePath,
+  copy,
+  href,
+  entryHref,
+  collection,
+  markdown,
+  media,
+  dateLabel,
+  safeUrl,
+  type Locale,
+  type Entry,
+} from '../lib/data';
+export function getStaticPaths() {
+  return LOCALES.flatMap((locale) => {
+    const prefix = localePath(locale);
+    return [
+      { params: { path: prefix }, props: { locale, route: '' } },
+      ...['projects', 'posts', 'pages', 'resume'].map((route) => ({
+        params: { path: `${prefix}/${route}` },
+        props: { locale, route },
+      })),
+      ...entries.map((entry) => ({
+        params: { path: `${prefix}/${collection(entry.type)}/${entry.slug}` },
+        props: { locale, route: `${collection(entry.type)}/${entry.slug}`, entry },
+      })),
+    ];
+  });
+}
+const { locale, route, entry } = Astro.props as { locale: Locale; route: string; entry?: Entry };
+const t = copy[locale],
+  profile = snapshot.settings.profile[locale],
+  home = !route;
+const content = entry?.translations[locale];
+const pageTitle =
+  content?.title ||
+  (
+    { projects: t.projects, posts: t.writing, pages: t.pages, resume: t.resume } as Record<
+      string,
+      string
+    >
+  )[route];
+const listType = (
+  { projects: 'project', posts: 'post', pages: 'page' } as Record<string, Entry['type']>
+)[route];
+const filtered = listType
+  ? entries
+      .filter((e) => e.type === listType)
+      .sort((a, b) => (listType === 'post' ? b.date.localeCompare(a.date) : a.order - b.order))
+  : [];
+const sectionEntries = (id: string) =>
+  entries
+    .filter(
+      (e) =>
+        e.type ===
+        (
+          { experience: 'experience', projects: 'project', writing: 'post' } as Record<
+            string,
+            string
+          >
+        )[id],
+    )
+    .filter((e) => id === 'experience' || e.featured)
+    .sort((a, b) => (id === 'writing' ? b.date.localeCompare(a.date) : a.order - b.order));
+---
+
+<Layout
+  locale={locale}
+  title={pageTitle}
+  description={content?.summary}
+  path={route}
+  home={home}
+  category={entry?.type || 'page'}
+  cover={entry ? media(entry.coverId)?.path : undefined}
+>
+  {home ? (
+    <>
+      {snapshot.settings.sections
+        .filter((s) => s.enabled)
+        .map((section, index) => (
+          <section id={section.id} class="home-section" aria-labelledby={`heading-${section.id}`}>
+            <h2 id={`heading-${section.id}`} class="section-title">
+              <span class="section-index">0{index + 1}</span>
+              {t[section.id]}
+            </h2>
+            {section.id === 'about' ? (
+              <>
+                <div class="prose about-copy" set:html={markdown(profile.about)} />
+                <a
+                  class="text-link resume-link"
+                  href={
+                    snapshot.settings.resumeUrl
+                      ? safeUrl(snapshot.settings.resumeUrl)
+                      : href(locale, 'resume')
+                  }
+                >
+                  {t.resume}
+                  <Icon size={16} />
+                </a>
+              </>
+            ) : (
+              <>
+                <div class="card-list">
+                  {sectionEntries(section.id).map((item) => (
+                    <Card entry={item} locale={locale} />
+                  ))}
+                </div>
+                {sectionEntries(section.id).length === 0 && <p class="empty-state">{t.empty}</p>}
+                {section.id === 'projects' && (
+                  <a class="text-link" href={href(locale, 'projects')}>
+                    {t.archive}
+                    <Icon size={16} />
+                  </a>
+                )}
+                {section.id === 'writing' && (
+                  <a class="text-link" href={href(locale, 'posts')}>
+                    {t.allPosts}
+                    <Icon size={16} />
+                  </a>
+                )}
+              </>
+            )}
+          </section>
+        ))}
+    </>
+  ) : entry && content ? (
+    <article class="detail">
+      <a
+        class="back-link"
+        href={href(locale, entry.type === 'experience' ? '' : collection(entry.type))}
+      >
+        <Icon name="back" size={16} />
+        {entry.type === 'experience'
+          ? t.home
+          : t[entry.type === 'project' ? 'projects' : entry.type === 'post' ? 'writing' : 'pages']}
+      </a>
+      <p class="eyebrow">{entry.type === 'experience' ? t.experienceSingular : t[entry.type]}</p>
+      <h1 data-pagefind-meta="title">{content.title}</h1>
+      <p class="detail-summary">{content.summary}</p>
+      <div class="detail-meta">
+        {entry.period && <span>{entry.period}</span>}
+        {entry.date && <time datetime={entry.date}>{dateLabel(entry.date, locale)}</time>}
+      </div>
+      {entry.tags.length > 0 && (
+        <ul class="tags">
+          {entry.tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )}
+      <Picture id={entry.coverId} locale={locale} />
+      <div class="prose article-prose" set:html={markdown(content.body)} />
+      {entry.url && (
+        <a
+          class="text-link external-visit"
+          href={safeUrl(entry.url)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t.visit}
+          <Icon size={16} />
+          <span class="sr-only">{t.external}</span>
+        </a>
+      )}
+    </article>
+  ) : route === 'resume' ? (
+    <article class="resume-page">
+      <p class="eyebrow">{t.resume}</p>
+      <h1 data-pagefind-meta="title">{profile.name}</h1>
+      <p class="detail-summary">{profile.headline}</p>
+      <button class="text-link print-button" type="button" data-print>
+        {t.print}
+        <Icon size={16} />
+      </button>
+      <div class="prose" set:html={markdown(profile.about)} />
+      <h2>{t.experience}</h2>
+      {entries
+        .filter((e) => e.type === 'experience')
+        .map((item) => (
+          <section class="resume-entry">
+            <p class="eyebrow">{item.period}</p>
+            <h3>{item.translations[locale].title}</h3>
+            <div class="prose" set:html={markdown(item.translations[locale].body)} />
+          </section>
+        ))}
+      <h2>{t.projects}</h2>
+      {entries
+        .filter((e) => e.type === 'project')
+        .map((item) => (
+          <section class="resume-entry">
+            <h3>
+              <a href={entryHref(locale, item)}>{item.translations[locale].title}</a>
+            </h3>
+            <p>{item.translations[locale].summary}</p>
+          </section>
+        ))}
+    </article>
+  ) : (
+    <section class="archive">
+      <a class="back-link" href={href(locale)}>
+        <Icon name="back" size={16} />
+        {t.home}
+      </a>
+      <p class="eyebrow">{t.theme}</p>
+      <h1 data-pagefind-meta="title">
+        {pageTitle}
+        <span class="archive-count">{String(filtered.length).padStart(2, '0')}</span>
+      </h1>
+      <div class="archive-list">
+        {filtered.map((item) => (
+          <Card entry={item} locale={locale} wide />
+        ))}
+      </div>
+      {!filtered.length && <p class="empty-state">{t.empty}</p>}
+    </section>
+  )}
+</Layout>

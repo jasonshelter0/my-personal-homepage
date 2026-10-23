@@ -1,0 +1,11 @@
+node_modules/
+.folio/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+apps/*/dist/
+apps/site/.astro/
+playwright-report/
+test-results/

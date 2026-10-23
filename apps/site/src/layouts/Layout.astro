@@ -1,0 +1,254 @@
+---
+import '../styles/global.css';
+import {
+  snapshot,
+  copy,
+  href,
+  LOCALES,
+  localePath,
+  siteUrl,
+  safeUrl,
+  media,
+  type Locale,
+} from '../lib/data';
+import Icon from '../components/Icon.astro';
+interface Props {
+  locale: Locale;
+  title?: string;
+  description?: string;
+  path?: string;
+  home?: boolean;
+  cover?: string;
+  category?: string;
+}
+const {
+  locale,
+  title,
+  description,
+  path = '',
+  home = false,
+  cover,
+  category = 'page',
+} = Astro.props;
+const t = copy[locale],
+  settings = snapshot.settings,
+  profile = settings.profile[locale];
+const pageTitle = title ? `${title} — ${profile.name}` : `${profile.name} — ${profile.headline}`;
+const canonical = siteUrl + href(locale, path);
+const accent = /^#[0-9a-f]{6}$/i.test(settings.accent) ? settings.accent : '#5eead4';
+const background = /^#[0-9a-f]{6}$/i.test(settings.background) ? settings.background : '#0f172a';
+const avatar = media(settings.avatarId);
+const ProfileHeading = home ? 'h1' : 'span';
+---
+
+<!doctype html>
+<html lang={locale} style={`--accent:${accent};--background:${background}`}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content={background} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description || profile.seoDescription} />
+    {siteUrl && (
+      <>
+        <link rel="canonical" href={canonical} />
+        {LOCALES.map((l) => (
+          <link rel="alternate" hreflang={l} href={siteUrl + href(l, path)} />
+        ))}
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={siteUrl + href(settings.defaultLocale, path)}
+        />
+      </>
+    )}
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description || profile.seoDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={locale.replace('-', '_')} />
+    {siteUrl && <meta property="og:url" content={canonical} />}
+    {cover && siteUrl && <meta property="og:image" content={siteUrl + cover} />}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      href={`/${localePath(locale)}/rss.xml`}
+      title={`${profile.name} — ${t.writing}`}
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body data-locale={locale}>
+    <a class="skip-link" href="#main">
+      {t.skip}
+    </a>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="site-shell">
+      <header class="profile-panel" data-pagefind-ignore>
+        <div>
+          <a class="brand-mark" href={href(locale)} aria-label={`${profile.name} — ${t.home}`}>
+            <span class="brand-dot"></span> {t.theme}
+          </a>
+          {avatar && (
+            <img class="avatar" src={avatar.path} width="80" height="80" alt={avatar.alt[locale]} />
+          )}
+          <a class="name-link" href={href(locale)}>
+            <ProfileHeading class="profile-name">
+              {profile.name}
+              <span class="name-period">.</span>
+            </ProfileHeading>
+          </a>
+          <p class="headline">{profile.headline}</p>
+          <p class="intro">{profile.intro}</p>
+          <nav class="section-nav" aria-label={t.toc}>
+            {home ? (
+              settings.sections
+                .filter((s) => s.enabled)
+                .map((s, index) => (
+                  <a href={`#${s.id}`} data-nav={s.id}>
+                    <span class="nav-number">0{index + 1}</span>
+                    <span class="nav-line"></span>
+                    <span>{t[s.id]}</span>
+                  </a>
+                ))
+            ) : (
+              <>
+                <a href={href(locale)}>
+                  <Icon name="back" size={16} />
+                  <span>{t.home}</span>
+                </a>
+                <a
+                  href={href(locale, 'projects')}
+                  aria-current={path === 'projects' ? 'page' : undefined}
+                >
+                  {t.projects}
+                </a>
+                <a
+                  href={href(locale, 'posts')}
+                  aria-current={path === 'posts' ? 'page' : undefined}
+                >
+                  {t.writing}
+                </a>
+                <a
+                  href={href(locale, 'pages')}
+                  aria-current={path === 'pages' ? 'page' : undefined}
+                >
+                  {t.pages}
+                </a>
+              </>
+            )}
+          </nav>
+        </div>
+        <div class="profile-bottom">
+          <div class="social-links">
+            {settings.socials.map((s) => (
+              <a
+                href={safeUrl(s.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${s.label} (${t.external})`}
+                title={s.label}
+              >
+                <Icon name={s.icon} size={23} />
+              </a>
+            ))}
+          </div>
+          <div class="controls">
+            <nav class="languages" aria-label={t.language}>
+              {LOCALES.map((l) => (
+                <a
+                  href={href(l, path)}
+                  lang={l}
+                  hreflang={l}
+                  aria-current={l === locale ? 'page' : undefined}
+                >
+                  {l === 'zh-CN' ? '中文' : l === 'en' ? 'EN' : 'FR'}
+                </a>
+              ))}
+            </nav>
+            <button class="search-trigger" type="button" aria-label={t.search} data-open-search>
+              <Icon name="search" size={17} />
+              <span>{t.search}</span>
+              <kbd>⌘ K</kbd>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main
+        id="main"
+        tabindex="-1"
+        class:list={['main-content', { 'inner-content': !home }]}
+        data-pagefind-body
+        data-pagefind-filter={`type:${category}`}
+      >
+        <slot />
+      </main>
+      <footer class="site-footer" data-pagefind-ignore>
+        <p>{t.built}</p>
+        <p class="demo-note">{t.demo}</p>
+        <a href={href(locale, 'pages')}>
+          {t.allPages} <span aria-hidden="true">↗</span>
+        </a>
+      </footer>
+    </div>
+    <dialog
+      id="search-dialog"
+      class="search-dialog"
+      aria-label={t.search}
+      data-pagefind-ignore
+      data-loading={t.searchLoading}
+      data-empty={t.searchEmpty}
+      data-unavailable={t.searchUnavailable}
+      data-hint={t.searchHint}
+      data-count={t.resultCount}
+    >
+      <div class="search-box">
+        <Icon name="search" />
+        <label class="sr-only" for="search-input">
+          {t.search}
+        </label>
+        <input
+          id="search-input"
+          type="search"
+          autocomplete="off"
+          placeholder={t.searchPlaceholder}
+        />
+        <button type="button" class="icon-button" data-close-dialog aria-label={t.close}>
+          <Icon name="close" />
+        </button>
+      </div>
+      <div class="search-filters" role="group" aria-label={t.search}>
+        {[
+          ['', t.all],
+          ['project', t.projects],
+          ['post', t.writing],
+          ['page', t.pages],
+        ].map(([value, label]) => (
+          <button
+            type="button"
+            data-search-filter={value}
+            aria-pressed={value === '' ? 'true' : 'false'}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <p id="search-status" role="status" aria-live="polite">
+        {t.searchHint}
+      </p>
+      <div id="search-results" role="list" aria-label={t.results}></div>
+      <p class="search-shortcut">{t.searchKeyboard}</p>
+    </dialog>
+    <dialog id="image-dialog" class="image-dialog" aria-label={t.openImage} data-pagefind-ignore>
+      <button type="button" class="icon-button" data-close-dialog aria-label={t.close}>
+        <Icon name="close" />
+      </button>
+      <figure>
+        <img src="" alt="" />
+        <figcaption></figcaption>
+      </figure>
+    </dialog>
+    <script>
+      import '../lib/interactions';
+    </script>
+  </body>
+</html>
