@@ -25,7 +25,7 @@ export class HttpError extends Error {
 }
 export function getSnapshot(): Snapshot {
   const row = db.prepare('SELECT content FROM draft WHERE id=1').get() as { content: string };
-  return JSON.parse(row.content);
+  return parseSnapshot(JSON.parse(row.content));
 }
 export function saveSnapshot(snapshot: Snapshot, expectedRevision = snapshot.revision): Snapshot {
   const next = parseSnapshot({ ...snapshot, revision: expectedRevision + 1 });

@@ -82,7 +82,7 @@ export const copy = {
     print: '打印 / 保存为 PDF',
     external: '在新标签页打开',
     theme: '个人作品与记录',
-    searchKeyboard: '按 Esc 关闭 · Ctrl / ⌘ K 搜索',
+    searchKeyboard: '按 Esc 关闭 · {shortcut} 搜索',
   },
   en: {
     all: 'All',
@@ -127,7 +127,7 @@ export const copy = {
     print: 'Print / Save as PDF',
     external: 'Opens in a new tab',
     theme: 'Selected work & field notes',
-    searchKeyboard: 'Esc to close · Ctrl / ⌘ K to search',
+    searchKeyboard: 'Esc to close · {shortcut} to search',
   },
   fr: {
     all: 'Tout',
@@ -172,7 +172,7 @@ export const copy = {
     print: 'Imprimer / Enregistrer en PDF',
     external: 'S’ouvre dans un nouvel onglet',
     theme: 'Projets choisis & carnets',
-    searchKeyboard: 'Échap pour fermer · Ctrl / ⌘ K pour rechercher',
+    searchKeyboard: 'Échap pour fermer · {shortcut} pour rechercher',
   },
 } as const;
 export const dateLabel = (date: string, locale: Locale) =>

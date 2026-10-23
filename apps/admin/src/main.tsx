@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { marked } from 'marked';
 import {
   LOCALES,
+  CURSOR_GLOW_RADIUS,
   type Entry,
   type EntryType,
   type Locale,
@@ -122,6 +123,83 @@ function Field({
       <span>{label}</span>
       {children}
     </label>
+  );
+}
+function CursorGlowSettings({
+  radius,
+  onChange,
+  t,
+}: {
+  radius: number;
+  onChange: (radius: number) => void;
+  t: (key: MessageKey) => string;
+}) {
+  const [input, setInput] = useState(String(radius));
+  useEffect(() => setInput(String(radius)), [radius]);
+  function setRadius(value: number) {
+    setInput(String(value));
+    onChange(value);
+  }
+  return (
+    <section className="settings-section">
+      <h2 id="cursor-glow-label">{t('cursorGlowRadius')}</h2>
+      <p id="cursor-glow-help">{t('cursorGlowHelp')}</p>
+      <div className="glow-controls">
+        <div className="glow-slider">
+          <input
+            type="range"
+            min={CURSOR_GLOW_RADIUS.min}
+            max={CURSOR_GLOW_RADIUS.max}
+            step={1}
+            value={radius}
+            aria-labelledby="cursor-glow-label"
+            aria-describedby="cursor-glow-help"
+            aria-valuetext={`${radius} px`}
+            onChange={(e) => setRadius(e.target.valueAsNumber)}
+          />
+          <div className="glow-limits" aria-hidden="true">
+            <span>{CURSOR_GLOW_RADIUS.min} px</span>
+            <span>{CURSOR_GLOW_RADIUS.max} px</span>
+          </div>
+        </div>
+        <div className="glow-number">
+          <input
+            type="number"
+            min={CURSOR_GLOW_RADIUS.min}
+            max={CURSOR_GLOW_RADIUS.max}
+            step={1}
+            value={input}
+            aria-labelledby="cursor-glow-label"
+            aria-describedby="cursor-glow-help"
+            onChange={(e) => {
+              setInput(e.target.value);
+              const value = e.target.valueAsNumber;
+              if (
+                Number.isInteger(value) &&
+                value >= CURSOR_GLOW_RADIUS.min &&
+                value <= CURSOR_GLOW_RADIUS.max
+              )
+                onChange(value);
+            }}
+            onBlur={() => {
+              const value = input.trim() === '' ? radius : Number(input);
+              setRadius(
+                Number.isFinite(value)
+                  ? Math.min(
+                      CURSOR_GLOW_RADIUS.max,
+                      Math.max(CURSOR_GLOW_RADIUS.min, Math.round(value)),
+                    )
+                  : radius,
+              );
+            }}
+          />
+          <span aria-hidden="true">px</span>
+        </div>
+        <button type="button" onClick={() => setRadius(CURSOR_GLOW_RADIUS.default)}>
+          {t('cursorGlowReset')}
+        </button>
+      </div>
+    </section>
   );
 }
 function App() {
@@ -1163,6 +1241,15 @@ function App() {
                     </Field>
                   </div>
                 </section>
+                <CursorGlowSettings
+                  radius={snap.settings.cursorGlowRadius ?? CURSOR_GLOW_RADIUS.default}
+                  t={t}
+                  onChange={(radius) =>
+                    update((s) => {
+                      s.settings.cursorGlowRadius = radius;
+                    })
+                  }
+                />
                 <section className="settings-section">
                   <h2>{t('sections')}</h2>
                   <p>{t('sectionHelp')}</p>

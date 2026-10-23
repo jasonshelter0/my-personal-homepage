@@ -63,6 +63,15 @@ if (nav.length) {
 const search = document.querySelector<HTMLDialogElement>('#search-dialog')!;
 const imageDialog = document.querySelector<HTMLDialogElement>('#image-dialog')!;
 const input = document.querySelector<HTMLInputElement>('#search-input')!;
+const appleKeyboard = /Mac|iPhone|iPad|iPod/i.test(navigator.platform);
+const searchShortcut = appleKeyboard ? '⌘ K' : 'Ctrl + K';
+for (const label of document.querySelectorAll<HTMLElement>('[data-search-shortcut]'))
+  label.textContent = searchShortcut;
+for (const label of document.querySelectorAll<HTMLElement>('[data-search-shortcut-template]'))
+  label.textContent = label.dataset.searchShortcutTemplate!.replace('{shortcut}', searchShortcut);
+document
+  .querySelector('[data-open-search]')
+  ?.setAttribute('aria-keyshortcuts', appleKeyboard ? 'Meta+k' : 'Control+k');
 let previousFocus: HTMLElement | null = null;
 function openDialog(dialog: HTMLDialogElement) {
   previousFocus = document.activeElement as HTMLElement;

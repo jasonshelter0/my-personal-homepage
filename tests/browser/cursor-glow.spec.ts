@@ -3,6 +3,34 @@ import sharp from 'sharp';
 
 const live = 'http://127.0.0.1:4523';
 
+for (const [platform, shortcut, key, aria] of [
+  ['Win32', 'Ctrl + K', 'Control+k', 'Control+k'],
+  ['Linux x86_64', 'Ctrl + K', 'Control+k', 'Control+k'],
+  ['MacIntel', '⌘ K', 'Meta+k', 'Meta+k'],
+]) {
+  test(`search shortcut matches ${platform} and opens localized search`, async ({ page }) => {
+    await page.addInitScript(
+      (platform) => Object.defineProperty(navigator, 'platform', { get: () => platform }),
+      platform,
+    );
+    for (const locale of ['zh-cn', 'en', 'fr']) {
+      await page.goto(`${live}/${locale}/`);
+      await expect(page.locator('[data-search-shortcut]')).toHaveText(shortcut);
+      await expect(page.locator('[data-open-search]')).toHaveAttribute('aria-keyshortcuts', aria);
+      await page.keyboard.press(key);
+      await expect(page.locator('#search-dialog')).toBeVisible();
+      await expect(page.locator('#search-input')).toBeFocused();
+      await expect(page.locator('.search-shortcut')).toContainText(shortcut);
+      await expect(page.locator('.search-shortcut')).not.toContainText('Ctrl / ⌘');
+      await page.keyboard.press(key);
+      await expect(page.locator('#search-dialog')).not.toBeVisible();
+      await page.keyboard.press(key);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('#search-dialog')).not.toBeVisible();
+    }
+  });
+}
+
 test.beforeAll(async ({ request }) => {
   expect(
     (await request.post('/api/login', { data: { password: 'local-demo-password' } })).ok(),

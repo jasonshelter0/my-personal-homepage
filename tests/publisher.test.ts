@@ -14,6 +14,8 @@ test(
   { timeout: 180000 },
   async () => {
     const snapshot = structuredClone(seed);
+    // Old release snapshots have no radius field and must keep their appearance.
+    Reflect.deleteProperty(snapshot.settings, 'cursorGlowRadius');
     const draft = structuredClone(snapshot.entries[0]);
     draft.id = 'secret-draft';
     draft.slug = 'never-published';
@@ -55,6 +57,7 @@ test(
     const html = fs.readFileSync(path.join(out, 'en/index.html'), 'utf8');
     assert.deepEqual(fs.readFileSync(path.join(out, 'media', 'frozen.webp')), asset);
     assert.ok(html.includes('Jason'));
+    assert.ok(html.includes('--glow-radius:600px'));
     assert.ok(!html.includes('MUTATED AFTER BUILD REQUEST'));
     assert.ok(!html.includes('DO-NOT-PUBLISH-SECRET'));
     assert.ok(!fs.existsSync(path.join(out, 'en/projects/never-published/index.html')));
@@ -67,16 +70,27 @@ test(
     assert.equal(publisher.getCurrentRelease()!.id, r1.id);
     const second = structuredClone(seed);
     second.revision = 2;
+    second.settings.cursorGlowRadius = 320;
     for (const p of Object.values(second.settings.profile)) p.name = 'Version Two';
     for (const p of Object.values(second.settings.profile))
       p.sourceHash = contentHash(second.settings.profile['zh-CN']);
     const r2 = await publisher.createRelease(second);
+    second.settings.cursorGlowRadius = 1200;
     await publisher.waitForBuilds();
     ready = publisher.listReleases().find((r) => r.id === r2.id)!;
     assert.equal(ready.status, 'ready', ready.error || 'second build');
     publisher.markPreviewed(r2.id);
     await publisher.publishRelease(r2.id);
     assert.equal(publisher.getCurrentRelease()!.id, r2.id);
+    for (const locale of ['zh-cn', 'en', 'fr'])
+      assert.ok(
+        fs
+          .readFileSync(
+            path.join(publisher.releaseDirectory(r2.id), `${locale}/index.html`),
+            'utf8',
+          )
+          .includes('--glow-radius:320px'),
+      );
     assert.ok(
       fs
         .readFileSync(path.join(publisher.releaseDirectory(r2.id), 'en/index.html'), 'utf8')
@@ -84,6 +98,11 @@ test(
     );
     await publisher.rollbackRelease(r1.id);
     assert.equal(publisher.getCurrentRelease()!.id, r1.id);
+    assert.ok(
+      fs
+        .readFileSync(path.join(publisher.releaseDirectory(r1.id), 'en/index.html'), 'utf8')
+        .includes('--glow-radius:600px'),
+    );
     assert.ok(
       fs
         .readFileSync(path.join(publisher.releaseDirectory(r1.id), 'en/index.html'), 'utf8')

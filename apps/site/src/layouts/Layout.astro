@@ -12,6 +12,7 @@ import {
   type Locale,
 } from '../lib/data';
 import Icon from '../components/Icon.astro';
+import { CURSOR_GLOW_RADIUS } from '../../../../shared/types';
 interface Props {
   locale: Locale;
   title?: string;
@@ -40,12 +41,21 @@ const glowRGB = [1, 3, 5]
   .map((offset) => parseInt(accent.slice(offset, offset + 2), 16))
   .join(', ');
 const background = /^#[0-9a-f]{6}$/i.test(settings.background) ? settings.background : '#0f172a';
+const glowRadius =
+  Number.isInteger(settings.cursorGlowRadius) &&
+  settings.cursorGlowRadius >= CURSOR_GLOW_RADIUS.min &&
+  settings.cursorGlowRadius <= CURSOR_GLOW_RADIUS.max
+    ? settings.cursorGlowRadius
+    : CURSOR_GLOW_RADIUS.default;
 const avatar = media(settings.avatarId);
 const ProfileHeading = home ? 'h1' : 'span';
 ---
 
 <!doctype html>
-<html lang={locale} style={`--accent:${accent};--background:${background};--glow-rgb:${glowRGB}`}>
+<html
+  lang={locale}
+  style={`--accent:${accent};--background:${background};--glow-rgb:${glowRGB};--glow-radius:${glowRadius}px`}
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -171,7 +181,7 @@ const ProfileHeading = home ? 'h1' : 'span';
             <button class="search-trigger" type="button" aria-label={t.search} data-open-search>
               <Icon name="search" size={17} />
               <span>{t.search}</span>
-              <kbd>⌘ K</kbd>
+              <kbd data-search-shortcut>Ctrl / ⌘ K</kbd>
             </button>
           </div>
         </div>
@@ -239,7 +249,9 @@ const ProfileHeading = home ? 'h1' : 'span';
         {t.searchHint}
       </p>
       <div id="search-results" role="list" aria-label={t.results}></div>
-      <p class="search-shortcut">{t.searchKeyboard}</p>
+      <p class="search-shortcut" data-search-shortcut-template={t.searchKeyboard}>
+        {t.searchKeyboard.replace('{shortcut}', 'Ctrl / ⌘ K')}
+      </p>
     </dialog>
     <dialog id="image-dialog" class="image-dialog" aria-label={t.openImage} data-pagefind-ignore>
       <button type="button" class="icon-button" data-close-dialog aria-label={t.close}>

@@ -25,6 +25,28 @@ test('complete editorial journey, multilingual static search and responsive layo
   await page.reload();
   await page
     .locator('.sidebar')
+    .getByRole('button', { name: /Appearance/ })
+    .click();
+  const glowRadius = page.getByRole('spinbutton', { name: 'Cursor glow radius', exact: true });
+  const glowSlider = page.getByRole('slider', { name: 'Cursor glow radius', exact: true });
+  await glowRadius.fill('320');
+  await expect(glowSlider).toHaveValue('320');
+  await page.getByRole('button', { name: 'Reset to 600 px', exact: true }).click();
+  await expect(glowRadius).toHaveValue('600');
+  await glowSlider.focus();
+  await page.keyboard.press('End');
+  await expect(glowRadius).toHaveValue('1200');
+  await glowRadius.fill('320');
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await expect(page.getByText('All changes saved', { exact: true })).toBeVisible();
+  await page.reload();
+  await page
+    .locator('.sidebar')
+    .getByRole('button', { name: /Appearance/ })
+    .click();
+  await expect(glowRadius).toHaveValue('320');
+  await page
+    .locator('.sidebar')
     .getByRole('button', { name: /Profile/ })
     .click();
   await expect(page.getByLabel('Role / headline', { exact: true })).toHaveValue(/TEST$/);
@@ -62,6 +84,11 @@ test('complete editorial journey, multilingual static search and responsive layo
   await expect(preview.locator('html')).toHaveAttribute('lang', 'zh-CN');
   await preview.getByRole('link', { name: 'EN', exact: true }).click();
   await expect(preview.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(preview.locator('html')).toHaveCSS('--glow-radius', '320px');
+  await expect(preview.locator('.cursor-glow')).toHaveCSS(
+    'background-image',
+    /^radial-gradient\(320px /,
+  );
   await expect(preview.locator('body')).toContainText('Developer, researcher');
   await preview.getByRole('button', { name: 'Search', exact: true }).click();
   await preview.getByRole('searchbox').fill('Atlas');
@@ -82,6 +109,7 @@ test('complete editorial journey, multilingual static search and responsive layo
   const live = await context.newPage();
   await live.goto('http://127.0.0.1:4523/en/');
   await expect(live.locator('body')).toContainText('Atlas');
+  await expect(live.locator('html')).toHaveCSS('--glow-radius', '320px');
   const privateContext = await context.browser()!.newContext();
   const outsider = await privateContext.newPage();
   const blocked = await outsider.goto('http://127.0.0.1:4522/');
@@ -92,7 +120,7 @@ test('complete editorial journey, multilingual static search and responsive layo
   // Theme save stays private until a new immutable version is built and published.
   const theme = () =>
     live.evaluate(() =>
-      ['--accent', '--background'].map((key) =>
+      ['--accent', '--background', '--glow-radius'].map((key) =>
         document.documentElement.style.getPropertyValue(key),
       ),
     );
@@ -102,6 +130,7 @@ test('complete editorial journey, multilingual static search and responsive layo
     .getByRole('button', { name: /Appearance/ })
     .click();
   await page.getByRole('button', { name: /Violet/ }).click();
+  await page.getByRole('spinbutton', { name: 'Cursor glow radius', exact: true }).fill('900');
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await live.reload();
   expect(await theme()).toEqual(before);
@@ -204,6 +233,11 @@ test('author and upload in three languages, publish a new article, restore a pre
   await preview.waitForLoadState();
   await preview.goto('http://127.0.0.1:4522/fr/posts/browser-authored-story/');
   await expect(preview.locator('h1')).toContainText('Un article');
+  await expect(preview.locator('html')).toHaveCSS('--glow-radius', '900px');
+  await expect(preview.locator('.cursor-glow')).toHaveCSS(
+    'background-image',
+    /^radial-gradient\(900px /,
+  );
   await expect(preview.locator('.editorial-image img')).toHaveAttribute('src', upload.media.path);
   expect((await preview.request.get(`http://127.0.0.1:4522${upload.media.path}`)).status()).toBe(
     200,
@@ -217,6 +251,7 @@ test('author and upload in three languages, publish a new article, restore a pre
   );
   expect(publicResponse.status()).toBe(200);
   expect(await publicResponse.text()).toContain('A browser authored story');
+  expect(await publicResponse.text()).toContain('--glow-radius:900px');
   page.once('dialog', (dialog) => dialog.accept());
   await page
     .locator('.release-row')
@@ -229,6 +264,9 @@ test('author and upload in three languages, publish a new article, restore a pre
       .filter({ hasText: previous })
       .getByText('Current live version', { exact: true }),
   ).toBeVisible();
+  expect(await (await page.request.get('http://127.0.0.1:4523/en/')).text()).toContain(
+    '--glow-radius:320px',
+  );
   expect(
     (await page.request.get('http://127.0.0.1:4523/en/posts/browser-authored-story/')).status(),
   ).toBe(404);

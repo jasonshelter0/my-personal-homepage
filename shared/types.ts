@@ -1,4 +1,5 @@
 export const LOCALES = ['zh-CN', 'en', 'fr'] as const;
+export const CURSOR_GLOW_RADIUS = { min: 100, max: 1200, default: 600 } as const;
 export type Locale = (typeof LOCALES)[number];
 export type EntryType = 'project' | 'post' | 'page' | 'experience';
 export interface LocalizedContent {
@@ -52,6 +53,7 @@ export interface SiteSettings {
   profile: Record<Locale, Profile>;
   accent: string;
   background: string;
+  cursorGlowRadius: number;
   defaultLocale: Locale;
   sections: Array<{ id: 'about' | 'experience' | 'projects' | 'writing'; enabled: boolean }>;
   socials: SocialLink[];

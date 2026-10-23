@@ -85,6 +85,7 @@ export const seed: Snapshot = {
     profile,
     accent: '#5eead4',
     background: '#0f172a',
+    cursorGlowRadius: 600,
     defaultLocale: 'zh-CN',
     sections: [
       { id: 'about', enabled: true },

@@ -3,6 +3,28 @@ import assert from 'node:assert/strict';
 import { referencedMediaIds, missingMediaReferences } from '../shared/media-references.ts';
 import { seed } from '../shared/seed.ts';
 import { contentHash, validateSnapshot } from '../shared/validation.ts';
+import { parseSnapshot } from '../server/schema.ts';
+
+test('legacy snapshots receive the default glow radius without changing their revision', () => {
+  const legacy = structuredClone(seed);
+  Reflect.deleteProperty(legacy.settings, 'cursorGlowRadius');
+  const restored = parseSnapshot(legacy);
+  assert.equal(restored.settings.cursorGlowRadius, 600);
+  assert.equal(restored.revision, legacy.revision);
+});
+
+test('glow radius accepts bounded integers and rejects unsafe or invalid values', () => {
+  for (const radius of [100, 320, 600, 1200]) {
+    const s = structuredClone(seed);
+    s.settings.cursorGlowRadius = radius;
+    assert.equal(parseSnapshot(s).settings.cursorGlowRadius, radius);
+  }
+  for (const radius of [0, 99, 1201, -1, 300.5, Infinity, NaN, '600', null]) {
+    const s = structuredClone(seed);
+    Object.assign(s.settings, { cursorGlowRadius: radius });
+    assert.throws(() => parseSnapshot(s));
+  }
+});
 test('complete zh-CN/en/fr seed is publishable', () =>
   assert.deepEqual(validateSnapshot(seed), []));
 test('source edits invalidate other language versions', () => {

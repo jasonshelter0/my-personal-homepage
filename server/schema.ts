@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Snapshot } from '../shared/types.ts';
+import { CURSOR_GLOW_RADIUS, type Snapshot } from '../shared/types.ts';
 const short = z.string().max(500);
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/);
 const locale = z.enum(['zh-CN', 'en', 'fr']);
@@ -61,6 +61,12 @@ export const snapshotSchema = z
         profile: tri(profile),
         accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
         background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+        cursorGlowRadius: z
+          .number()
+          .int()
+          .min(CURSOR_GLOW_RADIUS.min)
+          .max(CURSOR_GLOW_RADIUS.max)
+          .default(CURSOR_GLOW_RADIUS.default),
         defaultLocale: locale,
         sections: z
           .array(

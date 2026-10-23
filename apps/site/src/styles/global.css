@@ -119,7 +119,7 @@ img {
   z-index: 30;
   opacity: 0;
   background: radial-gradient(
-    600px circle at var(--mouse-x, 50%) var(--mouse-y, 30%),
+    var(--glow-radius, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 30%),
     rgba(var(--glow-rgb, 94, 234, 212), 0.16),
     transparent 80%
   );
