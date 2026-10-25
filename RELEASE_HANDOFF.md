@@ -1,5 +1,36 @@
 # Folio Studio 生产发布交接
 
+## 方形简介头像 1.2.1（2026-10-26，当前部署）
+
+已于 `2026-10-25T16:25:58.602Z` 通过真实 HTTPS 私有预览、发布和公网验证。此节为当前状态，下方部署记录均保留为历史。
+
+- 项目：`/home/jasonshelter/Projects/personal-website`；运行源码 `a6b83c479952d60413f239771442c0f3f58ddf93`，版本 `1.2.1`。
+- 简介姓名上方加入可选方形头像；桌面128px、手机104px，居中裁切、小圆角、随主题色变化的细边框和柔和边缘高亮。无头像时不渲染框或留白，较矮桌面下简介随页面滚动。
+- 后台继续使用「媒体库上传 → 个人资料/头像选择 → 保存 → 预览 → 发布」，支持中英法说明。当前已发布内容未选择头像，生产验证确认其隐藏；带图场景在隔离本地环境验证，没有向生产添加示例图片。操作说明见 `docs/PROFILE_PORTRAIT.md`。
+- 镜像 `sha256:6cc35ee4e0f8287c435db62db155a1373337434be7043ad86c7b6b506cec3c39`；runtime/current → `/www/dk_project/folio-studio/releases/avatar-20261026-a6b83c4`。
+- 当前内容 `mvo1gv9g-c49823d5`，仅从现场已发布 `mvnz3t4d-fb9699f6` 重建；保留用户内容与 Git/Mamba 页面。草稿revision **16** 及内容SHA-256发布前后不变。
+- 数据仍为 `/www/dk_project/folio-studio/shared/data`，SQLite、媒体及冻结版本沿用，无迁移、新依赖或新增环境变量。现有环境变量名称见本文下方环境变量表（不含秘密值）。
+- 构建：`npm run typecheck`、`npm run test:e2e -- tests/browser/profile-portrait.spec.ts`、`npm run build`；产物 `apps/admin/dist/`、`apps/site/dist/`。生产内容由 `node --import tsx scripts/rebuild-published.ts --expected-current mvnz3t4d-fb9699f6` 创建私有预览，验收后经已有发布API切换。
+- 本地运行包 `/home/jasonshelter/Projects/personal-website/.folio/deployments/avatar-20261026-a6b83c4/runtime.tar.gz`，119740008字节，SHA-256 `581eee29670d5c07f82061442b676c827ba0d79a799cf33b56548665a0f182db`；服务器校验一致。BuildKit离线构建，已验证Node24.21.0基础镜像与最终镜像基础层相同。
+- 运行：现有Compose项目 `folio-studio`、服务 `studio`、容器 `folio-studio-studio-1`；`node --import tsx server/index.ts`，127.0.0.1:18080，UID10001、只读根目录。健康检查 `GET /healthz`。
+- 一致性备份 `/www/backup/site/folio-studio/20261025T162502Z-avatar/data.tar.gz`；SHA-256 `b2c172262da67e020f441db2518468e70a047d3a35a36f559db244d35c5d8097`。停应用备份并排除可再生build-cache，目录0700/归档0600，已校验归档可完整读取，未执行恢复演练。
+- 旧镜像 `sha256:4f5780e6c3b09378ab84040523a97e2a15411c748426076bef95b36493290174`、旧runtime `/www/dk_project/folio-studio/releases/git-theme-20261025-0855e4f`、旧内容和备份保留。
+- 验证：类型检查、生产构建、头像端到端回归通过，覆盖无图隐藏、三语替代文字、横图方形裁切、320/390/1280/1440px、主题色及预览/正式版本隔离；视觉检查手机与桌面截图。生产12页私有预览通过后发布，12页公开页面通过；后台新说明、翻译/图标控件、搜索、备案、canonical、匿名草稿/预览401、数据库文件404、health200通过；浏览器及资源错误0。
+- 与Git会话交接后持有 `config/deployment.lock` 独占部署；未修改Nginx、DNS、证书、WordPress、RDS、MySQL/PHP或其他服务，未清理旧版本与备份。
+
+### 回滚此版本
+
+先协调并持有 `/www/dk_project/folio-studio/config/deployment.lock`，恢复内容，再恢复应用；不要覆盖持久数据或草稿：
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvnz3t4d-fb9699f6')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261025T162502Z-avatar/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
 ## Git simulator main-site theme (2026-10-25, current deployment)
 
 Published and verified at `2026-10-25T15:20:57.411Z`. Earlier deployment sections below
