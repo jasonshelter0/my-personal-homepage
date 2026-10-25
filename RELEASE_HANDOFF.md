@@ -1,6 +1,53 @@
 # Folio Studio 生产发布交接
 
-## Git 手机目标窗口修复（2026-10-25，当前部署）
+## 免费翻译与资料图标 1.2.0（2026-10-25，当前部署）
+
+已于 `2026-10-25T12:46:55.106Z` 完成生产私有预览、发布和公网验收。以下为最新状态，下方 Git 手机修复和首次上线记录保留为历史。
+
+- 功能：默认免密钥 MyMemory 翻译；可选已配置的 LibreTranslate / OpenAI 兼容服务；三语言服务选择与发送确认；50 种可搜索、可预览的资料外链图标，含 WeChat、Goodreads。照片生成提示词位于 `docs/PORTRAIT_PROMPT.md`。
+- 运行源码：`6cc27bc8cffc3e816a55c53724bd23d4f711ca56`，包含 Git 手机目标窗口修复 `34cf36e`；应用版本 `1.2.0`。
+- 当前镜像：`sha256:f06bfdb565cb276e0c931bbfde7424765f89dfe5752b42b96d765109f74f6ab3`。
+- runtime：`/www/dk_project/folio-studio/releases/profile-20261025-6cc27bc`，`current` 指向该目录。
+- 当前内容：`mvntmwhb-8af480ce`；从现场已发布版本 `mvntcxim-e5d321e2` 重建，保留 Git 修复、Mamba 课程和用户自己的已发布内容。
+- 更新前应用：镜像 `sha256:96395dee4359fa6a1c119f953b65d3cf9202c6492fe5c10c36ceed31b5dbf255`，runtime `releases/git-width-20261025-34cf36e`。
+- 数据：继续使用 `/www/dk_project/folio-studio/shared/data`。草稿 revision **14** 及内容 SHA-256 发布前后相同，无数据库迁移；没有将示例数据或本地草稿覆盖生产数据。
+- 一致性备份：`/www/backup/site/folio-studio/20261025T124522Z-profile-tools/data.tar.gz`，停应用时归档、排除可再生 build-cache，目录0700/归档0600，已验证归档可完整读取；SHA-256 `6579cf7eb9b653ab72b7aab3749d4862e066e5c643e3e76969de383a9c3b14fd`。未执行完整恢复演练。
+- 本地运行包：`/home/jasonshelter/Projects/personal-website/.folio/deployments/profile-20261025-6cc27bc/runtime.tar.gz`，119739700 字节，SHA-256 `9704f8006fe00dc104a280de6be4f1f7d75c19ac779026a4164ee198ac72518d`，上传后校验相同。`artifact.json` 与 `verification.json` 记录发布证据。
+
+### 翻译与图标操作
+
+后台资料或内容页选择目标语言 → 选择 MyMemory → 确认发送源文并翻译 → 人工校对 → 预览并发布。MyMemory 匿名额度通常每天5,000字符，本站每次最多4,500个源文字符；失败、额度不足或并发编辑不会写入部分译文。源文只在用户确认动作后发送给所选服务。代码、链接和Markdown结构受保护，无法安全重建的结构会明确报错。详见 `docs/FREE_TRANSLATION.md`。
+
+生产无需新增密钥即可使用 MyMemory。可选环境变量 `LIBRETRANSLATE_URL`、`LIBRETRANSLATE_API_KEY` 新增于 `.env.example`；原有 `TRANSLATION_BASE_URL`、`TRANSLATION_API_KEY`、`TRANSLATION_MODEL`、`TRANSLATION_GLOSSARY` 保持支持。此次未配置 LibreTranslate 或付费 AI 服务，也未安装额外翻译模型。状态接口只报告是否配置，不承诺外部服务持续可用或剩余额度。
+
+图标在「外观与导航」的外链设置中选择，可搜索平台名称或中文别名；图标使用内置SVG，无CDN和新运行时依赖。WeChat图标仍使用用户填写的网页链接，不会自动生成微信个人账号链接或二维码。列表和来源见 `docs/SOCIAL_ICONS.md`。
+
+### 验证与运行
+
+本地38项单元/集成测试、15项浏览器测试、类型检查和正式构建通过；翻译辅助模块最后的转义检查8项通过。Git修复由其独立会话测试后合入，本批运行包包含该修复。
+
+生产容器内用合成文本实际验证 `zh-CN→en`、`en→fr`、`fr→zh-CN` 的 MyMemory 调用，未发送真实用户草稿。真实HTTPS验证后台服务选择、50图标搜索、手机布局；私有预览12页通过后发布，匿名再验证12页，覆盖中英法首页、学习入口、Git和Mamba。脚本/资源错误0，搜索预览路径、canonical、备案、健康和权限隔离通过。Git模拟器公开文件与修复后的本地SHA-256完全相同：`8f7226b2da11ec8e5e75192e8a14aa78531dc166ff99dd50be2cc9c4ce753815`。
+
+容器 running/healthy、重启0、无OOM。使用现有Compose、只读根目录、UID10001和127.0.0.1:18080；未修改Nginx、DNS、证书、WordPress、RDS或其他服务。先与Git会话交接，再持有 `/www/dk_project/folio-studio/config/deployment.lock` 完成生产变更。
+
+本次使用现代BuildKit离线构建：先核验本地 `node:24.21.0-bookworm-slim` 标签对应基础镜像 `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`，使用 `--pull=false --build-arg BASE_IMAGE=node:24.21.0-bookworm-slim` 构建，并验证最终镜像层包含相同基础镜像层。Compose继续固定最终应用镜像ID，不依赖浮动标签。
+
+### 此批次回滚
+
+持有部署锁并确认恢复范围后，先恢复内容，再恢复应用；不覆盖数据库或草稿：
+
+```bash
+ssh aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvntcxim-e5d321e2')).id);
+JS
+ssh aliyun-web 'bash /www/backup/site/folio-studio/20261025T124522Z-profile-tools/rollback-application.sh'
+ssh aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+旧版本不提供新增翻译选项，不认识的新图标可能显示为通用图标，但草稿值不丢失。数据库恢复是独立操作，不得在线解压覆盖当前数据。保留新旧镜像、内容版本和备份，不执行prune或恢复WordPress入口。
+
+## Git 手机目标窗口修复（2026-10-25，历史部署）
 
 已于 `2026-10-25T12:40:09.235Z` 完成真实 HTTPS 私有预览、发布及匿名公网验收。
 修复上游桌面样式的 400px 最小宽度覆盖手机样式的问题；目标图按实际容器重绘，
@@ -40,21 +87,21 @@ ssh aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
 
 **已发布并通过真实 HTTPS 验收，完成时间 `2026-10-25T07:49:11.541Z`。** 本节为当前状态；下方首次建站记录保留作历史，旧镜像和初始内容 ID 不代表当前版本。两个开发会话协调后，由 Mamba 会话持有服务器 `flock` 独占完成统一部署。
 
-| 项目 | 当前记录 |
-| --- | --- |
-| 主课程 | <https://www.jasonshelter.com/learn/mamba-tta-irstd/>；11 章 × 中英法，33 个正文页面 |
-| 同批课程 | <https://www.jasonshelter.com/learn/git-branching/>；由 Git 会话提供完整三语模拟器 |
-| 运行源码 | `8ff2c4dd16f66c2b5a9b0318222eee3ad13d2dc3`（包含 Git 提交 `defca9fb526a42fdaec37817fed6ca024be7eb1b`），已推送 `main` |
-| 当前镜像 | `sha256:ba0946ac153a012703a077e6ebaddd96b3669892e3e80a1249e364528f6ac728` |
-| 当前内容版本 | `mvnivkmk-648c10e2` |
-| runtime | `/www/dk_project/folio-studio/current` → `/www/dk_project/folio-studio/releases/learn-20261025-8ff2c4d` |
-| 持久数据 | `/www/dk_project/folio-studio/shared/data`；10001:10001 / 0700，沿用原目录 |
-| 更新前内容版本 | `mvngl5bl-5e2da295`（现场读取，区别于首次部署 ID） |
-| 更新前应用 | `sha256:bc865fa97e06200d0bd71377acf17e21c4f240724045041348d99f3ec25e1e93`；runtime `releases/1.1.0-8c4a227` |
-| 一致性备份 | `/www/backup/site/folio-studio/20261025T074428Z-learning`；目录 0700、`data.tar.gz` 0600，仅存服务器 |
-| 备份 SHA-256 | `ca486b48716f4a47c4c4d9627acb3251b0537508646202ba413227d5eb631596` |
-| 运行包 | `.folio/deployments/learn-20261025-8ff2c4d/runtime.tar.gz`，119679474 字节 |
-| 运行包 SHA-256 | `462391e7ff035f8cff1acc354ec73d6067ca19adce6879c41574ecd4e0d9c247`，上传后复核一致 |
+| 项目           | 当前记录                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 主课程         | <https://www.jasonshelter.com/learn/mamba-tta-irstd/>；11 章 × 中英法，33 个正文页面                                  |
+| 同批课程       | <https://www.jasonshelter.com/learn/git-branching/>；由 Git 会话提供完整三语模拟器                                    |
+| 运行源码       | `8ff2c4dd16f66c2b5a9b0318222eee3ad13d2dc3`（包含 Git 提交 `defca9fb526a42fdaec37817fed6ca024be7eb1b`），已推送 `main` |
+| 当前镜像       | `sha256:ba0946ac153a012703a077e6ebaddd96b3669892e3e80a1249e364528f6ac728`                                             |
+| 当前内容版本   | `mvnivkmk-648c10e2`                                                                                                   |
+| runtime        | `/www/dk_project/folio-studio/current` → `/www/dk_project/folio-studio/releases/learn-20261025-8ff2c4d`               |
+| 持久数据       | `/www/dk_project/folio-studio/shared/data`；10001:10001 / 0700，沿用原目录                                            |
+| 更新前内容版本 | `mvngl5bl-5e2da295`（现场读取，区别于首次部署 ID）                                                                    |
+| 更新前应用     | `sha256:bc865fa97e06200d0bd71377acf17e21c4f240724045041348d99f3ec25e1e93`；runtime `releases/1.1.0-8c4a227`           |
+| 一致性备份     | `/www/backup/site/folio-studio/20261025T074428Z-learning`；目录 0700、`data.tar.gz` 0600，仅存服务器                  |
+| 备份 SHA-256   | `ca486b48716f4a47c4c4d9627acb3251b0537508646202ba413227d5eb631596`                                                    |
+| 运行包         | `.folio/deployments/learn-20261025-8ff2c4d/runtime.tar.gz`，119679474 字节                                            |
+| 运行包 SHA-256 | `462391e7ff035f8cff1acc354ec73d6067ca19adce6879c41574ecd4e0d9c247`，上传后复核一致                                    |
 
 ### 内容保留与验收
 

@@ -91,4 +91,12 @@ References: [Docker Compose service settings](https://docs.docker.com/reference/
 
 When Docker Hub is unavailable from ECS, load the verified official image archive and verify its image ID before building. This release uses `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397` for the verified Node base. The production handoff records archive checksums.
 
+Version 1.2.0 successfully used the modern Docker BuildKit builder offline with
+the loaded `node:24.21.0-bookworm-slim` tag. Verify that tag's image ID against
+the value above immediately before building, then pass
+`--pull=false --platform linux/amd64 --build-arg BASE_IMAGE=node:24.21.0-bookworm-slim`.
+Verify the resulting application's root filesystem layers begin with the same
+base-image layers, and record the immutable application image ID for Compose.
+This verified local-tag approach is the preferred offline path on this server.
+
 Docker 26 BuildKit interprets a bare `sha256:...` in `FROM` as a registry image name, so it cannot use that argument directly. This first deployment used `DOCKER_BUILDKIT=0 docker build --pull=false --platform linux/amd64 --build-arg BASE_IMAGE=sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397 -t folio-studio:1.1.0-3ac5106 .` to build offline from the exact local image ID. The legacy builder is deprecated; this is a recorded bootstrap workaround, not a runtime dependency. For subsequent builds, prefer the pinned registry digest with BuildKit when registry access is available, or a local tag whose image ID has been checked against the verified archive immediately before building. Never substitute an unverified mirror or floating base image. Compose always runs the exact resulting application image ID.
