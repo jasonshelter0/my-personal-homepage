@@ -35,3 +35,7 @@ Default selection prefers an already configured OpenAI-compatible service, then 
 Production settings live in the existing restricted server configuration, documented in `RELEASE_HANDOFF.md`. Change optional provider configuration there and recreate the existing Compose service to load it. Do not place credentials in source control or browser code.
 
 The API accepts an optional `provider` field with `mymemory`, `libretranslate` or `openai`. Omitting it selects the configured default. Authentication, reviewed-content overwrite checks, source hashes and draft revision checks still apply. The status endpoint reports configuration availability, not a successful provider health probe or remaining quota.
+
+## Image descriptions and homepage sections (1.3.0)
+
+The media library translates alternative text and captions without uploading image files to a provider. Homepage sections translate localized titles and optional Markdown bodies. Choose the source language and target editor language, confirm sending/overwriting, then proofread. Empty optional fields remain empty. Existing provider limits, link/code preservation, atomic saves and concurrent-edit checks apply. See [section and release management](SECTIONS_AND_RELEASES.md).

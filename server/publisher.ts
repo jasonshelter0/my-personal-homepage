@@ -74,6 +74,48 @@ export function getCurrentRelease(): Release | null {
     return null;
   }
 }
+/** Delete only an inactive frozen release. All checks and removal are synchronous
+ * so an HTTP publish request cannot select this release between the guard and rm.
+ */
+export function deleteRelease(id: string): void {
+  const folder = path.join(releaseRoot, validId(id));
+  try {
+    if (fs.lstatSync(releaseRoot).isSymbolicLink() || !fs.lstatSync(releaseRoot).isDirectory())
+      fail('Release storage is invalid', 409);
+    const directory = fs.lstatSync(folder);
+    if (directory.isSymbolicLink() || !directory.isDirectory())
+      fail('Release storage is invalid', 409);
+    if (path.dirname(fs.realpathSync(folder)) !== fs.realpathSync(releaseRoot))
+      fail('Release storage is invalid', 409);
+    const metadata = fs.lstatSync(metaPath(id));
+    if (metadata.isSymbolicLink() || !metadata.isFile()) fail('Release storage is invalid', 409);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') fail('Release not found', 404);
+    throw error;
+  }
+  // Read the pointer itself: getCurrentRelease deliberately returns null when
+  // metadata is unavailable, which is unsuitable for authorizing a deletion.
+  let currentId: string | null = null;
+  try {
+    const current = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'current.json'), 'utf8'));
+    if (typeof current.id !== 'string' || !/^[a-z0-9-]{10,80}$/.test(current.id))
+      fail('Current release state is invalid. Resolve it before deleting releases.', 409);
+    currentId = current.id;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+      fail('Current release state is invalid. Resolve it before deleting releases.', 409);
+  }
+  if (currentId === id)
+    fail('The current live release cannot be deleted. Publish another version first.', 409);
+  const release = readRelease(id);
+  if (release.id !== id) fail('Release storage is invalid', 409);
+  if (release.status === 'building')
+    fail('A building release cannot be deleted. Wait for the build to finish.', 409);
+  if (!['ready', 'failed', 'published'].includes(release.status))
+    fail('Release is not ready for deletion', 409);
+  // rm removes nested symlinks themselves rather than following their targets.
+  fs.rmSync(folder, { recursive: true });
+}
 function run(
   command: string,
   args: string[],

@@ -113,7 +113,38 @@ export const messages = {
     violet: '紫罗兰',
     amber: '琥珀',
     sections: '首页分区',
-    sectionHelp: '调整顺序和可见性。',
+    sectionHelp:
+      '新建、改名、排序或隐藏分区；更改需保存草稿、预览并发布后生效。删除分区不会删除内容条目。',
+    newSection: '新建分区',
+    untitledSection: '未命名分区',
+    editSection: '编辑分区',
+    deleteSection: '删除分区',
+    deleteSectionConfirm: '确定移除此首页分区？其中的文章、项目和信息页会保留。保存并发布后生效。',
+    builtInSection: '内置',
+    customSection: '自定义',
+    sectionLanguage: '分区语言',
+    sectionTitle: '分区标题',
+    sectionBody: '分区正文（Markdown）',
+    sectionContentHelp:
+      '标题需填写中英法三种语言。正文可留空；如填写，三种语言均需完整。支持 Markdown 图片与链接。至少填写正文或选择一个可收录条目，发布前请校对三种语言。',
+    sectionAboutHelp:
+      '这里修改首页分区名称；正文来自「个人简介」中的关于我。三种标题均留空可恢复默认名称。',
+    sectionBuiltinHelp:
+      '这里修改首页分区名称；卡片来自对应内容类型中的首页展示条目（经历显示所有可收录条目）。三种标题均留空可恢复默认名称。',
+    sectionCards: '分区卡片',
+    sectionCardsHelp:
+      '选择已有内容；仅状态为「待发布 / 收录」的条目会出现在正式页面，草稿不会显示。最多选择100项。',
+    sectionEntrySearch: '搜索可选内容',
+    sectionNoEntries: '没有匹配的内容，可到「内容」中新建。',
+    sectionEntryReady: '可收录',
+    sectionCardOrder: '已选卡片的显示顺序',
+    sectionMissingEntry: '内容已不存在',
+    removeSectionCard: '移除卡片',
+    manageSectionContent: '管理内容条目',
+    restoreSection: '恢复内置分区',
+    restoreSectionButton: '添加回首页',
+    sectionLimit: '最多支持30个分区，请先移除不需要的分区。',
+    noSections: '尚无首页分区。新建自定义分区，或恢复下方内置分区。',
     enabled: '显示',
     up: '上移',
     down: '下移',
@@ -156,6 +187,21 @@ export const messages = {
     success: '操作成功',
     deleteEntry: '删除内容',
     releaseHistory: '版本历史',
+    deleteRelease: '删除版本记录',
+    deleteReleaseConfirm:
+      '确定永久删除这个版本记录及其预览、冻结副本？此后无法恢复到该版本。当前草稿和媒体库原图不会删除。',
+    releaseDeleted: '版本记录已删除',
+    deleteLiveReleaseHelp: '当前线上版本不能删除。请先发布其他版本。',
+    deleteBuildingReleaseHelp: '正在构建，完成后才能删除。',
+    translationSourceLanguage: '翻译源语言',
+    mediaTranslationDisclosure:
+      '只会发送替代文字和图注，不会上传图片。当前目标语言的文字会被译文替换，发布前请校对。',
+    sectionTranslationHelp:
+      '翻译所选源语言的分区标题和正文，替换当前分区语言中的文字。卡片内容请在「内容」中单独翻译，发布前请校对。',
+    translateMedia: '翻译图片说明为当前语言',
+    translateSection: '翻译分区为当前语言',
+    chooseTranslationTarget: '请选择与源语言不同的目标语言。',
+    metadataTranslationSuccess: '翻译已保存，请校对后预览并发布。',
     home: '首页',
     reviewState: '校对状态',
     overviewNext: '下一步',
@@ -306,7 +352,40 @@ export const messages = {
     violet: 'Violet',
     amber: 'Amber',
     sections: 'Homepage sections',
-    sectionHelp: 'Arrange sections and choose their visibility.',
+    sectionHelp:
+      'Create, rename, reorder or hide sections. Save your draft, preview and publish to apply changes. Removing a section keeps its content entries.',
+    newSection: 'New section',
+    untitledSection: 'Untitled section',
+    editSection: 'Edit section',
+    deleteSection: 'Delete section',
+    deleteSectionConfirm:
+      'Remove this homepage section? Its articles, projects and pages will be kept. Save and publish to apply this change.',
+    builtInSection: 'Built-in',
+    customSection: 'Custom',
+    sectionLanguage: 'Section language',
+    sectionTitle: 'Section title',
+    sectionBody: 'Section body (Markdown)',
+    sectionContentHelp:
+      'Fill in the title in Chinese, English and French. Body text is optional; if used, complete all three languages. Markdown images and links are supported. Add text or select at least one publishable entry, then proofread all languages before publishing.',
+    sectionAboutHelp:
+      'Rename this homepage section here. Its body comes from About in Profile. Leave all three titles empty to restore the default names.',
+    sectionBuiltinHelp:
+      'Rename this homepage section here. Cards come from featured entries of the corresponding content type (all publishable experience entries are included). Leave all three titles empty to restore the default names.',
+    sectionCards: 'Section cards',
+    sectionCardsHelp:
+      'Choose existing entries. Only entries marked Included in release appear on the public page; drafts stay hidden. Select up to 100 entries.',
+    sectionEntrySearch: 'Search available entries',
+    sectionNoEntries: 'No matching entries. Create an entry in Content.',
+    sectionEntryReady: 'Publishable',
+    sectionCardOrder: 'Selected cards in display order',
+    sectionMissingEntry: 'Entry no longer exists',
+    removeSectionCard: 'Remove card',
+    manageSectionContent: 'Manage content entries',
+    restoreSection: 'Restore built-in section',
+    restoreSectionButton: 'Add back to homepage',
+    sectionLimit: 'Up to 30 sections are supported. Remove an unused section first.',
+    noSections:
+      'No homepage sections yet. Create a custom section or restore a built-in section below.',
     enabled: 'Visible',
     up: 'Move up',
     down: 'Move down',
@@ -351,6 +430,21 @@ export const messages = {
     success: 'Done',
     deleteEntry: 'Delete entry',
     releaseHistory: 'Version history',
+    deleteRelease: 'Delete release record',
+    deleteReleaseConfirm:
+      'Permanently delete this release record, preview and frozen copy? You will no longer be able to roll back to it. Your current draft and original media files will be kept.',
+    releaseDeleted: 'Release record deleted',
+    deleteLiveReleaseHelp: 'The live version cannot be deleted. Publish another version first.',
+    deleteBuildingReleaseHelp: 'Wait for this build to finish before deleting it.',
+    translationSourceLanguage: 'Translation source language',
+    mediaTranslationDisclosure:
+      'Only alternative text and captions are sent; the image is not uploaded. Translations replace the current target language text. Proofread before publishing.',
+    sectionTranslationHelp:
+      'Translate the selected source language title and body into the current section language, replacing its text. Translate card entries separately in Content. Proofread before publishing.',
+    translateMedia: 'Translate image descriptions into this language',
+    translateSection: 'Translate section into this language',
+    chooseTranslationTarget: 'Choose a target language different from the source.',
+    metadataTranslationSuccess: 'Translation saved. Proofread, preview and publish when ready.',
     home: 'Homepage',
     reviewState: 'Review status',
     overviewNext: 'Up next',
@@ -502,7 +596,40 @@ export const messages = {
     violet: 'Violette',
     amber: 'Ambre',
     sections: 'Sections de l’accueil',
-    sectionHelp: 'Réorganisez les sections et leur visibilité.',
+    sectionHelp:
+      'Créez, renommez, réorganisez ou masquez les sections. Enregistrez, prévisualisez et publiez pour appliquer les changements. Retirer une section conserve ses contenus.',
+    newSection: 'Nouvelle section',
+    untitledSection: 'Section sans titre',
+    editSection: 'Modifier la section',
+    deleteSection: 'Supprimer la section',
+    deleteSectionConfirm:
+      'Retirer cette section de l’accueil ? Ses articles, projets et pages seront conservés. Enregistrez et publiez pour appliquer ce changement.',
+    builtInSection: 'Prédéfinie',
+    customSection: 'Personnalisée',
+    sectionLanguage: 'Langue de la section',
+    sectionTitle: 'Titre de la section',
+    sectionBody: 'Texte de la section (Markdown)',
+    sectionContentHelp:
+      'Renseignez le titre en chinois, anglais et français. Le texte est facultatif ; si utilisé, complétez les trois langues. Images et liens Markdown acceptés. Ajoutez du texte ou choisissez au moins un contenu publiable, puis relisez les trois langues avant publication.',
+    sectionAboutHelp:
+      'Renommez ici la section d’accueil. Son texte provient de À propos dans Profil. Laissez les trois titres vides pour retrouver les noms par défaut.',
+    sectionBuiltinHelp:
+      'Renommez ici la section d’accueil. Les cartes proviennent des contenus mis en avant du type correspondant (toutes les expériences publiables sont incluses). Laissez les trois titres vides pour retrouver les noms par défaut.',
+    sectionCards: 'Cartes de la section',
+    sectionCardsHelp:
+      'Choisissez des contenus existants. Seuls les contenus marqués pour publication apparaissent sur le site ; les brouillons restent masqués. Maximum : 100 contenus.',
+    sectionEntrySearch: 'Rechercher des contenus disponibles',
+    sectionNoEntries: 'Aucun contenu correspondant. Créez-en un dans Contenu.',
+    sectionEntryReady: 'Publiable',
+    sectionCardOrder: 'Cartes sélectionnées dans l’ordre d’affichage',
+    sectionMissingEntry: 'Ce contenu n’existe plus',
+    removeSectionCard: 'Retirer la carte',
+    manageSectionContent: 'Gérer les contenus',
+    restoreSection: 'Restaurer une section prédéfinie',
+    restoreSectionButton: 'Remettre sur l’accueil',
+    sectionLimit: 'Maximum : 30 sections. Retirez d’abord une section inutilisée.',
+    noSections:
+      'Aucune section d’accueil. Créez une section personnalisée ou restaurez une section prédéfinie ci-dessous.',
     enabled: 'Visible',
     up: 'Monter',
     down: 'Descendre',
@@ -548,6 +675,23 @@ export const messages = {
     success: 'Terminé',
     deleteEntry: 'Supprimer le contenu',
     releaseHistory: 'Historique des versions',
+    deleteRelease: 'Supprimer la version',
+    deleteReleaseConfirm:
+      'Supprimer définitivement cette version, son aperçu et sa copie figée ? Vous ne pourrez plus la restaurer. Le brouillon actuel et les médias originaux seront conservés.',
+    releaseDeleted: 'Version supprimée',
+    deleteLiveReleaseHelp:
+      'La version en ligne ne peut pas être supprimée. Publiez d’abord une autre version.',
+    deleteBuildingReleaseHelp:
+      'Attendez la fin de la construction avant de supprimer cette version.',
+    translationSourceLanguage: 'Langue source de traduction',
+    mediaTranslationDisclosure:
+      'Seuls le texte alternatif et la légende sont envoyés ; l’image n’est pas transmise. La traduction remplace les textes de la langue cible actuelle. Relisez avant de publier.',
+    sectionTranslationHelp:
+      'Traduisez le titre et le texte depuis la langue source vers la langue actuelle de la section, en remplaçant ses textes. Traduisez les cartes séparément dans Contenu. Relisez avant de publier.',
+    translateMedia: 'Traduire les descriptions dans cette langue',
+    translateSection: 'Traduire la section dans cette langue',
+    chooseTranslationTarget: 'Choisissez une langue cible différente de la source.',
+    metadataTranslationSuccess: 'Traduction enregistrée. Relisez, prévisualisez puis publiez.',
     home: 'Accueil',
     reviewState: 'État de relecture',
     overviewNext: 'La suite',
@@ -707,6 +851,50 @@ const serverMessages: Record<string, [string, string]> = {
   'Image must be smaller than 12 MB.': [
     '图片大小必须小于 12 MB。',
     'L’image doit faire moins de 12 Mo.',
+  ],
+  'Selected section entry is missing': [
+    '分区选择的内容已不存在，请移除该卡片引用。',
+    'Un contenu sélectionné pour la section n’existe plus. Retirez sa référence.',
+  ],
+  'Add section text or select at least one published entry': [
+    '请填写分区正文，或选择至少一个可收录的内容条目。',
+    'Ajoutez du texte à la section ou sélectionnez au moins un contenu publiable.',
+  ],
+  'The current live release cannot be deleted. Publish another version first.': [
+    '当前线上版本不能删除，请先发布其他版本。',
+    'La version en ligne ne peut pas être supprimée. Publiez d’abord une autre version.',
+  ],
+  'A building release cannot be deleted. Wait for the build to finish.': [
+    '构建中的版本不能删除，请等待构建结束。',
+    'Une version en construction ne peut pas être supprimée. Attendez la fin de la construction.',
+  ],
+  'Release not found': [
+    '版本记录不存在，可能已被删除。',
+    'Cette version n’existe pas ou a déjà été supprimée.',
+  ],
+  'Release storage is invalid': [
+    '版本存储异常，无法删除，请检查服务器记录。',
+    'Le stockage de la version est invalide. Vérifiez les données du serveur avant de supprimer.',
+  ],
+  'Current release state is invalid. Resolve it before deleting releases.': [
+    '当前版本状态异常，请修复后再删除版本记录。',
+    'L’état de la version actuelle est invalide. Corrigez-le avant de supprimer des versions.',
+  ],
+  'Release is not ready for deletion': [
+    '此版本暂时无法删除，请稍后重试。',
+    'Cette version ne peut pas encore être supprimée. Réessayez plus tard.',
+  ],
+  'Section not found.': [
+    '分区已不存在，请刷新后重试。',
+    'Cette section n’existe plus. Actualisez puis réessayez.',
+  ],
+  'Add source text before translating.': [
+    '请先填写源语言文字，再进行翻译。',
+    'Ajoutez du texte dans la langue source avant de traduire.',
+  ],
+  'This language already contains text. Confirm overwrite explicitly.': [
+    '此语言已有文字，请确认覆盖后再翻译。',
+    'Cette langue contient déjà du texte. Confirmez son remplacement avant de traduire.',
   ],
   'Required translation is missing': [
     '缺少必需的译文。',

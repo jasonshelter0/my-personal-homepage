@@ -233,15 +233,6 @@ p {
   left: -25px;
   background: var(--accent);
 }
-.nav-number {
-  font-size: 10px;
-  font-family: monospace;
-  color: #5d708c;
-  min-width: 23px;
-}
-.selected .nav-number {
-  color: var(--accent);
-}
 .nav-count {
   margin-left: auto;
   background: #26372f;
@@ -1218,9 +1209,6 @@ p {
   .sidebar nav button.selected:before {
     display: none;
   }
-  .nav-number {
-    display: none;
-  }
   .main-shell {
     margin-left: 0;
   }
@@ -1517,4 +1505,177 @@ p {
 .button:focus-within {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
+}
+
+/* Homepage section editing stays usable on both desktop and narrow phones. */
+.section-manager .section-heading {
+  flex-wrap: wrap;
+}
+.section-editor-list {
+  display: grid;
+  gap: 12px;
+}
+.section-editor {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.section-editor__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 14px;
+}
+.section-editor__toggle {
+  display: flex;
+  flex: 1 1 200px;
+  min-width: 0;
+  justify-content: flex-start;
+  text-align: left;
+}
+.section-editor__toggle strong {
+  font-size: 12px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.section-editor__kind {
+  font-size: 10px;
+  color: #91a0b7;
+  margin-left: auto;
+}
+.section-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.section-editor__actions .checkbox {
+  margin: 0 8px 0 0;
+}
+.section-editor__body {
+  padding: 0 18px 20px;
+  border-top: 1px solid var(--line);
+}
+.section-editor__locale {
+  max-width: 280px;
+}
+.section-editor__body .hint {
+  display: block;
+  line-height: 1.8;
+}
+.section-card-picker {
+  min-width: 0;
+  margin: 24px 0 16px;
+  padding: 0;
+  border: 0;
+}
+.section-card-picker legend {
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.section-card-options {
+  max-height: 260px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+.section-card-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: 12px;
+}
+.section-card-option input {
+  flex: 0 0 15px;
+  margin-top: 3px;
+}
+.section-card-option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.section-card-option small {
+  display: block;
+  font-size: 10px;
+  color: #91a0b7;
+  margin-top: 3px;
+}
+.section-selected-cards {
+  margin-top: 20px;
+}
+.section-selected-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.section-selected-card > span {
+  flex: 1 1 150px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.section-restore {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.section-restore .field {
+  margin: 0;
+  flex: 1 1 200px;
+}
+@media (max-width: 600px) {
+  .section-editor__header {
+    padding: 12px;
+  }
+  .section-editor__toggle {
+    flex-basis: 100%;
+  }
+  .section-editor__body {
+    padding: 0 12px 16px;
+  }
+  .section-editor__actions {
+    width: 100%;
+  }
+}
+.metadata-translation-controls {
+  padding: 12px 0;
+}
+.metadata-translation-controls .form-grid {
+  gap: 12px 24px;
+}
+.metadata-translation-controls .field {
+  margin-bottom: 8px;
+}
+.metadata-translation-controls .hint {
+  display: block;
+  line-height: 1.8;
+  margin: 8px 0;
+}
+.section-translation {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+.release-delete-help {
+  flex-basis: 100%;
+  text-align: right;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .metadata-translation-controls .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .release-delete-help {
+    text-align: left;
+  }
 }

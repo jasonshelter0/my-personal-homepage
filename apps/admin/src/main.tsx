@@ -18,6 +18,7 @@ import './style.css';
 import { CursorGlow } from './CursorGlow';
 import { editorMediaUrl } from './media-url';
 import { SocialIconPicker } from './SocialIconPicker';
+import { SectionManager } from './SectionManager';
 
 const blankTranslation = () => ({
   title: '',
@@ -244,6 +245,7 @@ function App() {
       providers: [],
     });
   const [translationProvider, setTranslationProvider] = useState<TranslationProvider | null>(null);
+  const [metadataSourceLocale, setMetadataSourceLocale] = useState<Locale | null>(null);
   const selectedProvider = translationProvider ?? translation.defaultProvider;
   const selectedTranslation = translation.providers.find(
     (provider) => provider.id === selectedProvider,
@@ -451,6 +453,79 @@ function App() {
       setToast(t('success'));
     });
   }
+  async function translateMetadata(
+    target: { mediaId: string } | { sectionId: string },
+    targetLocale: Locale,
+  ) {
+    const sourceLocale = metadataSourceLocale ?? snap!.settings.sourceLocale;
+    if (busy || sourceLocale === targetLocale || !selectedTranslation?.configured) return;
+    if (
+      !window.confirm(
+        `${t('translateConfirm')}\n\n${localeLabels[sourceLocale]} → ${localeLabels[targetLocale]}\n${selectedTranslation.label}: ${t('translationDisclosure')}${'mediaId' in target ? `\n${t('mediaTranslationDisclosure')}` : ''}`,
+      )
+    )
+      return;
+    await run(async () => {
+      if (dirty) await save();
+      accept(
+        await api<Snapshot>('/translate', 'POST', {
+          ...target,
+          sourceLocale,
+          targetLocale,
+          overwrite: true,
+          provider: selectedProvider,
+        }),
+      );
+      setToast(t('metadataTranslationSuccess'));
+    });
+  }
+  function metadataTranslationControls(kind: 'media' | 'section') {
+    return (
+      <div className="metadata-translation-controls">
+        <div className="form-grid">
+          <Field label={t('translationSourceLanguage')}>
+            <select
+              value={metadataSourceLocale ?? snap!.settings.sourceLocale}
+              onChange={(event) => setMetadataSourceLocale(event.target.value as Locale)}
+            >
+              {LOCALES.map((language) => (
+                <option key={language} value={language}>
+                  {localeLabels[language]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t('translationProvider')}>
+            <select
+              value={selectedProvider}
+              onChange={(event) =>
+                setTranslationProvider(event.target.value as TranslationProvider)
+              }
+            >
+              {translation.providers.map((provider) => (
+                <option key={provider.id} value={provider.id} disabled={!provider.configured}>
+                  {provider.label}
+                  {provider.configured ? '' : ` — ${t('providerNeedsSetup')}`}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <p className="hint">
+          {t(kind === 'media' ? 'mediaTranslationDisclosure' : 'sectionTranslationHelp')}
+        </p>
+        <p className="hint">
+          {t(
+            selectedProvider === 'mymemory'
+              ? 'freeTranslationHelp'
+              : selectedProvider === 'libretranslate'
+                ? 'libreTranslationHelp'
+                : 'translationDisclosure',
+          )}
+        </p>
+      </div>
+    );
+  }
   const languageTabs = (
     <div className="language-tabs" aria-label={t('contentLanguage')}>
       {LOCALES.map((l) => (
@@ -635,7 +710,7 @@ function App() {
           </div>
         </div>
         <nav aria-label={t('studio')}>
-          {navs.map((n, i) => (
+          {navs.map((n) => (
             <button
               key={n}
               className={tab === n ? 'selected' : ''}
@@ -644,7 +719,6 @@ function App() {
                 if (n !== 'content') setSelected(null);
               }}
             >
-              <span className="nav-number">0{i + 1}</span>
               {t(n)}
               {n === 'releases' && issues.length > 0 && (
                 <span className="nav-count">{issues.length}</span>
@@ -753,7 +827,7 @@ function App() {
                   </div>
                 </div>
                 <section className="next-step">
-                  <div className="eyebrow">01 — {t('overviewNext')}</div>
+                  <div className="eyebrow">{t('overviewNext')}</div>
                   <h2>{t('overviewHint')}</h2>
                   <p>{t('contentHint')}</p>
                   <div className="actions">
@@ -1092,6 +1166,10 @@ function App() {
                         if (confirm(t('deleteConfirm'))) {
                           update((s) => {
                             s.entries = s.entries.filter((e) => e.id !== entry.id);
+                            for (const section of s.settings.sections) {
+                              if (section.entryIds)
+                                section.entryIds = section.entryIds.filter((id) => id !== entry.id);
+                            }
                           });
                           setSelected(null);
                         }
@@ -1296,58 +1374,40 @@ function App() {
                     })
                   }
                 />
-                <section className="settings-section">
-                  <h2>{t('sections')}</h2>
-                  <p>{t('sectionHelp')}</p>
-                  {snap.settings.sections.map((section, i) => (
-                    <div className="section-row" key={section.id}>
-                      <span className="nav-number">0{i + 1}</span>
-                      <strong>{t(section.id)}</strong>
-                      <label className="checkbox">
-                        <input
-                          type="checkbox"
-                          checked={section.enabled}
-                          onChange={(e) =>
-                            update((s) => {
-                              s.settings.sections[i].enabled = e.target.checked;
-                            })
-                          }
-                        />
-                        {t('enabled')}
-                      </label>
+                <SectionManager
+                  sections={snap.settings.sections}
+                  entries={snap.entries}
+                  ui={ui}
+                  t={t}
+                  onChange={(sections) =>
+                    update((s) => {
+                      s.settings.sections = sections;
+                    })
+                  }
+                  onOpenContent={(target) => {
+                    setTab(target);
+                    setSelected(null);
+                  }}
+                  renderTranslation={(sectionId, targetLocale) => (
+                    <div className="section-translation">
+                      {metadataTranslationControls('section')}
                       <button
-                        className="icon-button"
-                        aria-label={`${t('up')} ${t(section.id)}`}
-                        disabled={i === 0}
-                        onClick={() =>
-                          update((s) => {
-                            [s.settings.sections[i - 1], s.settings.sections[i]] = [
-                              s.settings.sections[i],
-                              s.settings.sections[i - 1],
-                            ];
-                          })
+                        type="button"
+                        disabled={
+                          busy ||
+                          !selectedTranslation?.configured ||
+                          (metadataSourceLocale ?? snap.settings.sourceLocale) === targetLocale
                         }
+                        onClick={() => void translateMetadata({ sectionId }, targetLocale)}
                       >
-                        ↑
+                        {t('translateSection')}
                       </button>
-                      <button
-                        className="icon-button"
-                        aria-label={`${t('down')} ${t(section.id)}`}
-                        disabled={i === snap.settings.sections.length - 1}
-                        onClick={() =>
-                          update((s) => {
-                            [s.settings.sections[i + 1], s.settings.sections[i]] = [
-                              s.settings.sections[i],
-                              s.settings.sections[i + 1],
-                            ];
-                          })
-                        }
-                      >
-                        ↓
-                      </button>
+                      {(metadataSourceLocale ?? snap.settings.sourceLocale) === targetLocale && (
+                        <p className="hint">{t('chooseTranslationTarget')}</p>
+                      )}
                     </div>
-                  ))}
-                </section>
+                  )}
+                />
                 <section className="settings-section">
                   <div className="section-heading">
                     <h2>{t('socials')}</h2>
@@ -1465,6 +1525,10 @@ function App() {
                   </label>
                 </div>
                 {languageTabs}
+                {metadataTranslationControls('media')}
+                {(metadataSourceLocale ?? snap.settings.sourceLocale) === locale && (
+                  <p className="hint">{t('chooseTranslationTarget')}</p>
+                )}
                 <div className="media-grid">
                   {snap.media.map((m) => {
                     const refs = snap.entries.filter(
@@ -1510,6 +1574,17 @@ function App() {
                               (snap.settings.avatarId !== m.id ? t('unreferenced') : '')}
                           </p>
                           <div className="actions">
+                            <button
+                              type="button"
+                              disabled={
+                                busy ||
+                                !selectedTranslation?.configured ||
+                                (metadataSourceLocale ?? snap.settings.sourceLocale) === locale
+                              }
+                              onClick={() => void translateMetadata({ mediaId: m.id }, locale)}
+                            >
+                              {t('translateMedia')}
+                            </button>
                             <button
                               onClick={() =>
                                 void run(async () => {
@@ -1661,6 +1736,45 @@ function App() {
                               </button>
                             )}
                           </>
+                        )}
+                        <button
+                          type="button"
+                          className="danger"
+                          disabled={
+                            busy || releaseData.currentId === r.id || r.status === 'building'
+                          }
+                          aria-describedby={
+                            releaseData.currentId === r.id || r.status === 'building'
+                              ? `delete-release-help-${r.id}`
+                              : undefined
+                          }
+                          onClick={() => {
+                            if (!window.confirm(t('deleteReleaseConfirm'))) return;
+                            void run(async () => {
+                              setReleaseData(
+                                await api<{ releases: Release[]; currentId: string | null }>(
+                                  `/releases/${r.id}`,
+                                  'DELETE',
+                                ),
+                              );
+                              await refresh();
+                              setToast(t('releaseDeleted'));
+                            });
+                          }}
+                        >
+                          {t('deleteRelease')}
+                        </button>
+                        {(releaseData.currentId === r.id || r.status === 'building') && (
+                          <span
+                            className="hint release-delete-help"
+                            id={`delete-release-help-${r.id}`}
+                          >
+                            {t(
+                              releaseData.currentId === r.id
+                                ? 'deleteLiveReleaseHelp'
+                                : 'deleteBuildingReleaseHelp',
+                            )}
+                          </span>
                         )}
                       </div>
                     </article>

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { sectionTitle } from '../../../../shared/sections';
 import {
   snapshot,
   copy,
@@ -101,7 +102,14 @@ const ProfileHeading = home ? 'h1' : 'span';
     <div class="cursor-glow" aria-hidden="true"></div>
     <div class="site-shell">
       <header
-        class:list={['profile-panel', { 'profile-panel--with-portrait': avatar }]}
+        class:list={[
+          'profile-panel',
+          {
+            'profile-panel--with-portrait': avatar,
+            'profile-panel--expanded':
+              home && settings.sections.filter((s) => s.enabled).length > 6,
+          },
+        ]}
         data-pagefind-ignore
       >
         <div>
@@ -132,11 +140,10 @@ const ProfileHeading = home ? 'h1' : 'span';
             {home ? (
               settings.sections
                 .filter((s) => s.enabled)
-                .map((s, index) => (
+                .map((s) => (
                   <a href={`#${s.id}`} data-nav={s.id}>
-                    <span class="nav-number">0{index + 1}</span>
                     <span class="nav-line"></span>
-                    <span>{t[s.id]}</span>
+                    <span>{sectionTitle(s, locale)}</span>
                   </a>
                 ))
             ) : (
@@ -218,10 +225,11 @@ const ProfileHeading = home ? 'h1' : 'span';
         <slot />
       </main>
       <footer class="site-footer" data-pagefind-ignore>
-        <p>{t.built}</p>
-        <p class="demo-note">{t.demo}</p>
         <a href={href(locale, 'pages')}>
           {t.allPages} <span aria-hidden="true">↗</span>
+        </a>
+        <a class="site-notes-link" href={href(locale, 'site-notes')}>
+          {t.siteNotes}
         </a>
       </footer>
     </div>

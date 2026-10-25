@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { referencedMediaIds, missingMediaReferences } from './media-references.ts';
+import { isBuiltinSection } from './sections.ts';
 import {
   LOCALES,
   type Snapshot,
@@ -39,6 +40,30 @@ export function validateSnapshot(s: Snapshot): ValidationIssue[] {
       if (l !== e.sourceLocale && t.sourceHash !== hash)
         add(`${e.id}.${l}`, 'Translation is out of date');
     }
+  }
+  const entriesById = new Map(s.entries.map((entry) => [entry.id, entry]));
+  for (const section of s.settings.sections.filter((section) => section.enabled)) {
+    const path = `sections.${section.id}`;
+    const builtin = isBuiltinSection(section.id);
+    const hasCustomTitle = Object.values(section.titles ?? {}).some((title) => title.trim());
+    if (!builtin || hasCustomTitle)
+      for (const locale of LOCALES)
+        if (!section.titles?.[locale]?.trim())
+          add(`${path}.titles.${locale}`, 'Required translation is missing');
+    if (builtin) continue;
+    const hasBody = Object.values(section.body ?? {}).some((body) => body.trim());
+    if (hasBody)
+      for (const locale of LOCALES)
+        if (!section.body?.[locale]?.trim())
+          add(`${path}.body.${locale}`, 'Required translation is missing');
+    let hasPublishedEntry = false;
+    for (const id of section.entryIds ?? []) {
+      const entry = entriesById.get(id);
+      if (!entry) add(`${path}.entryIds.${id}`, 'Selected section entry is missing');
+      else if (entry.status === 'published') hasPublishedEntry = true;
+    }
+    if (!hasBody && !hasPublishedEntry)
+      add(path, 'Add section text or select at least one published entry');
   }
   const referenced = referencedMediaIds(s);
   for (const reference of missingMediaReferences(s))

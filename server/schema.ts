@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CURSOR_GLOW_RADIUS, type Snapshot } from '../shared/types.ts';
+import { isBuiltinSection } from '../shared/sections.ts';
 const short = z.string().max(500);
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/);
 const locale = z.enum(['zh-CN', 'en', 'fr']);
@@ -51,6 +52,43 @@ const profile = z
   .strict();
 const tri = <T extends z.ZodType>(schema: T) =>
   z.object({ 'zh-CN': schema, en: schema, fr: schema }).strict();
+const homeSection = z
+  .object({
+    id: z
+      .string()
+      .max(100)
+      .refine(
+        (value) => isBuiltinSection(value) || /^section-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value),
+        'Use a built-in section ID or a section-prefixed lowercase anchor',
+      ),
+    enabled: z.boolean(),
+    titles: tri(z.string().max(120)).optional(),
+    body: tri(z.string().max(50000)).optional(),
+    entryIds: z
+      .array(id)
+      .max(100)
+      .refine(
+        (values) => new Set(values).size === values.length,
+        'Duplicate section entries are not allowed',
+      )
+      .optional(),
+  })
+  .strict()
+  .superRefine((section, ctx) => {
+    if (!isBuiltinSection(section.id)) return;
+    if (section.body && Object.values(section.body).some((text) => text.trim()))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['body'],
+        message: 'Built-in section content is managed in Profile or Content',
+      });
+    if (section.entryIds?.length)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['entryIds'],
+        message: 'Built-in section entries are selected automatically',
+      });
+  });
 export const snapshotSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -68,16 +106,7 @@ export const snapshotSchema = z
           .max(CURSOR_GLOW_RADIUS.max)
           .default(CURSOR_GLOW_RADIUS.default),
         defaultLocale: locale,
-        sections: z
-          .array(
-            z
-              .object({
-                id: z.enum(['about', 'experience', 'projects', 'writing']),
-                enabled: z.boolean(),
-              })
-              .strict(),
-          )
-          .length(4),
+        sections: z.array(homeSection).max(30),
         socials: z
           .array(
             z

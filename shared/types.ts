@@ -48,6 +48,16 @@ export interface Media {
   alt: Record<Locale, string>;
   caption: Record<Locale, string>;
 }
+export interface HomeSection {
+  id: string;
+  enabled: boolean;
+  /** Missing or blank built-in titles use the original localized labels. */
+  titles?: Record<Locale, string>;
+  /** Optional Markdown introduction for a custom section. */
+  body?: Record<Locale, string>;
+  /** Ordered cards for a custom section; only published entries are rendered. */
+  entryIds?: string[];
+}
 export interface SiteSettings {
   sourceLocale: Locale;
   profile: Record<Locale, Profile>;
@@ -55,7 +65,7 @@ export interface SiteSettings {
   background: string;
   cursorGlowRadius: number;
   defaultLocale: Locale;
-  sections: Array<{ id: 'about' | 'experience' | 'projects' | 'writing'; enabled: boolean }>;
+  sections: HomeSection[];
   socials: SocialLink[];
   avatarId: string | null;
   resumeUrl: string;

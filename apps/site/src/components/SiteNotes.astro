@@ -1,0 +1,44 @@
+---
+import { copy, href, type Locale } from '../lib/data';
+import Icon from './Icon.astro';
+const { locale } = Astro.props as { locale: Locale };
+const t = copy[locale];
+const text = {
+  'zh-CN': {
+    intro: '这份个人网站的视觉设计参考了 Brittany Chiang 的个人网站。',
+    detail:
+      '深色配色、简洁布局和跟随光标的柔和光晕，为本站提供了设计灵感。感谢她分享这些细致的设计。',
+    visit: '访问 Brittany Chiang 的原站',
+  },
+  en: {
+    intro:
+      'The visual design of this personal website draws inspiration from Brittany Chiang’s portfolio.',
+    detail:
+      'Its dark palette, minimal layout and soft cursor-following glow inspired the design of this site. Thank you to Brittany for sharing her thoughtful work.',
+    visit: 'Visit Brittany Chiang’s original website',
+  },
+  fr: {
+    intro: 'Le design visuel de ce site personnel s’inspire du portfolio de Brittany Chiang.',
+    detail:
+      'Sa palette sombre, sa mise en page épurée et son halo discret suivant le curseur ont inspiré ce site. Merci à Brittany de partager son travail soigné.',
+    visit: 'Visiter le site original de Brittany Chiang',
+  },
+}[locale];
+---
+
+<article class="detail site-notes">
+  <a class="back-link" href={href(locale)}>
+    <Icon name="back" size={16} />
+    {t.home}
+  </a>
+  <h1 data-pagefind-meta="title">{t.siteNotes}</h1>
+  <p class="detail-summary">{text.intro}</p>
+  <div class="prose">
+    <p>{text.detail}</p>
+  </div>
+  <a class="text-link" href="https://brittanychiang.com/" target="_blank" rel="noopener noreferrer">
+    {text.visit}
+    <Icon size={16} />
+    <span class="sr-only">{t.external}</span>
+  </a>
+</article>

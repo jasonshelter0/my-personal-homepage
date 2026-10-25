@@ -22,6 +22,7 @@ import { uploadMedia, deleteMedia } from './media.ts';
 import { translate, translationStatus, review } from './translation.ts';
 import {
   createRelease,
+  deleteRelease,
   listReleases,
   publishRelease,
   rollbackRelease,
@@ -187,6 +188,10 @@ export function createApplications() {
   admin.get('/api/releases', (_req, res) =>
     res.json({ releases: listReleases(), currentId: getCurrentRelease()?.id ?? null }),
   );
+  admin.delete('/api/releases/:id', (req, res) => {
+    deleteRelease(String(req.params.id));
+    res.json({ releases: listReleases(), currentId: getCurrentRelease()?.id ?? null });
+  });
   admin.post('/api/releases', async (_req, res) => {
     const snapshot = getSnapshot(),
       issues = validateSnapshot(snapshot);

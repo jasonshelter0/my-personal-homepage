@@ -29,6 +29,11 @@ function references(snapshot: Snapshot, publishedOnly: boolean) {
   if (snapshot.settings.avatarId) ids.add(snapshot.settings.avatarId);
   for (const profile of Object.values(snapshot.settings.profile))
     for (const path of localMediaPaths(profile.about)) paths.add(path);
+  for (const section of snapshot.settings.sections) {
+    if (publishedOnly && !section.enabled) continue;
+    for (const body of Object.values(section.body ?? {}))
+      for (const path of localMediaPaths(body)) paths.add(path);
+  }
   for (const entry of snapshot.entries) {
     if (publishedOnly && entry.status !== 'published') continue;
     if (entry.coverId) ids.add(entry.coverId);

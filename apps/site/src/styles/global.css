@@ -226,6 +226,14 @@ img {
   min-height: 100vh;
   max-height: none;
 }
+.profile-panel--expanded {
+  position: static;
+  align-self: start;
+  height: auto;
+  min-height: 100vh;
+  max-height: none;
+  gap: 36px;
+}
 @media (min-width: 761px) and (max-height: 900px) {
   .profile-panel--with-portrait {
     position: static;
@@ -254,12 +262,12 @@ img {
   text-transform: uppercase;
   transition: color 0.2s;
 }
-.nav-number {
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 1px;
+.section-nav a {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .nav-line {
+  flex-shrink: 0;
   height: 1px;
   width: 28px;
   background: var(--faint);
@@ -357,12 +365,10 @@ kbd {
   letter-spacing: 2.2px;
   margin-bottom: 28px;
   font-weight: 650;
+  overflow-wrap: anywhere;
 }
-.section-index {
-  color: var(--accent);
-  font-family: ui-monospace, monospace;
-  font-size: 10px;
-  font-weight: 400;
+.custom-section-copy {
+  margin-bottom: 28px;
 }
 .section-title:after {
   content: '';
@@ -654,11 +660,7 @@ kbd {
   border-radius: 50%;
   background: var(--accent);
 }
-.demo-note {
-  font-size: 9px;
-  letter-spacing: 0.7px;
-  opacity: 0.85;
-}
+
 .inner-content {
   padding-bottom: 80px;
 }
@@ -989,7 +991,8 @@ dialog::backdrop {
     width: 104px;
     margin-bottom: 22px;
   }
-  .profile-panel--with-portrait {
+  .profile-panel--with-portrait,
+  .profile-panel--expanded {
     gap: 0;
   }
   .brand-mark {
@@ -1021,9 +1024,6 @@ dialog::backdrop {
   }
   .nav-line {
     display: none;
-  }
-  .nav-number {
-    font-size: 9px;
   }
   .profile-bottom {
     margin-top: 31px;
@@ -1236,4 +1236,8 @@ dialog::backdrop {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   border-color: color-mix(in srgb, var(--accent) 30%, transparent);
   color: var(--accent);
+}
+
+.site-notes-link {
+  margin-left: 24px;
 }
