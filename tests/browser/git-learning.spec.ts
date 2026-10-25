@@ -73,7 +73,15 @@ test('authenticated preview keeps Git assets and language links inside preview',
   const preview = new URL(previewPath, 'http://127.0.0.1:4521');
   await page.goto(preview.href);
   await page.goto(`${preview.origin}${prefix}en/${topic}`);
-  await expect(page.locator('#git-stage iframe')).toHaveAttribute('src', `${prefix}learn-assets/git-branching/simulator.html?locale=en_US&NODEMO`);
+  const simulator = new URL((await page.locator('#git-stage iframe').getAttribute('src'))!, page.url());
+  expect(simulator.pathname).toBe(`${prefix}learn-assets/git-branching/simulator.html`);
+  expect(simulator.searchParams.get('locale')).toBe('en_US');
+  const theme = await page.evaluate(() => {
+    const style = getComputedStyle(document.documentElement);
+    return { background: style.getPropertyValue('--background').trim(), accent: style.getPropertyValue('--accent').trim() };
+  });
+  expect(simulator.searchParams.get('background')).toBe(theme.background.slice(1));
+  expect(simulator.searchParams.get('accent')).toBe(theme.accent.slice(1));
   await page.locator('[data-git-open]').click();
   await expect(page.frameLocator('#git-stage iframe').locator('#pocketStartup')).toBeHidden({ timeout: 15000 });
   await page.locator('[data-git-close]').click();

@@ -97,3 +97,20 @@ portrait/landscape/reopen regression tests; the existing 13 browser tests,
 Live verification: `2026-10-25T12:40:09.235Z`; source `34cf36e02d6e75117d0b74350aeb3671841c3e48`, content
 `mvntcxim-e5d321e2`, image `sha256:96395dee4359fa6a1c119f953b65d3cf9202c6492fe5c10c36ceed31b5dbf255`.
 Exact backup and rollback references are in the newest `RELEASE_HANDOFF.md` section.
+
+### Main-site theme (2026-10-25)
+
+The simulator now uses the site's navy background, teal accents and slate text.
+Terminal, goals, lesson dialogs and level picker share flat surfaces and subtle
+borders; branch colors remain distinct and readable on navy. The embedded and
+full-page links pass the published snapshot's validated six-digit background and
+accent colors as URL parameters. Standalone files default to #0f172a/#5eead4;
+invalid color parameters fall back to those defaults. No network call is needed.
+
+Mobile fork commit `c950961` is included in the full vendored source patch.
+The imported file is 4,024,614 bytes, SHA-256
+`7d7f0f5fbbed227fad94d073fb594ccf8cd73bcd9bbdc32f917be68080006634`.
+415 upstream tests, 38 website tests, 18 browser tests, typecheck/build pass.
+Manual browser checks cover default/custom/invalid theme parameters and settled
+mobile help, levels and goal panels. The 320px/landscape/reopen goal regression
+remains in the regular suite. Deployment evidence is in RELEASE_HANDOFF.md.

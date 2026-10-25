@@ -211,11 +211,29 @@ index 98f20a8..6d0bcb4 100644
 +    expect(mobile).toBeGreaterThan(legacy);
    });
  });
+diff --git a/__tests__/visuals.spec.js b/__tests__/visuals.spec.js
+index d1f4586..9ce1731 100644
+--- a/__tests__/visuals.spec.js
++++ b/__tests__/visuals.spec.js
+@@ -10,11 +10,11 @@ describe('visBranch', function() {
+     });
+ 
+     it('should return the correct color for main', function() {
+-      expect(VisBranch.randomHueString('main')).toEqual('#00FF7F');
++      expect(VisBranch.randomHueString('main')).toEqual('#5eead4');
+     });
+ 
+     it('should return the correct color for master', function() {
+-      expect(VisBranch.randomHueString('master')).toEqual('#0074D9');
++      expect(VisBranch.randomHueString('master')).toEqual('#93c5fd');
+     });
+ 
+     it('should return a color from the palette for other branch names', function() {
 diff --git a/index.html b/index.html
-index aad67a2..55cef7f 100644
+index aad67a2..34648ca 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,40 +1,55 @@
+@@ -1,40 +1,83 @@
  <!DOCTYPE html>
 -<html lang="en">
 +<html lang="zh-CN">
@@ -225,7 +243,8 @@ index aad67a2..55cef7f 100644
 -  <title>Learn Git Branching</title>
 +  <title>Git 掌上练习室 · Learn Git Branching</title>
 +  <meta name="pocket-build" content="website-trilingual-3">
-+  <meta name="theme-color" content="#f5f7f2">
++  <meta name="theme-color" content="#0f172a">
++  <meta name="color-scheme" content="dark">
 +  <meta name="description" content="在手机上动手学习 Git：中文关卡、分支可视化、触屏命令和完整离线练习。">
 +  <meta name="robots" content="noindex">
    <meta name="author" content="Peter Cottle">
@@ -243,7 +262,8 @@ index aad67a2..55cef7f 100644
 -  <meta property="og:temporal:status" content="active" />
 -  <meta property="og:temporal:next_update_time" content="2026-06-16T20:00:00Z" />
 -  <meta property="og:temporal:next_update_label" content="Next lesson released in <dynamic_time_string_placeholder>" />
--
++  <meta http-equiv="content-language" content="zh-CN">
+ 
 -  <meta property="og:temporal:event_update" content="Remote lessons now available!" />
 -  <meta property="og:temporal:event_update:time" content="2022-11-09T18:45:00Z" />
 -  <meta property="og:temporal:event_update:description" content="We have added lessons related to managing remote repositories. Learn about git push and pull today :)" />
@@ -257,7 +277,32 @@ index aad67a2..55cef7f 100644
 -
 -  <!-- end testing -->
 -  <meta http-equiv="content-language" content="en">
-+  <meta http-equiv="content-language" content="zh-CN">
++  <script>
++    // Public, validated theme colors only. No parent access or network needed;
++    // a downloaded HTML file retains the default Folio palette.
++    (function () {
++      var params = new URLSearchParams(location.search);
++      var root = document.documentElement;
++      function color(name, fallback) {
++        var value = params.get(name);
++        return /^[0-9a-f]{6}$/i.test(value || '') ? '#' + value : fallback;
++      }
++      function rgb(hex) { return [1, 3, 5].map(function (i) { return parseInt(hex.substr(i, 2), 16); }); }
++      function surface(hex, weight) {
++        return 'rgb(' + rgb(hex).map(function (c) { return Math.round(c + (255 - c) * weight); }).join(',') + ')';
++      }
++      var background = color('background', '#0f172a');
++      var accent = color('accent', '#5eead4');
++      root.style.setProperty('--paper', background);
++      root.style.setProperty('--accent', accent);
++      root.style.setProperty('--surface', surface(background, .025));
++      root.style.setProperty('--raised', surface(background, .055));
++      root.style.setProperty('--accent-soft', 'rgba(' + rgb(accent).join(',') + ',.1)');
++      var c = rgb(accent);
++      root.style.setProperty('--on-accent', (c[0]*.299+c[1]*.587+c[2]*.114)>145 ? '#0f172a' : '#ffffff');
++      document.querySelector('meta[name="theme-color"]').setAttribute('content', background);
++    }());
++  </script>
  
    <link rel="stylesheet" href="/src/style/index.css" type="text/css" charset="utf-8">
    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
@@ -294,7 +339,7 @@ index aad67a2..55cef7f 100644
    <!-- Templates from here on out... -->
    <script type="text/html" id="modal-view-template">
      <div class="contentHolder box vertical center flex1">
-@@ -316,7 +331,7 @@
+@@ -316,7 +359,7 @@
          </p>
        <% } %>
        <p class="helperText">
@@ -303,7 +348,7 @@ index aad67a2..55cef7f 100644
        </p>
        <div class="entryHolders">
          <ul class="rebaseEntries">
-@@ -332,22 +347,22 @@
+@@ -332,22 +375,22 @@
    <script type="text/html" id="left-right-template">
      <% if (!showLeft && lastNav ) { %>
        <div class="box right">
@@ -331,7 +376,7 @@ index aad67a2..55cef7f 100644
          <% } %>
        </div>
      <% } %>
-@@ -369,16 +384,16 @@
+@@ -369,16 +412,16 @@
    <script type="text/html" id="interactive-rebase-entry-template">
      <li id="<%= id %>" class="rebaseEntry transitionOpacity">
        <div class="wrapper">
@@ -351,11 +396,11 @@ index aad67a2..55cef7f 100644
            </span>
          </button>
        </div>
-@@ -443,7 +458,20 @@
+@@ -443,7 +486,20 @@
      </div>
    </noscript>
  
-+  <section id="pocketStartup" style="position:fixed;inset:0;z-index:1000002;background:#f5f7f2;color:#193a33;padding:32px 24px;overflow:auto;font:16px/1.7 sans-serif;box-sizing:border-box">
++  <section id="pocketStartup" style="position:fixed;inset:0;z-index:1000002;background:var(--paper,#0f172a);color:var(--text,#cbd5e1);padding:32px 24px;overflow:auto;font:16px/1.7 sans-serif;box-sizing:border-box">
 +    <h2>Git 掌上练习室</h2>
 +    <p id="pocketStartupMessage">正在启动离线练习，请稍候…</p>
 +    <p>如果一直停在这里，当前应用可能只支持文件预览，或禁用了 JavaScript。请用浏览器打开这个 HTML 文件。</p>
@@ -372,7 +417,7 @@ index aad67a2..55cef7f 100644
    <div id="interfaceWrapper" class="box horizontal flex1">
      <div id="controls" class="box vertical flex1 visBackgroundColor">
        <div id="commandLineHistory" class="box vertical flex3">
-@@ -480,6 +508,7 @@
+@@ -480,6 +536,7 @@
            </div>
          </div>
  
@@ -380,7 +425,7 @@ index aad67a2..55cef7f 100644
          <div id="commandLineBar" class="box vertical flex0">
            <div id="prompt" class="">
              <span class="promptSign box">$</span>
-@@ -487,18 +516,23 @@
+@@ -487,18 +544,23 @@
              <p class="command"></p>
              <div id="shadow"></div>
            </div>
@@ -405,7 +450,7 @@ index aad67a2..55cef7f 100644
        <span class="modeText transitionOpacity gitMode">
          Git
        </span>
-@@ -548,139 +582,7 @@
+@@ -548,139 +610,7 @@
  </style>
  
  
@@ -415,7 +460,7 @@ index aad67a2..55cef7f 100644
 -    window.dataLayer = window.dataLayer || [];
 -    function gtag(){dataLayer.push(arguments);}
 -    gtag('js', new Date());
--
+ 
 -    gtag('config', 'G-SF8FGS1DYX');
 -  </script>
 -
@@ -526,7 +571,7 @@ index aad67a2..55cef7f 100644
 -      } catch (e) {
 -        // localStorage not available, continue showing
 -      }
- 
+-
 -      var showProbability = (visitNumber !== null && visitNumber <= 1) ?
 -        SHOW_PROBABILITY_FIRST_VISIT : SHOW_PROBABILITY_RETURN_VISIT;
 -      if (Math.random() < showProbability) {
@@ -1386,6 +1431,37 @@ index f4ba8e9..e6c6e5b 100644
  
  try {
    _solvedMap = JSON.parse(
+diff --git a/src/js/util/constants.js b/src/js/util/constants.js
+index cbb1619..5d9a207 100644
+--- a/src/js/util/constants.js
++++ b/src/js/util/constants.js
+@@ -21,7 +21,7 @@ var GRAPHICS = {
+   defaultAnimationTime: 400,
+ 
+   rectFill: 'hsb(0.8816909813322127,0.6,1)',
+-  headRectFill: '#7278FF',
++  headRectFill: '#a5b4fc',
+   rectStroke: '#FFF',
+   rectStrokeWidth: '3',
+ 
+@@ -35,7 +35,7 @@ var GRAPHICS = {
+   edgeUpstreamNoneOpacity: 0.15,
+ 
+   visBranchStrokeWidth: 2,
+-  visBranchStrokeColorNone: '#333',
++  visBranchStrokeColorNone: '#94a3b8',
+ 
+   defaultNodeFill: 'hsba(0.5,0.6,0.7,1)',
+   defaultNodeStrokeWidth: 2,
+@@ -45,7 +45,7 @@ var GRAPHICS = {
+   tagStroke: '#FFF',
+   tagStrokeWidth: '2',
+ 
+-  orphanNodeFill: 'hsb(0.5,0.8,0.7)'
++  orphanNodeFill: '#94a3b8'
+ };
+ 
+ exports.TIME = TIME;
 diff --git a/src/js/util/storage.js b/src/js/util/storage.js
 new file mode 100644
 index 0000000..cee0b06
@@ -1511,6 +1587,65 @@ index 05bcbe8..df05dfd 100644
  };
  
  GitVisuals.prototype.getDepthIncrement = function(maxDepth) {
+diff --git a/src/js/visuals/visBranch.js b/src/js/visuals/visBranch.js
+index 05e961f..6d2b2d8 100644
+--- a/src/js/visuals/visBranch.js
++++ b/src/js/visuals/visBranch.js
+@@ -3,48 +3,15 @@ var GRAPHICS = require('../util/constants').GRAPHICS;
+ var VisBase = require('../visuals/visBase').VisBase;
+ var TreeCompare = require('../graph/treeCompare');
+ 
+-// Accessible, high-contrast color palette (WCAG AA compliant)
+-// Colors chosen for maximum distinguishability and accessibility
++// Light, distinct branch fills keep dark commit/branch labels legible on
++// Folio's dark canvas. Branch identity remains encoded with separate hues.
+ const BRANCH_COLOR_PALETTE = [
+-  // Blue, Orange, Green, Red, Purple, Teal, Brown, Pink, Gray
+-  '#0074D9', // Blue
+-  '#FF851B', // Orange
+-  '#2ECC40', // Green
+-  '#FF4136', // Red
+-  '#B10DC9', // Purple
+-  '#39CCCC', // Teal
+-  '#8B4513', // Brown
+-  '#F012BE', // Pink
+-  // Additional high-contrast, accessible colors
+-  '#0055A4', // Deep Blue
+-  '#FFD700', // Gold (Yellow, high contrast on dark)
+-  '#228B22', // Forest Green
+-  '#E67E22', // Carrot Orange
+-  '#800000', // Maroon
+-  '#00CED1', // Dark Turquoise
+-  '#C71585', // Medium Violet Red
+-  '#FF69B4', // Hot Pink
+-  '#FFDAB9', // Peach Puff
+-  '#DC143C', // Crimson
+-  '#20B2AA', // Light Sea Green
+-  '#8A2BE2', // Blue Violet
+-  '#556B2F', // Dark Olive Green
+-  '#FF6347', // Tomato
+-  '#4682B4', // Steel Blue
+-  '#B22222', // Firebrick
+-  '#00FF7F', // Spring Green
+-  '#483D8B', // Dark Slate Blue
++  '#93c5fd', '#fdba74', '#86efac', '#fda4af', '#c4b5fd', '#67e8f9',
++  '#fcd34d', '#f9a8d4', '#a5b4fc', '#bef264', '#6ee7b7', '#cbd5e1',
+ ];
+-
+-// Map common branch names to fixed colors
+ const BRANCH_NAME_COLOR_MAP = {
+-  main: '#00FF7F', // Spring Green
+-  master: '#0074D9',  // Blue (legacy)
+-  bugFix: '#4682B4',  // Steel blue
+-  develop: '#2ECC40', // Green
+-  feature: '#F012BE', // Pink
+-  release: '#B10DC9', // Purple
+-  hotfix: '#39CCCC',  // Teal
++  main: '#5eead4', master: '#93c5fd', bugFix: '#fdba74',
++  develop: '#86efac', feature: '#c4b5fd', release: '#f9a8d4', hotfix: '#fcd34d',
+ };
+ 
+ // Used to assign colors to branches not in the map
 diff --git a/src/style/font-awesome.css b/src/style/font-awesome.css
 index 7dea744..d3f28cf 100644
 --- a/src/style/font-awesome.css
@@ -1540,31 +1675,31 @@ index 50f8dc5..d05d7c5 100644
 +@import './mobile.css';
 diff --git a/src/style/mobile.css b/src/style/mobile.css
 new file mode 100644
-index 0000000..2441659
+index 0000000..953f0b9
 --- /dev/null
 +++ b/src/style/mobile.css
-@@ -0,0 +1,70 @@
-+:root{--pocket-height:100dvh;--pocket-top:0px;--pocket-header:112px;--ink:#193a33;--accent:#176f58;--paper:#f5f7f2;--line:#dce4d9}
-+html,body{width:100%;height:100%;background:var(--paper);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-+*{box-sizing:border-box}button,a,input,textarea{-webkit-tap-highlight-color:transparent}button{touch-action:manipulation}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #f2b65e;outline-offset:2px}
+@@ -0,0 +1,105 @@
++:root{--pocket-height:100dvh;--pocket-top:0px;--pocket-header:112px;--paper:#0f172a;--ink:#e2e8f0;--text:#cbd5e1;--muted:#94a3b8;--accent:#5eead4;--on-accent:#0f172a;--surface:#152035;--raised:#1b2940;--line:rgba(148,163,184,.18);--accent-soft:rgba(94,234,212,.1);--danger:#fda4af;--warning:#fde68a;--warning-soft:#302b23}
++html,body{width:100%;height:100%;background:var(--paper);color:var(--text);color-scheme:dark;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
++*{box-sizing:border-box}button,a,input,textarea{-webkit-tap-highlight-color:transparent}button{touch-action:manipulation}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 +#pocketHeader{position:fixed;top:var(--pocket-top);left:0;right:0;height:var(--pocket-header);padding:12px 22px 0;z-index:10;background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line);padding-top:max(12px,env(safe-area-inset-top))}
-+.pocket-brand{display:flex;align-items:center;gap:12px;height:48px}.pocket-mark{display:grid;place-items:center;width:38px;height:38px;background:var(--accent);color:#e6efb8;border-radius:12px;font:32px monospace}.pocket-brand strong{display:block;font-size:19px;letter-spacing:.5px}.pocket-brand small{display:block;font-size:9px;letter-spacing:1.8px;margin-top:4px;color:#718277}
-+#pocketAbout{margin-left:auto;background:none;border:0;color:#537367;font-size:12px;min-height:44px;padding:8px}
-+.pocket-nav{display:flex;gap:8px;align-items:center;height:50px}.pocket-nav button{background:none;color:#456052;border:0;padding:8px 14px;font:600 13px inherit;min-height:40px;border-radius:9px;white-space:nowrap}.pocket-nav button:first-child{background:var(--ink);color:white}.pocket-nav button:hover{background:#dde7dc;color:var(--ink)}#pocketProgress{margin-left:auto;font-size:12px;color:#607c68;white-space:nowrap}
++.pocket-brand{display:flex;align-items:center;gap:12px;height:48px}.pocket-mark{display:grid;place-items:center;width:38px;height:38px;background:var(--accent);color:var(--on-accent);border-radius:12px;font:32px monospace}.pocket-brand strong{display:block;font-size:19px;letter-spacing:.5px}.pocket-brand small{display:block;font-size:9px;letter-spacing:1.8px;margin-top:4px;color:var(--muted)}
++#pocketAbout{margin-left:auto;background:none;border:0;color:var(--muted);font-size:12px;min-height:44px;padding:8px}
++.pocket-nav{display:flex;gap:8px;align-items:center;height:50px}.pocket-nav button{background:none;color:var(--muted);border:0;padding:8px 14px;font:600 13px inherit;min-height:40px;border-radius:9px;white-space:nowrap}.pocket-nav button:first-child{background:var(--accent-soft);color:var(--accent)}.pocket-nav button:hover{background:var(--accent-soft);color:var(--ink)}#pocketProgress{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
 +#interfaceWrapper{position:fixed;top:calc(var(--pocket-top) + var(--pocket-header));left:0;width:100%;height:calc(var(--pocket-height) - var(--pocket-header));min-height:0;min-width:0;display:flex;flex-direction:row;padding:0;gap:0}
 +#controls{width:390px;max-width:42%;flex:0 0 390px;min-height:0;background:transparent;z-index:4;padding:16px 0 16px 16px}
-+#commandLineHistory{display:flex;flex-direction:column;flex:1;margin:0;min-width:0;min-height:0;border:1px solid #cfdacc;border-radius:16px;box-shadow:0 8px 32px #193a330c;overflow:hidden;background:#182d29}
-+#commandLineHistory>.toolbar{display:flex;min-height:40px;align-items:center;justify-content:center;background:#213d35;border:0;color:#b6d0bb;border-radius:0;font-size:11px;letter-spacing:1px;padding:8px}#commandLineHistory>.toolbar .controls{display:none}
-+#terminal{display:block;flex:1;min-height:0;overflow:auto!important;background:#182d29;border:0;padding:6px 12px;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.6}#commandDisplay{min-width:0}#commandDisplay p{overflow-wrap:anywhere}#commandDisplay .commandLine{color:#dcebd7}p.commandError,p.errorResult{color:#ffad9e}p.commandLine span.prompt{color:#b8da93}
-+#commandLineBar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:0 0 auto;min-height:108px;padding:0 10px 12px;gap:8px;background:#213d35;border:0}#prompt{display:none}#commandLineBar #commandTextField{display:block;position:static;top:auto;left:auto;resize:none;min-width:0;width:100%;height:46px;padding:12px 10px;border-radius:9px;border:1px solid #567364;background:#152c24;color:#f0f7e9;font:16px/20px Menlo,Consolas,monospace;box-shadow:none}#commandTextField::placeholder{color:#9cb2a1}#pocketRun{height:46px;min-width:70px;padding:8px 12px;border:0;border-radius:9px;background:#d7eca5;color:#203b2b;font-size:14px;font-weight:700}
-+#pocketQuick{grid-column:1/-1;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:8px}#pocketQuick button{flex-shrink:0;height:38px;padding:0 12px;background:#2b483f;color:#d2e3d3;border:1px solid #446354;border-radius:7px;font:12px Menlo,Consolas,monospace}#pocketQuick button:last-child{color:#e3caa7}
-+#mainVisSpace{display:block;flex:1;min-width:0;min-height:0;background:radial-gradient(#afc6ae77 .7px,transparent .7px) 0 0/18px 18px,var(--paper)!important;transition:none}#mainVisSpace .modeText{display:none}#pocketGraphLabel{position:absolute;z-index:2;top:16px;left:22px;right:22px;display:flex;align-items:center;gap:12px;pointer-events:none;color:var(--ink)}#pocketGraphLabel>span{font-size:9px;letter-spacing:2px;color:#718572}#pocketMode{font-size:13px}#pocketStart{pointer-events:auto;margin-left:auto;border:1px solid #bdceb8;border-radius:20px;background:#eaf0df;color:#426140;min-height:36px;padding:6px 12px;font-size:12px}#pocketStart[hidden]{display:none}
++#commandLineHistory{display:flex;flex-direction:column;flex:1;margin:0;min-width:0;min-height:0;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.12);overflow:hidden;background:var(--surface)}
++#commandLineHistory>.toolbar{display:flex;min-height:40px;align-items:center;justify-content:center;background:var(--raised);border:0;color:var(--muted);border-radius:0;font-size:11px;letter-spacing:1px;padding:8px}#commandLineHistory>.toolbar .controls{display:none}
++#terminal{display:block;flex:1;min-height:0;overflow:auto!important;background:var(--surface);border:0;padding:6px 12px;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.6}#commandDisplay{min-width:0}#commandDisplay p{overflow-wrap:anywhere}#commandDisplay .commandLine{color:var(--text)}p.commandError,p.errorResult{color:var(--danger)}p.commandLine span.prompt{color:var(--accent)}
++#commandLineBar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:0 0 auto;min-height:108px;padding:0 10px 12px;gap:8px;background:var(--raised);border:0}#prompt{display:none}#commandLineBar #commandTextField{display:block;position:static;top:auto;left:auto;resize:none;min-width:0;width:100%;height:46px;padding:12px 10px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--text);font:16px/20px Menlo,Consolas,monospace;box-shadow:none}#commandTextField::placeholder{color:var(--muted)}#pocketRun{height:46px;min-width:70px;padding:8px 12px;border:0;border-radius:9px;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:700}
++#pocketQuick{grid-column:1/-1;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:8px}#pocketQuick button{flex-shrink:0;height:38px;padding:0 12px;background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:7px;font:12px Menlo,Consolas,monospace}#pocketQuick button:last-child{color:var(--muted)}
++#mainVisSpace{display:block;flex:1;min-width:0;min-height:0;background:radial-gradient(ellipse at 70% 15%,var(--accent-soft),transparent 70%),var(--paper)!important;transition:none}#mainVisSpace .modeText{display:none}#pocketGraphLabel{position:absolute;z-index:2;top:16px;left:22px;right:22px;display:flex;align-items:center;gap:12px;pointer-events:none;color:var(--ink)}#pocketGraphLabel>span{font-size:9px;letter-spacing:2px;color:var(--muted)}#pocketMode{font-size:13px}#pocketStart{pointer-events:auto;margin-left:auto;border:1px solid var(--line);border-radius:20px;background:var(--accent-soft);color:var(--accent);min-height:36px;padding:6px 12px;font-size:12px}#pocketStart[hidden]{display:none}
 +#canvasHolder{pointer-events:none}#canvasHolder svg{pointer-events:auto}#helperBarMount,.github-corner,.upsell,.upsellImage{display:none!important}#goalPlaceholder{display:none!important}
-+.level-toolbar{background:#29483c!important;color:#d5e5d7!important;border:0!important;padding:8px!important;font-size:12px!important;min-height:72px!important;flex-shrink:0}.level-toolbar.hidden{display:flex!important}.level-toolbar button{min-height:36px;border:1px solid #65836b;border-radius:6px;background:#3c5b48;color:#f1f7ed;padding:4px 10px;margin-top:4px}
-+.modalView{height:var(--pocket-height);top:var(--pocket-top);backdrop-filter:blur(5px);background:#112c2570}.modalView .terminal-window{margin:16px auto;width:100%;min-width:0;max-height:calc(var(--pocket-height) - 32px);display:flex;flex:0 1 auto}.modalView .terminal-window>.box.flex3{display:none}.modalView .terminal-window-holder{display:flex;flex:1;min-width:0;max-width:820px;width:calc(100% - 24px);margin:auto;border-radius:16px;overflow:hidden}.modalView .terminal-window-holder>.wrapper{display:flex;flex-direction:column;width:100%;min-height:0;max-height:calc(var(--pocket-height) - 32px)}.modalView .toolbar{background:#e8eee2;border:0;color:var(--ink);padding:14px;flex-shrink:0;min-height:48px}.modalView .inside{background:#213b32;padding:16px;overflow-y:auto;min-height:0;border:0;box-shadow:none;font-size:14px;line-height:1.65}.modalView .inside h2{font-size:21px}.modalView .inside code{background:#385743;border:0;border-radius:4px;padding:3px 5px;overflow-wrap:anywhere}.modalView .controls{left:8px;top:4px}.modalView .controls .close,div.canvasTerminalHolder .close{height:40px;width:40px;min-width:40px;border:0;border-radius:10px;background:#d1dfca;position:relative}.modalView .controls .close:after,div.canvasTerminalHolder .close:after{content:'×';font:25px/38px sans-serif;color:#264330;display:block;text-align:center}.modalView .minimize,.modalView .plus{display:none}.modalView button{min-height:44px;min-width:44px}.modalView div.displayName h3{font-size:16px}.modalView .levelDropdownTab{min-height:44px;padding:8px 16px;margin:0 4px;border:0;box-shadow:none;background:#d5e5c5}.modalView .levelDropdownTab.deselected{opacity:.65;background:#9eae9b}.modalView .seriesView p.about,.modalView .seriesView p.levelInfo{font-size:12px;line-height:1.5;color:#b8d0bc}.modalView .levelIcon{min-width:46px;min-height:46px}.modalView .iconHolder{flex-wrap:wrap}.modalView .leftRightView{flex-shrink:0}.modalView .gitDemonstrationView{max-width:100%;min-width:0}
-+div.canvasTerminalHolder{top:calc(var(--pocket-top) + var(--pocket-header) + 8px);right:12px;width:min(360px,calc(100vw - 24px));z-index:8}div.canvasTerminalHolder>div.terminal-window-holder{min-width:0;max-width:100%;width:100%;height:calc((var(--pocket-height) - var(--pocket-header)) * .65)!important;left:0!important;top:0!important}div.canvasTerminalHolder>div.terminal-window-holder>.wrapper{border-radius:14px;overflow:hidden;box-shadow:0 6px 35px #15362955}div.canvasTerminalHolder .toolbar{min-height:48px;padding:14px;background:#edcfc1;color:#613e2c;border:0}div.canvasTerminalHolder .terminal-text{font-size:11px;color:#613e2c;background:#f7e5d7!important}div.canvasTerminalHolder>div.terminal-window-holder div.inside{min-height:80px;background:#f7e5d7}div.canvasTerminalHolder .controls{top:3px;left:8px}
-+.pocket-reorder{background:#526749;color:white;border:1px solid #9cba8b;border-radius:7px;font-size:18px}.rebaseEntry .wrapper{display:flex;gap:6px;align-items:center;justify-content:space-between}.rebaseEntry .idwrapper{min-width:25px}.rebaseEntry #toggleButton{font-size:12px;padding:6px}.rebaseEntry{margin:8px 0!important}.iRebaseDialog .entryHolders{padding:0}.iRebaseDialog ul{padding:0}
-+#pocketDialog{position:fixed;inset:0;width:min(560px,calc(100% - 24px));max-height:calc(var(--pocket-height) - 32px);margin:auto;padding:0;border:1px solid #ccd8c5;border-radius:20px;background:var(--paper);color:var(--ink);box-shadow:0 20px 70px #122c2540;font-size:14px;line-height:1.7;overflow:auto}#pocketDialog::backdrop{background:#112c2588;backdrop-filter:blur(5px)}.pocket-dialog-top{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--paper);border-bottom:1px solid var(--line)}.pocket-dialog-top h2{font-size:18px;margin:0}.pocket-dialog-top button{border:0;border-radius:10px;background:#e5ecdd;color:var(--ink);height:44px;width:44px;font-size:18px}#pocketDialogBody{padding:16px 20px 24px}.pocket-note,.pocket-credit{font-size:12px;color:#6a7b68}.pocket-reference{display:flex;flex-direction:column;gap:8px}.pocket-reference button{text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);min-height:60px}.pocket-reference code{display:block;padding:0;border:0;background:none;font:14px/24px Menlo,Consolas,monospace;color:var(--accent)}.pocket-reference span{font-size:12px;color:#71836b}.pocket-eyebrow{font-size:10px;letter-spacing:2px;color:#7b8969}.pocket-data{display:flex;gap:10px}.pocket-data button,.pocket-import{display:inline-flex;align-items:center;min-height:44px;border:1px solid #b9cbb2;background:#edf2e5;color:var(--ink);padding:8px 12px;border-radius:9px;font-size:13px;cursor:pointer}.pocket-import input{position:absolute;width:1px;height:1px;opacity:0}.pocket-import:focus-within{outline:3px solid #f2b65e}.pocket-download{display:block;background:var(--accent);border-radius:10px;color:white;text-align:center;text-decoration:none;padding:12px}.pocket-credit a{color:var(--accent)}
++.level-toolbar{background:var(--raised)!important;color:var(--text)!important;border:0!important;padding:8px!important;font-size:12px!important;min-height:72px!important;flex-shrink:0}.level-toolbar.hidden{display:flex!important}.level-toolbar button{min-height:36px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);padding:4px 10px;margin-top:4px}
++.modalView{height:var(--pocket-height);top:var(--pocket-top);backdrop-filter:blur(5px);background:rgba(2,6,23,.72)}.modalView .terminal-window{margin:16px auto;width:100%;min-width:0;max-height:calc(var(--pocket-height) - 32px);display:flex;flex:0 1 auto}.modalView .terminal-window>.box.flex3{display:none}.modalView .terminal-window-holder{display:flex;flex:1;min-width:0;max-width:820px;width:calc(100% - 24px);margin:auto;border-radius:16px;overflow:hidden}.modalView .terminal-window-holder>.wrapper{display:flex;flex-direction:column;width:100%;min-height:0;max-height:calc(var(--pocket-height) - 32px)}.modalView .toolbar{background:var(--raised);border:0;color:var(--ink);padding:14px;flex-shrink:0;min-height:48px}.modalView .inside{background:var(--surface);padding:16px;overflow-y:auto;min-height:0;border:0;box-shadow:none;font-size:14px;line-height:1.65}.modalView .inside h2{font-size:21px}.modalView .inside code{background:var(--raised);border:0;border-radius:4px;padding:3px 5px;overflow-wrap:anywhere}.modalView .controls{left:8px;top:4px}.modalView .controls .close,div.canvasTerminalHolder .close{height:40px;width:40px;min-width:40px;border:0;border-radius:10px;background:var(--raised);position:relative}.modalView .controls .close:after,div.canvasTerminalHolder .close:after{content:'×';font:25px/38px sans-serif;color:var(--text);display:block;text-align:center}.modalView .minimize,.modalView .plus{display:none}.modalView button{min-height:44px;min-width:44px}.modalView div.displayName h3{font-size:16px}.modalView .levelDropdownTab{min-height:44px;padding:8px 16px;margin:0 4px;border:0;box-shadow:none;background:var(--accent-soft)}.modalView .levelDropdownTab.deselected{opacity:.65;background:var(--raised)}.modalView .seriesView p.about,.modalView .seriesView p.levelInfo{font-size:12px;line-height:1.5;color:var(--muted)}.modalView .levelIcon{min-width:46px;min-height:46px}.modalView .iconHolder{flex-wrap:wrap}.modalView .leftRightView{flex-shrink:0}.modalView .gitDemonstrationView{max-width:100%;min-width:0}
++div.canvasTerminalHolder{top:calc(var(--pocket-top) + var(--pocket-header) + 8px);right:12px;width:min(360px,calc(100vw - 24px));z-index:8}div.canvasTerminalHolder>div.terminal-window-holder{min-width:0;max-width:100%;width:100%;height:calc((var(--pocket-height) - var(--pocket-header)) * .65)!important;left:0!important;top:0!important}div.canvasTerminalHolder>div.terminal-window-holder>.wrapper{border-radius:14px;overflow:hidden;box-shadow:0 6px 35px rgba(0,0,0,.35)}div.canvasTerminalHolder .toolbar{min-height:48px;padding:14px;background:var(--raised);color:var(--text);border:0}div.canvasTerminalHolder .terminal-text{font-size:11px;color:var(--text);background:var(--surface)!important}div.canvasTerminalHolder>div.terminal-window-holder div.inside{min-height:80px;background:var(--surface)}div.canvasTerminalHolder .controls{top:3px;left:8px}
++.pocket-reorder{background:var(--raised);color:white;border:1px solid var(--line);border-radius:7px;font-size:18px}.rebaseEntry .wrapper{display:flex;gap:6px;align-items:center;justify-content:space-between}.rebaseEntry .idwrapper{min-width:25px}.rebaseEntry #toggleButton{font-size:12px;padding:6px}.rebaseEntry{margin:8px 0!important}.iRebaseDialog .entryHolders{padding:0}.iRebaseDialog ul{padding:0}
++#pocketDialog{position:fixed;inset:0;width:min(560px,calc(100% - 24px));max-height:calc(var(--pocket-height) - 32px);margin:auto;padding:0;border:1px solid var(--line);border-radius:20px;background:var(--paper);color:var(--ink);box-shadow:0 20px 70px rgba(0,0,0,.4);font-size:14px;line-height:1.7;overflow:auto}#pocketDialog::backdrop{background:rgba(2,6,23,.8);backdrop-filter:blur(5px)}.pocket-dialog-top{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--paper);border-bottom:1px solid var(--line)}.pocket-dialog-top h2{font-size:18px;margin:0}.pocket-dialog-top button{border:0;border-radius:10px;background:var(--raised);color:var(--ink);height:44px;width:44px;font-size:18px}#pocketDialogBody{padding:16px 20px 24px}.pocket-note,.pocket-credit{font-size:12px;color:var(--muted)}.pocket-reference{display:flex;flex-direction:column;gap:8px}.pocket-reference button{text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--raised);color:var(--ink);min-height:60px}.pocket-reference code{display:block;padding:0;border:0;background:none;font:14px/24px Menlo,Consolas,monospace;color:var(--accent)}.pocket-reference span{font-size:12px;color:var(--muted)}.pocket-eyebrow{font-size:10px;letter-spacing:2px;color:var(--muted)}.pocket-data{display:flex;gap:10px}.pocket-data button,.pocket-import{display:inline-flex;align-items:center;min-height:44px;border:1px solid var(--line);background:var(--raised);color:var(--ink);padding:8px 12px;border-radius:9px;font-size:13px;cursor:pointer}.pocket-import input{position:absolute;width:1px;height:1px;opacity:0}.pocket-import:focus-within{outline:3px solid var(--accent)}.pocket-download{display:block;background:var(--accent);border-radius:10px;color:var(--on-accent);text-align:center;text-decoration:none;padding:12px}.pocket-credit a{color:var(--accent)}
 +#appLoading{background:var(--paper)!important}
 +@media(max-width:760px){
 +:root{--pocket-header:108px}#pocketHeader{padding-left:14px;padding-right:14px}.pocket-brand{gap:9px}.pocket-brand strong{font-size:17px}.pocket-brand small{font-size:8px;letter-spacing:1.1px}.pocket-mark{width:34px;height:34px}.pocket-nav{gap:3px}.pocket-nav button{padding:7px 9px;font-size:12px}#pocketProgress{font-size:10px}#interfaceWrapper{flex-direction:column-reverse}#controls{flex:0 0 43%;width:100%;max-width:100%;padding:0 8px max(8px,env(safe-area-inset-bottom));min-height:205px}#commandLineHistory{border-radius:14px}#mainVisSpace{flex:1}#pocketGraphLabel{top:8px;left:16px;right:16px;gap:8px}#pocketGraphLabel>span{font-size:8px;letter-spacing:1.2px}#pocketMode{font-size:11px}#pocketStart{font-size:11px;min-height:32px;padding:4px 10px}#commandLineHistory>.toolbar{min-height:28px;padding:4px;font-size:9px}#terminal{font-size:11px;line-height:1.55;padding:4px 10px}#commandLineBar{min-height:104px;padding:0 8px 8px;gap:6px}#pocketQuick button{height:38px}div.canvasTerminalHolder>div.terminal-window-holder{height:calc((var(--pocket-height) - var(--pocket-header)) * .55)!important}.modalView .inside{padding:12px;font-size:13px}.modalView .terminal-window{margin:8px auto;max-height:calc(var(--pocket-height) - 16px)}.modalView .terminal-window-holder>.wrapper{max-height:calc(var(--pocket-height) - 16px)}.modalView .levelDropdownView{font-size:13px}.level-toolbar{min-height:65px!important;padding:4px!important;font-size:10px!important}.level-toolbar button{min-height:32px;margin-top:2px}.modalView .inside p{line-height:1.65}.modalView .gitDemonstrationView{display:flex;flex-direction:column}.modalView .gitDemonstrationView>.visHolder{min-height:200px}
@@ -1575,18 +1710,18 @@ index 0000000..2441659
 +/* SVGs span the stage; only actual graph elements should receive touches. */
 +#canvasHolder svg{pointer-events:none}#canvasHolder svg circle,#canvasHolder svg rect,#canvasHolder svg text,#canvasHolder svg path{pointer-events:auto}
 +#pocketGraphLabel{z-index:6}
-+#commandDisplay>div:empty::before{content:'试试 git commit，创建你的第一个提交。\A常用命令点一下填入，修改后运行。';display:block;white-space:pre-line;color:#8faa97;line-height:2;padding:14px 0;font-family:inherit}
-+#commandDisplay .commandLine .icons{background:none;color:#8bbd86;width:auto;padding-left:8px}
++#commandDisplay>div:empty::before{content:'试试 git commit，创建你的第一个提交。\A常用命令点一下填入，修改后运行。';display:block;white-space:pre-line;color:var(--muted);line-height:2;padding:14px 0;font-family:inherit}
++#commandDisplay .commandLine .icons{background:none;color:var(--accent);width:auto;padding-left:8px}
 +/* Replace the desktop dialog's spacer columns with one readable mobile sheet. */
 +.modalView .terminal-window>.box.flex2,.modalView .terminal-window>.box.flex3{display:none}
 +.modalView .terminal-window-holder{flex:0 1 auto;width:calc(100% - 24px);margin:0 auto}
 +.modalView .modalTerminal{width:100%;min-width:0}
 +.modalView .toolbar>.controls,div.canvasTerminalHolder .toolbar>.controls{width:44px;height:44px;top:2px;left:6px}
 +.modalView .toolbar>.controls>.box:not(:first-child),div.canvasTerminalHolder .toolbar>.controls>.box:not(:first-child){display:none}
-+.modalView .toolbar>.controls .box .close,div.canvasTerminalHolder .toolbar>.controls .box .close{display:block;min-width:40px;width:40px;height:40px;text-indent:0;border-radius:10px;background:#d1dfca;box-shadow:none;margin:0}
-+.modalView .leftRightView{position:sticky;bottom:-12px;background:#213b32;padding:8px 0;margin-top:16px;min-height:56px}
-+.modalView .leftRightView button{display:flex;align-items:center;justify-content:center;gap:6px;width:auto;min-width:80px;border-radius:9px;background:#3c5946;padding:7px 12px}
-+.modalView .leftRightView span.hoverLabel{position:static;clip:auto;clip-path:none;width:auto;height:auto;opacity:1;white-space:nowrap;font-size:13px;transform:none;background:none;color:#e1edd8;padding:0}
++.modalView .toolbar>.controls .box .close,div.canvasTerminalHolder .toolbar>.controls .box .close{display:block;min-width:40px;width:40px;height:40px;text-indent:0;border-radius:10px;background:var(--raised);box-shadow:none;margin:0}
++.modalView .leftRightView{position:sticky;bottom:-12px;background:var(--surface);padding:8px 0;margin-top:16px;min-height:56px}
++.modalView .leftRightView button{display:flex;align-items:center;justify-content:center;gap:6px;width:auto;min-width:80px;border-radius:9px;background:var(--raised);padding:7px 12px}
++.modalView .leftRightView span.hoverLabel{position:static;clip:auto;clip-path:none;width:auto;height:auto;opacity:1;white-space:nowrap;font-size:13px;transform:none;background:none;color:var(--text);padding:0}
 +.modalView .leftRightView div i{font-size:20px}
 +div.toolbar.level-toolbar.hidden{opacity:1;height:auto}
 +div.toolbar.level-toolbar .clearfix{margin:0}div.toolbar.level-toolbar .levelNameWrapper{margin:0;top:0;text-align:center;padding:0}div.toolbar.level-toolbar .buttonsWrapper{position:static;display:flex;justify-content:center;gap:8px;width:auto}div.toolbar.level-toolbar .buttonsWrapper>div{float:none;margin:0}
@@ -1594,9 +1729,9 @@ index 0000000..2441659
 +.modalView{overflow-x:hidden}.modalView:not(.inFront){visibility:hidden;pointer-events:none}
 +.modalView .iconHolder{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}.modalView .iconHolder .levelIcon{margin:5px;min-width:44px;width:50px;flex:0 0 50px}
 +html{overflow:hidden;min-width:0}#canvasHolder{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
-+@media(max-width:760px){.modalView .gitDemonstrationView>div.demonstrationText{width:100%;max-width:none;max-height:none;margin:0;overflow:visible}.modalView .gitDemonstrationView>div.visHolder{flex:0 0 210px;background:#e5efdb;border:0;box-shadow:none}.modalView .gitDemonstrationView>div.visHolder>.visHolderInside{width:100%;height:210px}}
++@media(max-width:760px){.modalView .gitDemonstrationView>div.demonstrationText{width:100%;max-width:none;max-height:none;margin:0;overflow:visible}.modalView .gitDemonstrationView>div.visHolder{flex:0 0 210px;background:var(--paper);border:0;box-shadow:none}.modalView .gitDemonstrationView>div.visHolder>.visHolderInside{width:100%;height:210px}}
 +
-+#pocketStorageNotice{background:#f6e9c5;color:#5c471e;padding:7px 10px;font:11px/1.5 sans-serif;flex-shrink:0}#pocketStorageNotice[hidden]{display:none}
++#pocketStorageNotice{background:var(--warning-soft);color:var(--warning);padding:7px 10px;font:11px/1.5 sans-serif;flex-shrink:0}#pocketStorageNotice[hidden]{display:none}
 +#pocketDialog{z-index:1000010}#pocketDialog:not([open]){display:none}
 +
 +@media(max-width:760px){#pocketProgress{max-width:74px;white-space:normal;text-align:right}}
@@ -1614,6 +1749,41 @@ index 0000000..2441659
 +div.canvasTerminalHolder>div.terminal-window-holder div.inside{min-width:0;min-height:80px}
 +div.canvasTerminalHolder>div.terminal-window-holder div.terminal-text{min-width:0;overflow-wrap:anywhere}
 +.modalView .inside,.modalView .contentHolder{min-width:0;overflow-wrap:anywhere}
++
++/* Folio theme: flat surfaces, subtle borders and restrained accent states. */
++button,a,input,textarea{transition:background-color .15s,color .15s,border-color .15s}
++.pocket-mark{background:var(--accent-soft);color:var(--accent);border:1px solid var(--line);border-radius:10px}
++#pocketAbout:hover,.pocket-nav button:hover{color:var(--accent);background:var(--accent-soft)}
++#pocketRun:hover,.pocket-download:hover{filter:brightness(1.08)}
++#pocketDialog a{color:var(--accent)}
++#pocketDialog .pocket-download{color:var(--on-accent)}
++.modalView .toolbar,div.canvasTerminalHolder .toolbar{background:var(--raised);background-image:none}
++.modalView .terminal-window-holder>.wrapper,div.canvasTerminalHolder>div.terminal-window-holder>div.wrapper{border:1px solid var(--line);box-shadow:0 12px 48px rgba(0,0,0,.35)}
++.modalView .inside,.modalView .inside p,.modalView .inside li,.modalView .inside h2{color:var(--text)}
++.modalView .inside a{color:var(--accent)}
++.modalView .uiButton,.level-toolbar .uiButton{background:var(--raised);color:var(--text);border:1px solid var(--line);box-shadow:none;text-shadow:none}
++.modalView .uiButton:hover,.level-toolbar .uiButton:hover{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
++.modalView .uiButtonYellow,.modalView .confirmButton{background:var(--accent-soft);color:var(--accent)}
++.modalView .uiButtonRed{color:var(--danger)}
++.modalView .levelIcon{background:var(--raised);color:var(--text);border:1px solid var(--line);box-shadow:none}
++.modalView .levelIcon:hover,.modalView .levelIcon.selected{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);box-shadow:none}
++.modalView .levelIcon.solved{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
++.modalView .levelIcon.best{background:var(--warning-soft);color:var(--warning);border-color:var(--warning)}
++.modalView .levelIcon .index,.modalView .levelIcon .indexNum,.modalView .levelIcon .index i{color:inherit;text-shadow:none}
++.modalView .levelDropdownTab{color:var(--accent)}
++.modalView .levelDropdownTab.deselected{color:var(--muted);opacity:1}
++.iRebaseDialog p.helperText{color:var(--muted)}
++.iRebaseDialog p.solutionText{color:var(--accent)}
++.modalView .leftRightView .icon-signout,.modalView .leftRightView .icon-ok,.modalView .leftRightView .icon-circle-arrow-left,.modalView .leftRightView .icon-circle-arrow-right{color:var(--accent);text-shadow:none}
++#pocketStartup{background:var(--paper)!important;color:var(--text)!important}
++#pocketStartup a{color:var(--accent)!important}
++::selection{background:var(--accent);color:var(--on-accent)}
++/* Clear the legacy glossy button backgrounds and dark number outlines. */
++div.toolbar.level-toolbar button{background:var(--accent-soft);background-image:none;color:var(--accent);border:1px solid var(--line);font-size:12px;text-shadow:none;box-shadow:none}
++div.toolbar.level-toolbar button:hover{border-color:var(--accent)}
++.modalView .levelIcon div.index,.modalView .levelIcon div.indexNum{-webkit-text-stroke:0}
++.modalView div.gitDemonstrationView>div.visHolder{background:var(--paper);border:1px solid var(--line);box-shadow:none}
++div.canvasTerminalHolder .terminal-text p.helperText{font-size:11px;line-height:1.5;color:var(--muted);margin:0}
 diff --git a/vite.config.mjs b/vite.config.mjs
 index 2fc1c96..889307f 100644
 --- a/vite.config.mjs
