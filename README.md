@@ -2,6 +2,8 @@
 
 一个可在本地运行的个人网站与单人编辑后台。深色、极简、柔和鼠标光晕，完整支持简体中文、English 和 Français。示例项目、经历和个人介绍均为演示内容，不代表真实履历。
 
+生产部署使用同域网关：正式站 `https://www.jasonshelter.com/`、后台 `/admin/`、学习入口 `/learn/`。部署记录、SQLite 数据路径、健康检查及回滚见 [RELEASE_HANDOFF.md](RELEASE_HANDOFF.md)；后续扩展学习页面请先读 [LEARN_CODEX_HANDOFF.md](docs/LEARN_CODEX_HANDOFF.md)。
+
 ## 界面预览
 
 [桌面正式站](docs/screenshots/site-desktop.png) · [手机正式站](docs/screenshots/site-mobile.png) · [编辑后台](docs/screenshots/studio.png) · [光晕设置](docs/screenshots/glow-settings.png) · [后台光晕预览](docs/screenshots/admin-glow.png)

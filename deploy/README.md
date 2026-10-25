@@ -50,8 +50,9 @@ The service uses host networking and binds only to `127.0.0.1:18080`; no Docker
 port-publishing rule is created. This avoids Docker 26's historical caveat with
 localhost-published ports. Host networking grants network access to the host:
 keep the exact loopback bind, never use `0.0.0.0`, and verify socket ownership.
-The root filesystem is read-only. Astro's generated `.astro` types and Vite
-configuration cache are symlinked into the 256 MiB `/tmp` tmpfs; source files,
+The root filesystem is read-only. Astro's generated types and Vite configuration cache are symlinked into the
+256 MiB `/tmp` tmpfs. Prerender chunks use `/data/build-cache/astro-prerender`
+because Astro renames assets into the release directory on the same filesystem; source files,
 dependencies and editor assets remain immutable. `/data` is the only persistent
 write mount. The service runs as UID 10001 with all capabilities dropped.
 
@@ -88,4 +89,6 @@ References: [Docker Compose service settings](https://docs.docker.com/reference/
 
 ## Offline base-image loading
 
-When Docker Hub is unavailable from ECS, load the verified official image archive and verify its image ID before building. This release uses `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397` for the verified Node base. Pass that exact local ID through `--build-arg BASE_IMAGE=sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`; do not substitute an unverified mirror or a floating tag. The production handoff records archive checksums.
+When Docker Hub is unavailable from ECS, load the verified official image archive and verify its image ID before building. This release uses `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397` for the verified Node base. The production handoff records archive checksums.
+
+Docker 26 BuildKit interprets a bare `sha256:...` in `FROM` as a registry image name, so it cannot use that argument directly. This first deployment used `DOCKER_BUILDKIT=0 docker build --pull=false --platform linux/amd64 --build-arg BASE_IMAGE=sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397 -t folio-studio:1.1.0-3ac5106 .` to build offline from the exact local image ID. The legacy builder is deprecated; this is a recorded bootstrap workaround, not a runtime dependency. For subsequent builds, prefer the pinned registry digest with BuildKit when registry access is available, or a local tag whose image ID has been checked against the verified archive immediately before building. Never substitute an unverified mirror or floating base image. Compose always runs the exact resulting application image ID.
