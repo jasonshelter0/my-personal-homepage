@@ -11,6 +11,7 @@ import json
 import os
 import shutil
 import subprocess
+import time
 import urllib.request
 
 SITE = '/www/server/panel/vhost/nginx/www.jasonshelter.com.conf'
@@ -104,13 +105,24 @@ def main():
         run([NGINX, '-t', '-c', CONFIG], log)
         run([NGINX, '-s', 'reload', '-c', CONFIG], log)
         # Validate existing certificate chain and SNI without changing DNS.
-        result = subprocess.run([
-            'curl', '--fail', '--silent', '--show-error', '--retry', '3',
-            '--retry-delay', '1', '--max-time', '10', '--resolve',
-            'www.jasonshelter.com:443:127.0.0.1',
-            'https://www.jasonshelter.com/healthz',
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=50)
-        if result.returncode or json.loads(result.stdout).get('status') != 'ok':
+        # Reload returns before the new workers accept traffic. Old WordPress
+        # workers can briefly answer 404, which curl --retry does not retry.
+        ready = False
+        for attempt in range(15):
+            result = subprocess.run([
+                'curl', '--fail', '--silent', '--show-error', '--max-time', '5',
+                '--resolve', 'www.jasonshelter.com:443:127.0.0.1',
+                'https://www.jasonshelter.com/healthz',
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=10)
+            try:
+                ready = result.returncode == 0 and json.loads(result.stdout).get('status') == 'ok'
+            except (ValueError, AttributeError):
+                ready = False
+            if ready:
+                manifest['https_health_attempts'] = attempt + 1
+                break
+            time.sleep(1)
+        if not ready:
             raise RuntimeError('HTTPS health check failed after cutover.')
         req = urllib.request.Request('http://127.0.0.1/', headers={'Host': '47.120.33.219'}, method='HEAD')
         with urllib.request.urlopen(req, timeout=10) as response:
