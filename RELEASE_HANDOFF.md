@@ -1,5 +1,38 @@
 # Folio Studio 生产发布交接
 
+## 分区、翻译、版本整理与设计致谢 1.3.0（2026-10-26，当前部署）
+
+已于 `2026-10-25T17:12:49.644Z` 通过真实HTTPS私有预览、发布和公网验收。以下是当前状态，后面的部署记录均为历史。
+
+- 项目绝对路径：`/home/jasonshelter/Projects/personal-website`；版本1.3.0；运行源码 `28993b23b1adc21cb9402a1e3108c532a2865b14`。
+- 删除首页分区标题、导航及后台导航的装饰编号；后台可新建/命名/排序/隐藏/删除分区，配置三语Markdown正文与已发布内容卡片，恢复移除的原有分区。图片替代文字、题注和分区文字可翻译。
+- 预览与发布支持删除非当前、非构建中的记录；确认后仅删相应冻结副本，不删草稿或媒体源文件。本次部署没有代用户清理任何历史记录。
+- 公开页面移除口号、演示声明与Folio品牌；设计参考作者Brittany Chiang仅在三语同一逻辑页面 `/zh-cn/site-notes/`、`/en/site-notes/`、`/fr/site-notes/` 展示，页脚提供入口。具体使用见 `docs/SECTIONS_AND_RELEASES.md`。
+- 当前镜像 `sha256:1c99060e38b1dad6296399ef9e3fbc44af4a30aef482262f4177b6ef6b978033`；runtime/current → `/www/dk_project/folio-studio/releases/sections-20261026-28993b2`；公开内容 `mvo34ex9-43dd5198`。
+- 从现场最新已发布 `mvo2dbi7-49a9ec7b` 重建，保留用户刚发布的头像及全部内容；草稿revision19及SHA-256不变。没有以种子数据或本地草稿覆盖生产。
+- 构建：`npm run typecheck`、`npm test`、`npm run test:e2e`、`npm run build`。本地产物 `apps/admin/dist/`、`apps/site/dist/`；生产冻结站点位于 `/www/dk_project/folio-studio/shared/data/releases/mvo34ex9-43dd5198/dist/`，鉴权预览为同目录 `preview-dist/`。
+- 本地运行包 `/home/jasonshelter/Projects/personal-website/.folio/deployments/sections-20261026-28993b2/runtime.tar.gz`，119748660字节，SHA-256 `a6dd9ec7f516897beab2f34c2214ad88028569da10514ada710b04c5b3b8d41d`，上传校验一致。BuildKit使用已验证本地Node24.21.0基础镜像离线构建，最终基础层核验通过。
+- 运行仍为Compose项目 `folio-studio`、服务 `studio`、`node --import tsx server/index.ts`，127.0.0.1:18080、UID10001、只读根目录；`GET /healthz` 检查数据库/后台/站点。
+- 数据库仍为 `/www/dk_project/folio-studio/shared/data/studio.sqlite`，媒体与冻结版本同目录；无SQL迁移、新依赖或新增环境变量。原有环境变量名称表仍适用（不记录秘密值）。旧分区数据无需迁移即可读取；新增可选字段仅在编辑保存时写入。
+- 一致性备份 `/www/backup/site/folio-studio/20261025T171119Z-sections/data.tar.gz`，SHA-256 `7be8f57bda9aed3a298a70e05d5e3803073cd8b386897bb1b13c02849772d8e5`，停止应用时归档（排除可再生build-cache），目录0700/归档0600，已验证可完整读取，未做恢复演练。
+- 旧镜像 `sha256:6cc35ee4e0f8287c435db62db155a1373337434be7043ad86c7b6b506cec3c39`、旧runtime `/www/dk_project/folio-studio/releases/avatar-20261026-a6b83c4`、之前内容及备份全部保留。
+- 验证：68项单元/接口测试、22项浏览器测试、类型检查与生产构建通过；覆盖分区CRUD/顺序/隐藏/媒体/草稿隔离，翻译错误及并发保护，版本删除鉴权/当前与构建保护，原有头像/光晕/学习页面。真实HTTPS15页鉴权预览后发布，再匿名验证15页；后台新控件、搜索预览路径、备案、canonical、健康和权限检查通过，浏览器与资源错误0。生产未向翻译供应商发送用户文字，也未删除真实版本。
+- 继续使用既有部署flock，未改Nginx、DNS、证书、端口、WordPress、RDS、MySQL/PHP或其他服务。
+
+### 回滚说明
+
+优先恢复仍保留的已发布内容，同时继续运行1.3.0；在持有部署锁并协调独占后执行：
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvo2dbi7-49a9ec7b')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+应用恢复脚本 `/www/backup/site/folio-studio/20261025T171119Z-sections/rollback-application.sh` 保留，但**不能在写入新分区字段后直接降级到1.2.x**：旧运行时无法解析新草稿。仅当已核验草稿仍兼容旧schema时才可执行；否则应保留1.3.0并修复代码，或另行完成兼容性处理。不要用旧数据库覆盖用户新草稿。版本被站主删除后无法再用普通回滚恢复，需要单独评估备份恢复。
+
 ## 方形简介头像 1.2.1（2026-10-26，当前部署）
 
 已于 `2026-10-25T16:25:58.602Z` 通过真实 HTTPS 私有预览、发布和公网验证。此节为当前状态，下方部署记录均保留为历史。
