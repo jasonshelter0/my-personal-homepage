@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Card from '../components/Card.astro';
 import Picture from '../components/Picture.astro';
 import Icon from '../components/Icon.astro';
+import LearningHub from '../components/LearningHub.astro';
 import {
   snapshot,
   entries,
@@ -24,7 +25,7 @@ export function getStaticPaths() {
     const prefix = localePath(locale);
     return [
       { params: { path: prefix }, props: { locale, route: '' } },
-      ...['projects', 'posts', 'pages', 'resume'].map((route) => ({
+      ...['projects', 'posts', 'pages', 'resume', 'learn'].map((route) => ({
         params: { path: `${prefix}/${route}` },
         props: { locale, route },
       })),
@@ -43,10 +44,13 @@ const content = entry?.translations[locale];
 const pageTitle =
   content?.title ||
   (
-    { projects: t.projects, posts: t.writing, pages: t.pages, resume: t.resume } as Record<
-      string,
-      string
-    >
+    {
+      projects: t.projects,
+      posts: t.writing,
+      pages: t.pages,
+      resume: t.resume,
+      learn: t.learn,
+    } as Record<string, string>
   )[route];
 const listType = (
   { projects: 'project', posts: 'post', pages: 'page' } as Record<string, Entry['type']>
@@ -75,7 +79,7 @@ const sectionEntries = (id: string) =>
 <Layout
   locale={locale}
   title={pageTitle}
-  description={content?.summary}
+  description={route === 'learn' ? t.learnIntro : content?.summary}
   path={route}
   home={home}
   category={entry?.type || 'page'}
@@ -131,6 +135,8 @@ const sectionEntries = (id: string) =>
           </section>
         ))}
     </>
+  ) : route === 'learn' ? (
+    <LearningHub locale={locale} />
   ) : entry && content ? (
     <article class="detail">
       <a

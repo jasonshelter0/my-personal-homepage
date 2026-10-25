@@ -1,6 +1,7 @@
 import { randomBytes, createHash, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { Request, Response, NextFunction } from 'express';
 import { createSession, validSession, deleteSession, HttpError } from './store.ts';
+import { publicOrigin, singleOrigin } from './config.ts';
 const password = process.env.ADMIN_PASSWORD || 'local-demo-password';
 const salt = randomBytes(32),
   passwordHash = scryptSync(password, salt, 64);
@@ -12,6 +13,7 @@ export function sessionInfo(req: Request) {
     localDemo,
     productionUrl:
       process.env.PRODUCTION_URL ||
+      (singleOrigin() ? publicOrigin() : undefined) ||
       `http://${host.includes(':') && !host.startsWith('[') ? `[${host}]` : host}:${process.env.PRODUCTION_PORT || 4323}`,
   };
 }
@@ -87,6 +89,11 @@ export function login(req: Request, res: Response) {
 export function logout(req: Request, res: Response) {
   const token = cookies(req)[sessionKey];
   if (token) deleteSession(digest(token));
-  res.clearCookie(sessionKey, { path: '/' });
+  res.clearCookie(sessionKey, {
+    path: '/',
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.COOKIE_SECURE === 'true',
+  });
   res.json({ authenticated: false, localDemo });
 }

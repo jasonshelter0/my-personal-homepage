@@ -15,6 +15,7 @@ import {
 import { messages, localeLabels, localizeServerMessage, type MessageKey } from './i18n';
 import './style.css';
 import { CursorGlow } from './CursorGlow';
+import { editorMediaUrl } from './media-url';
 
 const blankTranslation = () => ({
   title: '',
@@ -73,12 +74,12 @@ function Markdown({ text }: { text: string }) {
           return <del key={i}>{children}</del>;
         case 'link':
           return (
-            <a key={i} href={safeUrl(t.href)} target="_blank" rel="noreferrer">
+            <a key={i} href={editorMediaUrl(safeUrl(t.href))} target="_blank" rel="noreferrer">
               {children}
             </a>
           );
         case 'image':
-          return <img key={i} src={safeUrl(t.href)} alt={t.text} />;
+          return <img key={i} src={editorMediaUrl(safeUrl(t.href))} alt={t.text} />;
         case 'code':
           return (
             <pre key={i}>
@@ -802,7 +803,10 @@ function App() {
                           }}
                         >
                           {e.coverId && (
-                            <img src={snap.media.find((m) => m.id === e.coverId)?.path} alt="" />
+                            <img
+                              src={editorMediaUrl(snap.media.find((m) => m.id === e.coverId)?.path)}
+                              alt=""
+                            />
                           )}
                           <div>
                             <span className="entry-type">{t(e.type)}</span>
@@ -1026,7 +1030,7 @@ function App() {
                     {entry.coverId && (
                       <img
                         className="cover-preview"
-                        src={snap.media.find((m) => m.id === entry.coverId)?.path}
+                        src={editorMediaUrl(snap.media.find((m) => m.id === entry.coverId)?.path)}
                         alt=""
                       />
                     )}
@@ -1440,7 +1444,7 @@ function App() {
                     return (
                       <article className="media-item" key={m.id}>
                         <div className="media-image">
-                          <img src={m.path} alt={m.alt[locale]} />
+                          <img src={editorMediaUrl(m.path)} alt={m.alt[locale]} />
                         </div>
                         <div className="media-details">
                           <h3>{m.filename}</h3>
@@ -1672,7 +1676,7 @@ function App() {
                     setImagePicker(false);
                   }}
                 >
-                  <img src={m.path} alt={m.alt[locale]} />
+                  <img src={editorMediaUrl(m.path)} alt={m.alt[locale]} />
                   <span>{m.filename}</span>
                 </button>
               ))}

@@ -566,6 +566,44 @@ kbd {
 .site-footer a:hover {
   color: var(--accent);
 }
+.site-compliance {
+  width: 100%;
+  padding: 24px 24px 30px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.site-compliance a:hover {
+  color: var(--accent);
+}
+.learn-hub h1 {
+  font-size: clamp(36px, 4vw, 52px);
+  letter-spacing: -1.5px;
+  margin-bottom: 22px;
+}
+.learn-placeholder {
+  margin: 40px 0 30px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.035);
+}
+.learn-placeholder h2 {
+  font-size: 18px;
+  margin: 18px 0 14px;
+}
+.learn-placeholder p {
+  color: var(--muted);
+  margin: 0;
+}
+.learn-status-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
 .demo-note {
   font-size: 9px;
   letter-spacing: 0.7px;

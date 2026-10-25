@@ -5,6 +5,8 @@ node_modules/
 !.env.example
 *.log
 .DS_Store
+__pycache__/
+*.pyc
 apps/*/dist/
 apps/site/.astro/
 playwright-report/

@@ -7,6 +7,7 @@ import { DATA_DIR, ROOT } from '../shared/paths.ts';
 import { validateSnapshot } from '../shared/validation.ts';
 import { referencedMediaIds } from '../shared/media-references.ts';
 import type { Release, Snapshot } from '../shared/types.ts';
+import { previewBasePath, publicOrigin } from './config.ts';
 const releaseRoot = path.join(DATA_DIR, 'releases');
 let queue = Promise.resolve();
 function fail(message: string, status = 400): never {
@@ -61,6 +62,9 @@ export function listReleases(): Release[] {
 }
 export function releaseDirectory(id: string) {
   return path.join(releaseRoot, validId(id), 'dist');
+}
+export function previewDirectory(id: string) {
+  return path.join(releaseRoot, validId(id), 'preview-dist');
 }
 export function getCurrentRelease(): Release | null {
   try {
@@ -134,42 +138,48 @@ function packageCommand(name: 'astro' | 'pagefind') {
 async function buildRelease(release: Release, snapshot: Snapshot) {
   const folder = path.dirname(metaPath(release.id));
   try {
-    const output = releaseDirectory(release.id);
-    const env = {
-      ...process.env,
-      FOLIO_SNAPSHOT: path.join(folder, 'snapshot.json'),
-      FOLIO_OUTPUT: output,
-      ASTRO_TELEMETRY_DISABLED: '1',
-    };
-    await run(
-      process.execPath,
-      [packageCommand('astro'), 'build', '--root', path.join(ROOT, 'apps/site')],
-      env,
-      path.join(folder, 'build.log'),
-    );
-    fs.mkdirSync(path.join(output, 'media'), { recursive: true });
-    for (const media of referencedMedia(snapshot)) {
-      if (path.basename(media.filename) !== media.filename)
-        throw new Error('Invalid media filename');
-      const source = path.join(folder, 'assets', media.filename);
-      if (fs.existsSync(source))
-        fs.copyFileSync(source, path.join(output, 'media', media.filename));
-      else throw new Error(`Frozen media missing: ${media.filename}`);
+    const outputs = [{ output: releaseDirectory(release.id), base: '/' }];
+    const prefix = previewBasePath();
+    if (prefix)
+      outputs.push({ output: previewDirectory(release.id), base: `${prefix}/${release.id}/` });
+    for (const { output, base } of outputs) {
+      const env = {
+        ...process.env,
+        FOLIO_SNAPSHOT: path.join(folder, 'snapshot.json'),
+        FOLIO_OUTPUT: output,
+        FOLIO_BASE: base,
+        ASTRO_TELEMETRY_DISABLED: '1',
+      };
+      await run(
+        process.execPath,
+        [packageCommand('astro'), 'build', '--root', path.join(ROOT, 'apps/site')],
+        env,
+        path.join(folder, 'build.log'),
+      );
+      fs.mkdirSync(path.join(output, 'media'), { recursive: true });
+      for (const media of referencedMedia(snapshot)) {
+        if (path.basename(media.filename) !== media.filename)
+          throw new Error('Invalid media filename');
+        const source = path.join(folder, 'assets', media.filename);
+        if (fs.existsSync(source))
+          fs.copyFileSync(source, path.join(output, 'media', media.filename));
+        else throw new Error(`Frozen media missing: ${media.filename}`);
+      }
+      await run(
+        process.execPath,
+        [packageCommand('pagefind'), '--site', output],
+        env,
+        path.join(folder, 'build.log'),
+      );
+      for (const locale of ['zh-cn', 'en', 'fr'])
+        if (!fs.existsSync(path.join(output, locale, 'index.html')))
+          throw new Error(`Missing language homepage: ${locale}`);
+      atomicJSON(path.join(output, 'release.json'), {
+        id: release.id,
+        createdAt: release.createdAt,
+        revision: release.revision,
+      });
     }
-    await run(
-      process.execPath,
-      [packageCommand('pagefind'), '--site', output],
-      env,
-      path.join(folder, 'build.log'),
-    );
-    for (const locale of ['zh-cn', 'en', 'fr'])
-      if (!fs.existsSync(path.join(output, locale, 'index.html')))
-        throw new Error(`Missing language homepage: ${locale}`);
-    atomicJSON(path.join(output, 'release.json'), {
-      id: release.id,
-      createdAt: release.createdAt,
-      revision: release.revision,
-    });
     release.status = 'ready';
     saveRelease(release);
   } catch (error) {
@@ -195,7 +205,9 @@ export async function createRelease(snapshot: Snapshot): Promise<Release> {
     createdAt: new Date().toISOString(),
     publishedAt: null,
     error: null,
-    previewUrl: `http://${host}:${port}/?release=${id}`,
+    previewUrl: previewBasePath()
+      ? `${publicOrigin() || ''}${previewBasePath()}/${id}/`
+      : `http://${host}:${port}/?release=${id}`,
     previewedAt: null,
   };
   const folder = path.dirname(metaPath(id));

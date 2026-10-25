@@ -12,15 +12,29 @@ export const entries = snapshot.entries
   .filter((e) => e.status === 'published')
   .sort((a, b) => a.order - b.order);
 export const localePath = (locale: Locale) => (locale === 'zh-CN' ? 'zh-cn' : locale);
-export const href = (locale: Locale, path = '') =>
+export const basePath = import.meta.env.BASE_URL;
+export function withBase(value: string): string {
+  if (!value.startsWith('/') || value.startsWith('//') || basePath === '/') return value;
+  return value.startsWith(basePath) ? value : basePath + value.slice(1);
+}
+export function withoutBase(value: string): string {
+  return basePath !== '/' && value.startsWith(basePath)
+    ? '/' + value.slice(basePath.length)
+    : value;
+}
+export const publicHref = (locale: Locale, path = '') =>
   `/${localePath(locale)}/${path}${path && !path.endsWith('/') ? '/' : ''}`;
+export const href = (locale: Locale, path = '') => withBase(publicHref(locale, path));
 export const collection = (type: Entry['type']) =>
   ({ project: 'projects', post: 'posts', page: 'pages', experience: 'experience' })[type];
 export const entryHref = (locale: Locale, entry: Entry) =>
   href(locale, `${collection(entry.type)}/${entry.slug}`);
-export const media = (id: string | null) => snapshot.media.find((m) => m.id === id);
+export const media = (id: string | null) => {
+  const item = snapshot.media.find((m) => m.id === id);
+  return item ? { ...item, path: withBase(item.path) } : undefined;
+};
 export function safeUrl(value: string): string {
-  return /^(https?:\/\/|mailto:|\/(?!\/)|#)/i.test(value) ? value : '#';
+  return /^(https?:\/\/|mailto:|\/(?!\/)|#)/i.test(value) ? withBase(value) : '#';
 }
 export function markdown(value: string): string {
   return sanitize(marked.parse(value, { async: false }) as string, {
@@ -33,8 +47,14 @@ export function markdown(value: string): string {
     allowedSchemes: ['http', 'https', 'mailto'],
     allowProtocolRelative: false,
     transformTags: {
-      img: (tagName, attribs) => ({ tagName, attribs: { ...attribs, loading: 'lazy' } }),
-      a: (tagName, attribs) => ({ tagName, attribs: { ...attribs, rel: 'noopener noreferrer' } }),
+      img: (tagName, attribs) => ({
+        tagName,
+        attribs: { ...attribs, src: withBase(attribs.src || ''), loading: 'lazy' },
+      }),
+      a: (tagName, attribs) => ({
+        tagName,
+        attribs: { ...attribs, href: withBase(attribs.href || ''), rel: 'noopener noreferrer' },
+      }),
     },
   });
 }
@@ -48,6 +68,12 @@ export const copy = {
     projects: '项目',
     writing: '文章',
     pages: '信息',
+    learn: '学习',
+    learnEyebrow: '学习与实践',
+    learnIntro: '把理解写下来，把想法做出来。这里将逐步整理学习笔记、实践记录与参考资料。',
+    learnStatus: '学习空间正在准备中',
+    learnBody: '目前还没有发布学习页面。后续内容会按主题整理，在这里提供入口，并持续补充与修订。',
+    learnBrowse: '先看看已有文章',
     archive: '所有项目',
     allPosts: '所有文章',
     allPages: '更多信息',
@@ -93,6 +119,14 @@ export const copy = {
     projects: 'Projects',
     writing: 'Writing',
     pages: 'Information',
+    learn: 'Learning',
+    learnEyebrow: 'Notes & practice',
+    learnIntro:
+      'Writing to understand, building to explore. This space will bring together study notes, practical work, and useful references.',
+    learnStatus: 'A learning space in progress',
+    learnBody:
+      'No learning pages have been published yet. Future pages will be organized by topic and linked here as they are developed and revised.',
+    learnBrowse: 'Explore existing writing',
     archive: 'View all projects',
     allPosts: 'View all writing',
     allPages: 'More information',
@@ -138,6 +172,14 @@ export const copy = {
     projects: 'Projets',
     writing: 'Articles',
     pages: 'Informations',
+    learn: 'Apprentissage',
+    learnEyebrow: 'Notes et pratique',
+    learnIntro:
+      'Écrire pour comprendre, créer pour explorer. Cet espace réunira progressivement des notes d’étude, des travaux pratiques et des références utiles.',
+    learnStatus: 'Un espace d’apprentissage en préparation',
+    learnBody:
+      'Aucune page d’apprentissage n’est encore publiée. Les prochaines pages seront organisées par thème et accessibles ici au fil de leur création et de leurs révisions.',
+    learnBrowse: 'Découvrir les articles existants',
     archive: 'Tous les projets',
     allPosts: 'Tous les articles',
     allPages: 'Plus d’informations',

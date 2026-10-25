@@ -1,0 +1,24 @@
+---
+import { copy, href, type Locale } from '../lib/data';
+import Icon from './Icon.astro';
+const { locale } = Astro.props as { locale: Locale };
+const t = copy[locale];
+---
+
+<article class="learn-hub">
+  <a class="back-link" href={href(locale)}>
+    <Icon name="back" size={16} />
+    {t.home}
+  </a>
+  <p class="eyebrow">{t.learnEyebrow}</p>
+  <h1 data-pagefind-meta="title">{t.learn}</h1>
+  <p class="detail-summary">{t.learnIntro}</p>
+  <section class="learn-placeholder" aria-labelledby="learn-status">
+    <span class="learn-status-dot" aria-hidden="true"></span>
+    <h2 id="learn-status">{t.learnStatus}</h2>
+    <p>{t.learnBody}</p>
+  </section>
+  <a class="text-link" href={href(locale, 'posts')}>
+    {t.learnBrowse} <Icon size={16} />
+  </a>
+</article>

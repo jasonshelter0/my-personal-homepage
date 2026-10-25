@@ -6,7 +6,8 @@ import { pathToFileURL } from 'node:url';
 import { ZodError } from 'zod';
 import { ROOT, DATA_DIR } from '../shared/paths.ts';
 import { validateSnapshot } from '../shared/validation.ts';
-import { getSnapshot, updateDraft, HttpError } from './store.ts';
+import { getSnapshot, updateDraft, HttpError, databaseReady } from './store.ts';
+import { singleOrigin, publicOrigin, previewBasePath, validateRuntimeConfig } from './config.ts';
 import {
   authenticated,
   requireAuth,
@@ -26,6 +27,7 @@ import {
   rollbackRelease,
   getCurrentRelease,
   releaseDirectory,
+  previewDirectory,
   markPreviewed,
   initializePublisher,
 } from './publisher.ts';
@@ -40,10 +42,10 @@ function securityHeaders(_req: Request, res: Response, next: NextFunction) {
   next();
 }
 function localHostGuard(req: Request, _res: Response, next: NextFunction) {
-  if (
-    ['127.0.0.1', 'localhost', '::1'].includes(HOST) &&
-    !['127.0.0.1', 'localhost', '[::1]', '::1'].includes(req.hostname)
-  )
+  const allowed = ['127.0.0.1', 'localhost', '[::1]', '::1'];
+  const origin = publicOrigin();
+  if (origin) allowed.push(new URL(origin).hostname);
+  if (['127.0.0.1', 'localhost', '::1'].includes(HOST) && !allowed.includes(req.hostname))
     return next(new HttpError(403, 'Unrecognized local hostname.'));
   next();
 }
@@ -108,16 +110,53 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 12 * 1024 * 1024, files: 1, fields: 0 },
 });
+function recordPreview(req: Request, res: Response, id: string) {
+  if (req.method !== 'GET') return;
+  res.once('finish', () => {
+    if (res.statusCode === 200 && String(res.getHeader('Content-Type')).includes('text/html')) {
+      try {
+        markPreviewed(id);
+      } catch (error) {
+        console.error('Could not record preview', error);
+      }
+    }
+  });
+}
 export function createApplications() {
   const admin = express(),
     preview = express(),
     production = express();
   for (const app of [admin, preview, production]) {
     app.disable('x-powered-by');
+    if (singleOrigin()) app.set('trust proxy', 'loopback');
     app.use(securityHeaders, localHostGuard);
   }
+  const health = (_req: Request, res: Response) => {
+    const current = getCurrentRelease();
+    const checks = {
+      database: databaseReady(),
+      editor: existsSync(join(ROOT, 'apps/admin/dist/index.html')),
+      website: Boolean(
+        current &&
+        ['index.html', 'zh-cn/index.html', 'en/index.html', 'fr/index.html'].every((file) =>
+          existsSync(join(releaseDirectory(current.id), file)),
+        ),
+      ),
+    };
+    const ready = Object.values(checks).every(Boolean);
+    res
+      .set('Cache-Control', 'no-store')
+      .status(ready ? 200 : 503)
+      .json({ status: ready ? 'ok' : 'not_ready', checks });
+  };
+  admin.get('/healthz', health);
+  production.get('/healthz', health);
   admin.use((req, res, next) => {
-    if (req.path.startsWith('/api/') || req.path.startsWith('/media/'))
+    if (
+      req.path.startsWith('/api/') ||
+      req.path.startsWith('/admin/media/') ||
+      (!singleOrigin() && req.path.startsWith('/media/'))
+    )
       res.set('Cache-Control', 'no-store');
     next();
   });
@@ -158,20 +197,47 @@ export function createApplications() {
     res.json(await rollbackRelease(String(req.params.id))),
   );
   admin.use('/api', (_req, res) => res.status(404).json({ error: 'API route not found.' }));
-  admin.use(
-    '/media',
+  const privateMedia = [
     requireAuth,
     express.static(join(DATA_DIR, 'media'), { dotfiles: 'deny' }),
     express.static(join(ROOT, 'apps/site/public/media'), { fallthrough: false, dotfiles: 'deny' }),
-  );
-  admin.get('/', (_req, res) => res.redirect('/admin/'));
+  ];
+  admin.use('/admin/media', ...privateMedia);
+  if (!singleOrigin()) {
+    admin.use('/media', ...privateMedia);
+    admin.get('/', (_req, res) => res.redirect('/admin/'));
+  }
   admin.use('/admin', express.static(join(ROOT, 'apps/admin/dist')));
   admin.use('/admin', (_req, res) => {
     const index = join(ROOT, 'apps/admin/dist/index.html');
     if (existsSync(index)) res.sendFile(index);
     else res.status(503).send('Editor is not built yet. Run npm run build:admin.');
   });
-  admin.use(errorHandler);
+  const prefix = previewBasePath();
+  if (prefix) {
+    admin.use(
+      prefix,
+      (_req, res, next) => {
+        res.set({ 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow, noarchive' });
+        next();
+      },
+      requireAuth,
+    );
+    admin.use(`${prefix}/:releaseId`, (req, res, next) => {
+      const id = String(req.params.releaseId);
+      const release = listReleases().find((r) => r.id === id);
+      if (!release || !['ready', 'published'].includes(release.status))
+        return next(new HttpError(404, 'Preview release is not ready.'));
+      const directory = previewDirectory(id);
+      if (!existsSync(join(directory, 'index.html')))
+        return next(new HttpError(409, 'Create a new preview for this deployment.'));
+      recordPreview(req, res, id);
+      return serveWebsite(directory, req, res, next, true);
+    });
+    admin.use(prefix, (_req, res) =>
+      res.status(404).send('Select a ready preview from the editor.'),
+    );
+  }
   preview.use((_req, res, next) => {
     res.set({ 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow, noarchive' });
     next();
@@ -196,16 +262,7 @@ export function createApplications() {
     if (!release || !['ready', 'published'].includes(release.status))
       return res.status(404).send('Select a ready preview from the editor.');
     const directory = releaseDirectory(release.id);
-    if (req.method === 'GET')
-      res.once('finish', () => {
-        if (res.statusCode === 200 && String(res.getHeader('Content-Type')).includes('text/html')) {
-          try {
-            markPreviewed(release.id);
-          } catch (error) {
-            console.error('Could not record preview', error);
-          }
-        }
-      });
+    recordPreview(req, res, release.id);
     return serveWebsite(directory, req, res, next, true);
   });
   preview.use(errorHandler);
@@ -218,11 +275,12 @@ export function createApplications() {
     return serveWebsite(releaseDirectory(current.id), req, res, next);
   });
   production.use(errorHandler);
+  if (singleOrigin()) admin.use(production);
+  admin.use(errorHandler);
   return { admin, preview, production };
 }
 export function startServers() {
-  if (!['127.0.0.1', 'localhost', '::1'].includes(HOST) && !process.env.ADMIN_PASSWORD)
-    throw new Error('Set ADMIN_PASSWORD before binding beyond loopback.');
+  validateRuntimeConfig();
   initializePublisher();
   const apps = createApplications();
   const ports = {
@@ -230,7 +288,8 @@ export function startServers() {
     preview: Number(process.env.PREVIEW_PORT || 4322),
     production: Number(process.env.PRODUCTION_PORT || 4323),
   };
-  const servers = Object.entries(apps).map(([name, app]) =>
+  const activeApps = singleOrigin() ? { admin: apps.admin } : apps;
+  const servers = Object.entries(activeApps).map(([name, app]) =>
     app.listen(ports[name as keyof typeof ports], HOST, () =>
       console.log(
         `${name}: http://${HOST}:${ports[name as keyof typeof ports]}${name === 'admin' ? '/admin/' : ''}`,

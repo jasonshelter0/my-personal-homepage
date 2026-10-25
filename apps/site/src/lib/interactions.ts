@@ -163,10 +163,10 @@ input.addEventListener('input', () => {
   timer = setTimeout(async () => {
     try {
       if (!pagefind) {
-        const path = '/pagefind/pagefind.js';
+        const path = `${import.meta.env.BASE_URL}pagefind/pagefind.js`;
         pagefind = import(/* @vite-ignore */ path)
           .then(async (module) => {
-            await module.options({});
+            await module.options({ baseUrl: import.meta.env.BASE_URL });
             return module;
           })
           .catch((error) => {

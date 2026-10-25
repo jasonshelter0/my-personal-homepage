@@ -4,6 +4,9 @@ import {
   snapshot,
   copy,
   href,
+  publicHref,
+  withBase,
+  withoutBase,
   LOCALES,
   localePath,
   siteUrl,
@@ -12,6 +15,7 @@ import {
   type Locale,
 } from '../lib/data';
 import Icon from '../components/Icon.astro';
+import ComplianceFooter from '../components/ComplianceFooter.astro';
 import { CURSOR_GLOW_RADIUS } from '../../../../shared/types';
 interface Props {
   locale: Locale;
@@ -35,7 +39,7 @@ const t = copy[locale],
   settings = snapshot.settings,
   profile = settings.profile[locale];
 const pageTitle = title ? `${title} — ${profile.name}` : `${profile.name} — ${profile.headline}`;
-const canonical = siteUrl + href(locale, path);
+const canonical = siteUrl + publicHref(locale, path);
 const accent = /^#[0-9a-f]{6}$/i.test(settings.accent) ? settings.accent : '#5eead4';
 const glowRGB = [1, 3, 5]
   .map((offset) => parseInt(accent.slice(offset, offset + 2), 16))
@@ -67,12 +71,12 @@ const ProfileHeading = home ? 'h1' : 'span';
       <>
         <link rel="canonical" href={canonical} />
         {LOCALES.map((l) => (
-          <link rel="alternate" hreflang={l} href={siteUrl + href(l, path)} />
+          <link rel="alternate" hreflang={l} href={siteUrl + publicHref(l, path)} />
         ))}
         <link
           rel="alternate"
           hreflang="x-default"
-          href={siteUrl + href(settings.defaultLocale, path)}
+          href={siteUrl + publicHref(settings.defaultLocale, path)}
         />
       </>
     )}
@@ -81,14 +85,14 @@ const ProfileHeading = home ? 'h1' : 'span';
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={locale.replace('-', '_')} />
     {siteUrl && <meta property="og:url" content={canonical} />}
-    {cover && siteUrl && <meta property="og:image" content={siteUrl + cover} />}
+    {cover && siteUrl && <meta property="og:image" content={siteUrl + withoutBase(cover)} />}
     <link
       rel="alternate"
       type="application/rss+xml"
-      href={`/${localePath(locale)}/rss.xml`}
+      href={withBase(`/${localePath(locale)}/rss.xml`)}
       title={`${profile.name} — ${t.writing}`}
     />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
   </head>
   <body data-locale={locale}>
     <a class="skip-link" href="#main">
@@ -149,6 +153,9 @@ const ProfileHeading = home ? 'h1' : 'span';
                 </a>
               </>
             )}
+            <a href={href(locale, 'learn')} aria-current={path === 'learn' ? 'page' : undefined}>
+              <span>{t.learn}</span>
+            </a>
           </nav>
         </div>
         <div class="profile-bottom">
@@ -203,6 +210,7 @@ const ProfileHeading = home ? 'h1' : 'span';
         </a>
       </footer>
     </div>
+    <ComplianceFooter />
     <dialog
       id="search-dialog"
       class="search-dialog"

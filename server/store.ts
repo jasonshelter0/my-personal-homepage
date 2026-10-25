@@ -27,6 +27,13 @@ export function getSnapshot(): Snapshot {
   const row = db.prepare('SELECT content FROM draft WHERE id=1').get() as { content: string };
   return parseSnapshot(JSON.parse(row.content));
 }
+export function databaseReady(): boolean {
+  try {
+    return Boolean(db.prepare('SELECT revision FROM draft WHERE id=1').get());
+  } catch {
+    return false;
+  }
+}
 export function saveSnapshot(snapshot: Snapshot, expectedRevision = snapshot.revision): Snapshot {
   const next = parseSnapshot({ ...snapshot, revision: expectedRevision + 1 });
   const result = db

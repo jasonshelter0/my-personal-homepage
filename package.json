@@ -1,6 +1,6 @@
 {
   "name": "folio-studio",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -18,7 +18,8 @@
     "setup": "npm run build:admin && tsx scripts/setup.ts",
     "export": "tsx scripts/export.ts",
     "start:env": "node --env-file=.env --import tsx server/index.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "release:prepare": "tsx scripts/prepare-production.ts"
   },
   "dependencies": {
     "astro": "^7.4.2",
