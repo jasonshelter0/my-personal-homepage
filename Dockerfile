@@ -14,9 +14,10 @@ COPY --chown=10001:10001 apps/admin/dist ./apps/admin/dist
 COPY --chown=10001:10001 deploy/container-entrypoint.sh ./deploy/container-entrypoint.sh
 
 # Astro writes types beneath the site root and prerender chunks beneath the
-# working directory. Vite's config loader also needs a writable cache.
+# working directory. Prerender assets are renamed into /data, so that cache
+# must share its filesystem. Vite's config loader also needs a writable cache.
 RUN ln -s /tmp/astro-types /app/apps/site/.astro \
-    && ln -s /tmp/astro-prerender /app/.astro \
+    && ln -s /data/build-cache/astro-prerender /app/.astro \
     && ln -s /tmp/vite-config /app/node_modules/.vite-temp \
     && chmod 0555 /app/deploy/container-entrypoint.sh
 
