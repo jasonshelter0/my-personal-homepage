@@ -13,9 +13,10 @@ COPY --chown=10001:10001 apps/site ./apps/site
 COPY --chown=10001:10001 apps/admin/dist ./apps/admin/dist
 COPY --chown=10001:10001 deploy/container-entrypoint.sh ./deploy/container-entrypoint.sh
 
-# Astro hardcodes .astro/ under the site root. Vite's config loader also uses
-# node_modules/.vite-temp. Keep both writable without making /app writable.
+# Astro writes types beneath the site root and prerender chunks beneath the
+# working directory. Vite's config loader also needs a writable cache.
 RUN ln -s /tmp/astro-types /app/apps/site/.astro \
+    && ln -s /tmp/astro-prerender /app/.astro \
     && ln -s /tmp/vite-config /app/node_modules/.vite-temp \
     && chmod 0555 /app/deploy/container-entrypoint.sh
 
