@@ -53,7 +53,9 @@ npm start
 
 ## 自动翻译
 
-支持 OpenAI 兼容的 Chat Completions 服务，通过服务器环境变量配置：
+资料和内容编辑页可选择翻译服务。默认提供免密钥的 **MyMemory**：官方匿名额度通常为每天 5,000 字符，本站每次最多发送 4,500 个源文字符；使用前会确认将源文发送给该服务。译文需校对、预览并发布才会公开。
+
+也支持配置 `LIBRETRANSLATE_URL` 与可选 `LIBRETRANSLATE_API_KEY`，连接自己的 LibreTranslate 服务；商业公共端点不作为免费默认服务。原有 OpenAI 兼容 Chat Completions 服务继续支持：
 
 ```dotenv
 TRANSLATION_BASE_URL=https://your-provider.example/v1
@@ -61,9 +63,11 @@ TRANSLATION_API_KEY=your-secret-key
 TRANSLATION_MODEL=your-model
 ```
 
-没有配置时，界面明确显示未配置，翻译请求返回错误；不会生成伪翻译。密钥不会进入客户端。译文保留 Markdown，生成后需要人工审核。覆盖已审核译文需要确认；翻译期间如果草稿发生变化，旧请求不会覆盖新内容。
+未配置的可选服务会显示但禁用，MyMemory 无需配置。密钥不会进入客户端。翻译会保留链接、代码和 Markdown 结构；额度不足、超时或结构无法安全处理时返回错误，不保存部分译文。覆盖已审核译文需要确认；翻译期间草稿发生变化时，旧请求不会覆盖新内容。
 
-供应商需要支持对应 JSON 输出格式。真实供应商费用与连通性由所选服务决定；自动化测试使用本地 HTTP 测试服务验证接口、覆盖保护和并发冲突，不代表对任何付费供应商做过实际调用。
+OpenAI 兼容服务需要支持对应 JSON 输出格式。服务详情、限制和配置见 [FREE_TRANSLATION.md](docs/FREE_TRANSLATION.md)。自动化测试使用模拟响应，不向外部服务发送草稿；另以合成示例句子验证了阿里云服务器到 MyMemory 的实际连通性。
+
+外链图标已扩展为 **50 种**，包含微信、Goodreads、豆瓣、知乎、Google Scholar、ORCID 等；后台可搜索名称并预览。清单及来源见 [SOCIAL_ICONS.md](docs/SOCIAL_ICONS.md)。个人照片风格与生成提示词见 [PORTRAIT_PROMPT.md](docs/PORTRAIT_PROMPT.md)。
 
 ## 数据与备份
 

@@ -82,7 +82,10 @@ export interface Release {
   previewUrl: string;
   previewedAt: string | null;
 }
+export type TranslationProvider = 'mymemory' | 'libretranslate' | 'openai';
 export interface TranslationStatus {
   configured: boolean;
   model: string | null;
+  defaultProvider: TranslationProvider;
+  providers: Array<{ id: TranslationProvider; label: string; configured: boolean }>;
 }

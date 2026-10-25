@@ -1,0 +1,9 @@
+# Portrait direction for this website
+
+A natural editorial portrait with a dark navy background fits the site's quiet typography, muted colors and soft teal glow. Keep realistic skin tones and a clear face; use teal only as a subtle lighting accent. A busy background or strong neon effects would compete with the page.
+
+Upload a clear photograph of yourself to the image editor, then use this prompt:
+
+> Use the uploaded photo as the identity reference. Create a realistic editorial head-and-shoulders portrait for my minimalist personal website. Preserve my recognizable facial features, facial proportions, skin tone, hairstyle, age and glasses if present. Keep natural skin texture and an authentic, relaxed expression. Use a matte deep navy background (#0f172a), soft diffused light on the face, gentle shadows, and a very faint muted teal rim light (#5eead4) along one shoulder. Keep the face naturally colored and clearly visible against the dark background. Wear a simple charcoal or navy top with no logos. Use restrained saturation, a clean composition and subtle photographic grain. Look toward the camera with a slight natural shoulder angle. Frame the face near the center, leave comfortable space above the head, and keep the shoulders inside the frame so it works as both a square image and a circular avatar. Output a high-resolution square portrait, ideally 1536 × 1536. No text, watermark, extra people, busy scenery, heavy retouching, plastic skin, exaggerated neon, fantasy effects or changes to my identity.
+
+Generate several variations and choose the one that looks most like you. Check the face at small avatar size as well as full size. Keep the original high-resolution export; upload the selected image through the existing media manager, which creates the site's WebP asset. Add meaningful image descriptions in all three languages and inspect the normal preview before publishing.

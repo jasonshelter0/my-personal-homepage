@@ -71,6 +71,17 @@ export const messages = {
     heading: '标题',
     code: '代码',
     translate: '自动翻译为当前语言',
+    translationProvider: '翻译服务',
+    providerNeedsSetup: '需配置',
+    translationDisclosure:
+      '选定源语言的内容会发送给此翻译服务。译文需人工校对，发布后才会对外显示。',
+    freeTranslationHelp:
+      'MyMemory 免费免密钥：通常每天共 5,000 字符，每次最多 4,500 字符。源文将发送给 MyMemory；链接和代码保持原样，译文仍需校对。',
+    libreTranslationHelp:
+      '使用站主配置的 LibreTranslate 服务。自托管无需按次付费；公共实例的密钥、支持语言和额度由实例决定。',
+    iconSearch: '搜索图标或平台名称',
+    iconNoResults: '没有匹配的图标',
+
     review: '确认当前语言已校对',
     reviewed: '已校对',
     needsReview: '需要校对',
@@ -248,6 +259,17 @@ export const messages = {
     heading: 'Heading',
     code: 'Code',
     translate: 'Translate into this language',
+    translationProvider: 'Translation service',
+    providerNeedsSetup: 'Setup required',
+    translationDisclosure:
+      'The selected source-language content is sent to this translation service. Review the result before publishing it.',
+    freeTranslationHelp:
+      'MyMemory is free with no API key: normally 5,000 characters per day, up to 4,500 per action. Source text is sent to MyMemory; links and code stay unchanged. Review the result before publishing.',
+    libreTranslationHelp:
+      'Uses the owner-configured LibreTranslate server. Self-hosting has no per-translation fee; public instances set their own keys, languages and limits.',
+    iconSearch: 'Search icons or platform names',
+    iconNoResults: 'No matching icons',
+
     review: 'Mark this language reviewed',
     reviewed: 'Reviewed',
     needsReview: 'Needs review',
@@ -430,6 +452,17 @@ export const messages = {
     heading: 'Titre',
     code: 'Code',
     translate: 'Traduire dans cette langue',
+    translationProvider: 'Service de traduction',
+    providerNeedsSetup: 'Configuration requise',
+    translationDisclosure:
+      'Le contenu de la langue source sélectionnée est envoyé à ce service. Relisez le résultat avant de le publier.',
+    freeTranslationHelp:
+      'MyMemory est gratuit sans clé : normalement 5 000 caractères par jour, jusqu’à 4 500 par action. Le texte source est envoyé à MyMemory ; liens et code restent intacts. Relisez avant publication.',
+    libreTranslationHelp:
+      'Utilise le serveur LibreTranslate configuré par le propriétaire. L’auto-hébergement n’a pas de frais par traduction ; les instances publiques définissent leurs clés, langues et quotas.',
+    iconSearch: 'Rechercher une icône ou une plateforme',
+    iconNoResults: 'Aucune icône correspondante',
+
     review: 'Valider la relecture',
     reviewed: 'Relu',
     needsReview: 'À relire',
@@ -551,6 +584,40 @@ export const localeLabels: Record<Locale, string> = {
   fr: 'Français',
 };
 const serverMessages: Record<string, [string, string]> = {
+  'The selected translation provider is not configured.': [
+    '所选翻译服务尚未配置，请选择 MyMemory 或联系站主配置服务。',
+    'Le service sélectionné n’est pas configuré. Choisissez MyMemory ou configurez le service.',
+  ],
+  'This Markdown structure cannot be translated safely. Simplify it or use the AI provider.': [
+    '无法完整保留此 Markdown 结构。请简化格式，或使用已配置的 AI 翻译服务。',
+    'Cette structure Markdown ne peut pas être préservée. Simplifiez-la ou utilisez le service IA configuré.',
+  ],
+  'MyMemory supports up to 4500 source characters per translation. Shorten this content or choose another provider.':
+    [
+      '每次 MyMemory 翻译最多支持 4,500 个源文字符。请缩短内容或选择其他服务。',
+      'MyMemory est limité ici à 4 500 caractères source par action. Raccourcissez le contenu ou changez de service.',
+    ],
+  'This content needs too many translation requests. Shorten it or choose the AI provider.': [
+    '此内容需要过多翻译请求。请缩短内容或使用已配置的 AI 服务。',
+    'Ce contenu nécessite trop de requêtes. Raccourcissez-le ou utilisez le service IA configuré.',
+  ],
+  'Translation quota reached. Try again later or choose another provider.': [
+    '翻译额度已用尽或请求过于频繁。请稍后重试或选择其他服务。',
+    'Quota atteint ou requêtes trop fréquentes. Réessayez plus tard ou changez de service.',
+  ],
+  'Translation provider rejected the request. Your draft has not changed.': [
+    '翻译服务拒绝了请求，译文草稿未修改。',
+    'Le service a refusé la requête. Le brouillon de traduction est inchangé.',
+  ],
+  'Translation provider returned invalid text. Your draft has not changed.': [
+    '翻译服务返回了无效文本，译文草稿未修改。',
+    'Le service a renvoyé un texte invalide. Le brouillon de traduction est inchangé.',
+  ],
+  'Translation provider failed or timed out. Your draft has not changed.': [
+    '翻译服务暂时不可用或请求超时，译文草稿未修改。请稍后重试。',
+    'Le service est indisponible ou le délai a expiré. Le brouillon est inchangé ; réessayez plus tard.',
+  ],
+
   'Incorrect password.': ['密码不正确。', 'Mot de passe incorrect.'],
   'Authentication required.': ['请重新登录工作室。', 'Veuillez vous reconnecter à l’atelier.'],
   'Too many attempts. Try again in 15 minutes.': [

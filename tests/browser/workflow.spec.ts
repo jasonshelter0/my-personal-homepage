@@ -177,7 +177,7 @@ test('author and upload in three languages, publish a new article, restore a pre
   }
   await expect(
     page.getByRole('button', { name: 'Translate into this language', exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   await page
     .getByRole('combobox', { name: 'Publication scope', exact: true })
     .selectOption('published');

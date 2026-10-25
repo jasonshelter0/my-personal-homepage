@@ -13,6 +13,8 @@ process.env.ADMIN_PASSWORD = 'test-owner-password';
 delete process.env.TRANSLATION_BASE_URL;
 delete process.env.TRANSLATION_API_KEY;
 delete process.env.TRANSLATION_MODEL;
+delete process.env.LIBRETRANSLATE_URL;
+delete process.env.LIBRETRANSLATE_API_KEY;
 const { createApplications } = await import('../server/index.ts');
 const { admin, preview, production } = createApplications();
 let servers: Server[] = [],
@@ -122,11 +124,23 @@ test('persistent draft revisions, schema validation and explicit translation rev
   });
   assert.equal((await request('/api/snapshot', 'PUT', media)).status, 400);
 });
-test('translation is honestly unavailable without provider and previews remain private', async () => {
+test('free translation is available while unconfigured providers and previews remain protected', async () => {
   const status = await request('/api/translation/status');
-  assert.equal((await status.json()).configured, false);
+  const providers = await status.json();
+  assert.equal(providers.configured, true);
+  assert.equal(providers.defaultProvider, 'mymemory');
   assert.equal(
-    (await request('/api/translate', 'POST', { profile: true, targetLocale: 'fr' })).status,
+    providers.providers.find((item: { id: string }) => item.id === 'libretranslate').configured,
+    false,
+  );
+  assert.equal(
+    (
+      await request('/api/translate', 'POST', {
+        profile: true,
+        targetLocale: 'fr',
+        provider: 'openai',
+      })
+    ).status,
     503,
   );
   assert.equal(
@@ -191,6 +205,52 @@ test('raster uploads, source-file sanitization, metadata editing and reference-s
   );
   assert.equal((await request('/api/snapshot', 'PUT', unlinked)).status, 200);
   assert.equal((await request(`/api/media/${media.id}`, 'DELETE')).status, 200);
+});
+test('free translation keeps drafts unchanged on quota failure and saves successful results for review', async () => {
+  const draft = await snapshot();
+  const entry = draft.entries[0];
+  entry.sourceLocale = 'en';
+  entry.translations.en.title = 'Welcome';
+  entry.translations.en.summary = 'A short description';
+  entry.translations.en.body =
+    '## Introduction\n\nRead [this page](https://example.com/help) and use `code`.\n';
+  assert.equal((await request('/api/snapshot', 'PUT', draft)).status, 200);
+  const before = await snapshot();
+  const realFetch = globalThis.fetch;
+  let quota = true;
+  let providerCalls = 0;
+  globalThis.fetch = (async (input, init) => {
+    if (new URL(String(input)).hostname !== 'api.mymemory.translated.net')
+      return realFetch(input, init);
+    providerCalls++;
+    return new Response(
+      JSON.stringify(
+        quota
+          ? { responseStatus: 429, responseData: { translatedText: 'Quota exhausted' } }
+          : { responseStatus: 200, responseData: { translatedText: 'Traduit' } },
+      ),
+    );
+  }) as typeof fetch;
+  try {
+    const body = { entryId: entry.id, targetLocale: 'fr', overwrite: true, provider: 'mymemory' };
+    assert.equal((await request('/api/translate', 'POST', body)).status, 429);
+    assert.deepEqual(await snapshot(), before);
+    quota = false;
+    const translated = await request('/api/translate', 'POST', body);
+    assert.equal(translated.status, 200);
+    const saved = (await translated.json()) as Snapshot;
+    assert.equal(saved.revision, before.revision + 1);
+    assert.equal(saved.entries[0].translations.fr.reviewed, false);
+    assert.ok(saved.entries[0].translations.fr.sourceHash);
+    assert.equal(saved.entries[0].translations.fr.title, 'Traduit');
+    assert.ok(
+      saved.entries[0].translations.fr.body.includes('[Traduit](https://example.com/help)'),
+    );
+    assert.ok(saved.entries[0].translations.fr.body.includes('`code`'));
+    assert.ok(providerCalls > 0);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
 test('provider translation preserves links, requires overwrite and catches concurrent edits', async () => {
   const express = (await import('express')).default;

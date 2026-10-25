@@ -11,11 +11,13 @@ import {
   type Release,
   type ValidationIssue,
   type TranslationStatus,
+  type TranslationProvider,
 } from '../../../shared/types';
 import { messages, localeLabels, localizeServerMessage, type MessageKey } from './i18n';
 import './style.css';
 import { CursorGlow } from './CursorGlow';
 import { editorMediaUrl } from './media-url';
+import { SocialIconPicker } from './SocialIconPicker';
 
 const blankTranslation = () => ({
   title: '',
@@ -235,7 +237,17 @@ function App() {
       releases: [],
       currentId: null,
     }),
-    [translation, setTranslation] = useState<TranslationStatus>({ configured: false, model: null });
+    [translation, setTranslation] = useState<TranslationStatus>({
+      configured: false,
+      model: null,
+      defaultProvider: 'mymemory',
+      providers: [],
+    });
+  const [translationProvider, setTranslationProvider] = useState<TranslationProvider | null>(null);
+  const selectedProvider = translationProvider ?? translation.defaultProvider;
+  const selectedTranslation = translation.providers.find(
+    (provider) => provider.id === selectedProvider,
+  );
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     document.documentElement.lang = ui;
@@ -414,7 +426,12 @@ function App() {
     });
   }
   async function translate(profile = false) {
-    if (!window.confirm(t('translateConfirm'))) return;
+    if (
+      !window.confirm(
+        `${t('translateConfirm')}\n\n${selectedTranslation?.label ?? ''}: ${t('translationDisclosure')}`,
+      )
+    )
+      return;
     await run(async () => {
       if (dirty) await save();
       accept(
@@ -422,8 +439,13 @@ function App() {
           '/translate',
           'POST',
           profile
-            ? { profile: true, targetLocale: locale, overwrite: true }
-            : { entryId: selected, targetLocale: locale, overwrite: true },
+            ? { profile: true, targetLocale: locale, overwrite: true, provider: selectedProvider }
+            : {
+                entryId: selected,
+                targetLocale: locale,
+                overwrite: true,
+                provider: selectedProvider,
+              },
         ),
       );
       setToast(t('success'));
@@ -453,10 +475,33 @@ function App() {
             {stale ? t('stale') : current.reviewed ? t('reviewed') : t('needsReview')}
           </span>
           <p>{t('reviewHelp')}</p>
+          <Field label={t('translationProvider')}>
+            <select
+              value={selectedProvider}
+              disabled={busy}
+              onChange={(event) =>
+                setTranslationProvider(event.target.value as TranslationProvider)
+              }
+            >
+              {translation.providers.map((provider) => (
+                <option key={provider.id} value={provider.id} disabled={!provider.configured}>
+                  {provider.label}
+                  {provider.configured ? '' : ` — ${t('providerNeedsSetup')}`}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <p className="hint">
+            {selectedProvider === 'mymemory'
+              ? t('freeTranslationHelp')
+              : selectedProvider === 'libretranslate'
+                ? t('libreTranslationHelp')
+                : t('translationDisclosure')}
+          </p>
         </div>
         <div className="actions">
           <button
-            disabled={busy || !translation.configured || source === locale}
+            disabled={busy || !selectedTranslation?.configured || source === locale}
             onClick={() => translate(profile)}
           >
             {t('translate')}
@@ -948,11 +993,6 @@ function App() {
                     </div>
                     <p className="hint">{t('markdownHelp')}</p>
                     {reviewPanel()}
-                    <p className="hint">
-                      {translation.configured
-                        ? `${t('translationConfigured')} · ${translation.model}`
-                        : t('translationUnconfigured')}
-                    </p>
                   </section>
                   <aside className="entry-settings">
                     <h3>{t('meta')}</h3>
@@ -1161,11 +1201,6 @@ function App() {
                   </Field>
                 </div>
                 {reviewPanel(true)}
-                <p className="hint">
-                  {translation.configured
-                    ? t('translationConfigured')
-                    : t('translationUnconfigured')}
-                </p>
               </>
             )}
             {tab === 'appearance' && (
@@ -1353,22 +1388,17 @@ function App() {
                           }
                         />
                       </Field>
-                      <Field label={t('icon')}>
-                        <select
-                          value={social.icon}
-                          onChange={(e) =>
-                            update((s) => {
-                              s.settings.socials[i].icon = e.target.value;
-                            })
-                          }
-                        >
-                          {['github', 'linkedin', 'email', 'x', 'bilibili', 'youtube', 'link'].map(
-                            (x) => (
-                              <option key={x}>{x}</option>
-                            ),
-                          )}
-                        </select>
-                      </Field>
+                      <SocialIconPicker
+                        value={social.icon}
+                        label={t('icon')}
+                        searchLabel={t('iconSearch')}
+                        noResultsLabel={t('iconNoResults')}
+                        onChange={(icon) =>
+                          update((draft) => {
+                            draft.settings.socials[i].icon = icon;
+                          })
+                        }
+                      />
                       <button
                         className="icon-button"
                         aria-label={t('up')}
