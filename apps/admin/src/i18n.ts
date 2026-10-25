@@ -97,6 +97,8 @@ export const messages = {
     about: '关于我',
     seoDescription: '搜索摘要',
     avatar: '头像',
+    avatarHelp:
+      '先在媒体库上传图片，再在此选择。头像按方形居中裁切；选择「无」则隐藏。保存后预览并发布。',
     resume: '简历地址',
     siteUrl: '正式站地址',
     defaultLocale: '默认语言',
@@ -287,6 +289,8 @@ export const messages = {
     about: 'About',
     seoDescription: 'Search description',
     avatar: 'Avatar',
+    avatarHelp:
+      'Upload an image in Media, then select it here. Portraits use a centered square crop; select None to hide. Save, preview and publish.',
     resume: 'Résumé URL',
     siteUrl: 'Production site URL',
     defaultLocale: 'Default language',
@@ -481,6 +485,8 @@ export const messages = {
     about: 'À propos',
     seoDescription: 'Description de recherche',
     avatar: 'Portrait',
+    avatarHelp:
+      'Importez une image dans Médias, puis sélectionnez-la ici. Recadrage carré centré ; choisissez Aucun pour masquer. Enregistrez, prévisualisez et publiez.',
     resume: 'URL du CV',
     siteUrl: 'URL du site public',
     defaultLocale: 'Langue par défaut',

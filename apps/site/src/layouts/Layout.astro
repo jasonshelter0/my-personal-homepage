@@ -100,13 +100,25 @@ const ProfileHeading = home ? 'h1' : 'span';
     </a>
     <div class="cursor-glow" aria-hidden="true"></div>
     <div class="site-shell">
-      <header class="profile-panel" data-pagefind-ignore>
+      <header
+        class:list={['profile-panel', { 'profile-panel--with-portrait': avatar }]}
+        data-pagefind-ignore
+      >
         <div>
           <a class="brand-mark" href={href(locale)} aria-label={`${profile.name} — ${t.home}`}>
             <span class="brand-dot"></span> {t.theme}
           </a>
           {avatar && (
-            <img class="avatar" src={avatar.path} width="80" height="80" alt={avatar.alt[locale]} />
+            <div class="profile-portrait">
+              <img
+                class="avatar"
+                src={avatar.path}
+                width="128"
+                height="128"
+                alt={avatar.alt[locale]}
+                decoding="async"
+              />
+            </div>
           )}
           <a class="name-link" href={href(locale)}>
             <ProfileHeading class="profile-name">
@@ -153,7 +165,10 @@ const ProfileHeading = home ? 'h1' : 'span';
                 </a>
               </>
             )}
-            <a href={href(locale, 'learn')} aria-current={path === 'learn' || path.startsWith('learn/') ? 'page' : undefined}>
+            <a
+              href={href(locale, 'learn')}
+              aria-current={path === 'learn' || path.startsWith('learn/') ? 'page' : undefined}
+            >
               <span>{t.learn}</span>
             </a>
           </nav>

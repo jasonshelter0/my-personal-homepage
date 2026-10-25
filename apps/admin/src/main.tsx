@@ -1160,6 +1160,7 @@ function App() {
                         s.settings.avatarId = id;
                       }),
                     )}
+                    <span className="hint">{t('avatarHelp')}</span>
                   </Field>
                   <Field label={t('resume')}>
                     <input
