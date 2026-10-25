@@ -35,6 +35,6 @@
 
 ## 发布与回滚
 
-实际线上应用镜像、内容 release、备份和验证结果以根目录 `RELEASE_HANDOFF.md` 最新记录为准。此文档的本地测试通过不代表已发布。
+已于 `2026-10-25T07:49:11.541Z` 完成真实 HTTPS 发布验收。入口：<https://www.jasonshelter.com/learn/mamba-tta-irstd/>。当前内容 `mvnivkmk-648c10e2`；实际镜像、备份和回滚以根目录 `RELEASE_HANDOFF.md` 最新记录为准。
 
 新增 `scripts/rebuild-published.ts --expected-current <verified-id>` 仅基于已发布冻结快照构建新版本，不保存草稿、不自动发布。必须随后打开真实鉴权预览并检查，才能通过正常发布端点切换内容。该脚本拒绝预期当前版本不匹配和已有构建，避免用旧交接 ID 或并发发布覆盖现场。

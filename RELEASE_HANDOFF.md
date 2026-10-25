@@ -1,8 +1,62 @@
 # Folio Studio 生产发布交接
 
+## 最新学习课程发布（2026-10-25）
+
+**已发布并通过真实 HTTPS 验收，完成时间 `2026-10-25T07:49:11.541Z`。** 本节为当前状态；下方首次建站记录保留作历史，旧镜像和初始内容 ID 不代表当前版本。两个开发会话协调后，由 Mamba 会话持有服务器 `flock` 独占完成统一部署。
+
+| 项目 | 当前记录 |
+| --- | --- |
+| 主课程 | <https://www.jasonshelter.com/learn/mamba-tta-irstd/>；11 章 × 中英法，33 个正文页面 |
+| 同批课程 | <https://www.jasonshelter.com/learn/git-branching/>；由 Git 会话提供完整三语模拟器 |
+| 运行源码 | `8ff2c4dd16f66c2b5a9b0318222eee3ad13d2dc3`（包含 Git 提交 `defca9fb526a42fdaec37817fed6ca024be7eb1b`），已推送 `main` |
+| 当前镜像 | `sha256:ba0946ac153a012703a077e6ebaddd96b3669892e3e80a1249e364528f6ac728` |
+| 当前内容版本 | `mvnivkmk-648c10e2` |
+| runtime | `/www/dk_project/folio-studio/current` → `/www/dk_project/folio-studio/releases/learn-20261025-8ff2c4d` |
+| 持久数据 | `/www/dk_project/folio-studio/shared/data`；10001:10001 / 0700，沿用原目录 |
+| 更新前内容版本 | `mvngl5bl-5e2da295`（现场读取，区别于首次部署 ID） |
+| 更新前应用 | `sha256:bc865fa97e06200d0bd71377acf17e21c4f240724045041348d99f3ec25e1e93`；runtime `releases/1.1.0-8c4a227` |
+| 一致性备份 | `/www/backup/site/folio-studio/20261025T074428Z-learning`；目录 0700、`data.tar.gz` 0600，仅存服务器 |
+| 备份 SHA-256 | `ca486b48716f4a47c4c4d9627acb3251b0537508646202ba413227d5eb631596` |
+| 运行包 | `.folio/deployments/learn-20261025-8ff2c4d/runtime.tar.gz`，119679474 字节 |
+| 运行包 SHA-256 | `462391e7ff035f8cff1acc354ec73d6067ca19adce6879c41574ecd4e0d9c247`，上传后复核一致 |
+
+### 内容保留与验收
+
+更新前短暂停止应用，对完整持久数据（排除可再生 build-cache）做文件系统备份，归档可完整列出；保留 SQLite/WAL/媒体/冻结版本。此次未做备份恢复演练，不将归档校验解释为完整灾备验证。新应用继续使用原数据库，未运行演示数据初始化或 schema 迁移。
+
+新内容由 `scripts/rebuild-published.ts --expected-current mvngl5bl-5e2da295` 从现场已发布快照生成。先在真实 HTTPS 私有预览检查三语言 36 个页面、360px 布局、Mamba 演示/测验、Git 命令、语言切换、搜索、base 路径、canonical、光晕与备案；通过后才调用正常发布 API。随后匿名重复公开页面和交互检查，浏览器脚本与资源错误均为 0。后台草稿 revision 8 和原始内容 SHA-256 发布前后均相同。
+
+本地 typecheck、正式 build、27 项单元/集成测试及 13 组 Chromium e2e 通过。集成测试串行运行，避免独立测试发布器争用 Astro prerender 目录。Pagefind 构建索引 75 页、3 语言。
+
+公网首页、后台和 `/healthz` 返回 200；真实 HTTPS 登录、Secure/HttpOnly/SameSite=Strict Cookie、会话和登出通过。匿名草稿和私有预览返回 401；数据库/快照文件返回 404。所有课程进入 sitemap，canonical 不含 preview 前缀。仅精确 Git 模拟器资源使用 `X-Frame-Options: SAMEORIGIN`，后台和其他页面仍为 DENY。
+
+Git 开发会话使用独立匿名浏览器再次验收三语言 Git 页面、命令、搜索和模拟器文件 SHA-256，全部通过。原 IP 页面返回 200，裸域 HTTPS 保留课程路径并 308 到 www。
+
+应用容器健康、只读根目录、用户 10001:10001；固定镜像运行。Nginx、DNS、证书、WordPress、RDS、本机 MySQL/PHP 和其他服务均未调整。
+
+### 此批次的精确回滚
+
+仅回退公开内容，可在受控运维会话执行现有发布器回滚；这不改变后台草稿：
+
+```bash
+ssh aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvngl5bl-5e2da295')).id);
+JS
+```
+
+回退应用使用已保存脚本，恢复精确旧镜像、runtime 链接并重新创建 Compose 容器：
+
+```bash
+ssh aliyun-web 'bash /www/backup/site/folio-studio/20261025T074428Z-learning/rollback-application.sh'
+ssh aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+完整撤回本次页面时先回退内容，再回退应用，并复核真实 HTTPS。应用回滚脚本不会覆盖 `/data`；数据库恢复是另一个受控操作，不得在线解压覆盖当前数据。保留新旧镜像和冻结内容，不做 prune、down -v 或 WordPress/Nginx 入口恢复。回滚前仍须协调唯一生产写入者并持有部署锁。
+
 更新时间：2026-10-25（Asia/Shanghai）。此文档仅记录非敏感信息，不含密码、令牌、私钥或环境变量秘密值。
 
-**当前交接状态：已上线并完成公网验收，2026-10-25 14:08:31（Asia/Shanghai）切换成功。** 用户已明确授权本会话接管上线，将 `www.jasonshelter.com` 的 WordPress 入口切到新站，保留旧站文件和原数据库供回滚。部署约束来源：`/home/jasonshelter/Projects/connect/DEPLOYMENT_HANDOFF.md` 与该目录的 `AGENTS.md`。
+**首次建站历史状态：已上线并完成公网验收，2026-10-25 14:08:31（Asia/Shanghai）切换成功。** 用户已明确授权本会话接管上线，将 `www.jasonshelter.com` 的 WordPress 入口切到新站，保留旧站文件和原数据库供回滚。部署约束来源：`/home/jasonshelter/Projects/connect/DEPLOYMENT_HANDOFF.md` 与该目录的 `AGENTS.md`。
 
 ## 项目标识与版本
 
