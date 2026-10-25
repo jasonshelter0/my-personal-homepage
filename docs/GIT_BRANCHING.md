@@ -76,3 +76,20 @@ embedding, blocked-storage offline operation, small/keyboard/landscape viewports
 and progress import/export. `tests/browser/git-learning.spec.ts` is part of the
 regular browser suite. Live deployment IDs, backups and rollback instructions
 are recorded in `RELEASE_HANDOFF.md` after the combined learning-page publication.
+
+### Mobile objective width fix (2026-10-25)
+
+The upstream goal-window selector had higher CSS specificity than the mobile
+selector, leaving a 400px minimum width on narrow screens. The mobile rules now
+win that cascade and constrain restored inline widths to the current viewport.
+The graph measures the narrower container; it is not merely clipped. Objective
+text also allows long words/commands to wrap. The regression test inspects panel
+and SVG bounds, checks portrait/landscape and reopening at 320px, and verifies
+that close/practice controls remain reachable in Chinese, English and French.
+
+The mobile fork fix is commit `9b5d3485db21ac2e0a311f7153e7b9223779ed53`.
+Validated all 36 English level goals/objectives at 320px, plus three-language
+portrait/landscape/reopen regression tests; the existing 13 browser tests,
+27 website tests and 415 upstream tests pass. The imported standalone file is
+4,019,515 bytes, SHA-256
+`8f7226b2da11ec8e5e75192e8a14aa78531dc166ff99dd50be2cc9c4ce753815`.
