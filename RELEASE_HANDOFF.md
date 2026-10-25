@@ -1,6 +1,58 @@
 # Folio Studio 生产发布交接
 
-## 免费翻译与资料图标 1.2.0（2026-10-25，当前部署）
+## Git simulator main-site theme (2026-10-25, current deployment)
+
+Published and verified at `2026-10-25T15:20:57.411Z`. Earlier deployment sections below
+are historical. The simulator now shares the published site's navy background,
+teal accents, slate text and flat controls, including goals, lessons and help.
+Validated theme colors come from the frozen site's settings; offline defaults
+match the main site's current palette. Mobile objective sizing is preserved.
+
+- Live page: <https://www.jasonshelter.com/learn/git-branching/> (Chinese, English, French).
+- Source commit: `0855e4f0a8a40770657e5abaeefcb6a8a939d625`; mobile source `c950961`; application version remains 1.2.0.
+- Image: `sha256:4f5780e6c3b09378ab84040523a97e2a15411c748426076bef95b36493290174`.
+- Runtime/current: `/www/dk_project/folio-studio/releases/git-theme-20261025-0855e4f`.
+- Published content: `mvnz3t4d-fb9699f6`, rebuilt exclusively from previously published `mvntmwhb-8af480ce`.
+- Previous image `sha256:f06bfdb565cb276e0c931bbfde7424765f89dfe5752b42b96d765109f74f6ab3` and runtime `/www/dk_project/folio-studio/releases/profile-20261025-6cc27bc` remain available.
+- Persistent data: `/www/dk_project/folio-studio/shared/data`; draft revision 14 and SHA-256 unchanged. No migration or draft publication.
+- Consistent backup: `/www/backup/site/folio-studio/20261025T151855Z-git-theme/data.tar.gz`, SHA-256 `b4b85358c7e2aea2317d47ef7f0a625bcfb8b24bdcfab599962d8c02aa15ae17`. Created while the application was stopped, excluding regenerable build-cache; directory0700/archive0600; archive readability verified, no restoration drill.
+- Runtime archive: `.folio/deployments/git-theme-20261025-0855e4f/runtime.tar.gz`, 119744041 bytes, SHA-256 `d25d256a7a5ba1ae083b796a94fcbec35b32a91dea10d12023ca719c70115034`; remote checksum matched.
+- Simulator SHA-256 `7d7f0f5fbbed227fad94d073fb594ccf8cd73bcd9bbdc32f917be68080006634` matched both private preview and public HTTPS.
+
+Validation: 415 upstream tests, 38 website tests, 18 browser tests, typecheck and
+production build pass. Default/custom/invalid color parameters and mobile panels
+were checked in Chromium. Actual authenticated HTTPS preview passed before
+publication; anonymous checks then passed for all three locales, theme matching,
+320px goals, landscape, hide/reopen, objective text, close controls and search.
+Homepage, learning hub, Mamba course, admin and health return200; anonymous drafts
+and preview return401, database/snapshot files404; browser/resource errors0.
+Production container is healthy, restart count0 and noOOM. The deployment used
+exclusive flock ownership after coordination with the website session.
+
+Built with the verified local Node24.21.0 base image and --pull=false, then checked
+base layers against `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`.
+Existing translation/icon features and all published content remain included.
+No changes to Nginx, DNS, certificates, ports, WordPress, databases or other services.
+
+### Rollback this theme deployment
+
+Coordinate ownership and hold `config/deployment.lock`; restore content first,
+then the previous application without replacing persistent data:
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvntmwhb-8af480ce')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261025T151855Z-git-theme/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+Retain all new/old images, content releases and backups. A database restoration is
+separate; do not extract a backup over live data. Details of source rebuilding are
+in `docs/GIT_BRANCHING.md`; local artifact/verification JSON records the evidence.
+
+## 免费翻译与资料图标 1.2.0（2026-10-25，历史部署）
 
 已于 `2026-10-25T12:46:55.106Z` 完成生产私有预览、发布和公网验收。以下为最新状态，下方 Git 手机修复和首次上线记录保留为历史。
 
