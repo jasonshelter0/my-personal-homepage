@@ -1,0 +1,86 @@
+---
+import { href, withBase, type Locale } from '../lib/data';
+import { gitLearningCopy } from '../lib/git-learning';
+import Icon from './Icon.astro';
+const { locale } = Astro.props as { locale: Locale };
+const t = gitLearningCopy[locale];
+const asset = withBase('/learn-assets/git-branching/simulator.html');
+const simulator = `${asset}?locale=${t.engineLocale}&NODEMO`;
+---
+<article class="git-learning">
+  <a class="back-link" href={href(locale, 'learn')}><Icon name="back" size={16} />{t.back}</a>
+  <p class="eyebrow">{t.eyebrow}</p>
+  <h1 data-pagefind-meta="title">{t.title}</h1>
+  <p class="detail-summary">{t.summary}</p>
+  <p class="git-meta">{t.detail}</p>
+  <p>{t.intro}</p>
+  <div class="git-actions">
+    <button type="button" data-git-open aria-expanded="false" aria-controls="git-stage">{t.launch} ↗</button>
+    <a href={simulator} target="_blank" rel="noopener noreferrer">{t.direct} ↗</a>
+  </div>
+  <div class="git-stage" id="git-stage" data-pagefind-ignore>
+    <div class="git-stage-bar"><span>{t.frame}</span><button type="button" data-git-close>{t.close} ✕</button></div>
+    <iframe src={simulator} title={t.frame} loading="lazy" allow="fullscreen" referrerpolicy="no-referrer"></iframe>
+  </div>
+  <section aria-labelledby="git-steps">
+    <h2 id="git-steps">{t.stepsTitle}</h2>
+    <ol>{t.steps.map((step) => <li>{step}</li>)}</ol>
+  </section>
+  <section aria-labelledby="git-concepts">
+    <h2 id="git-concepts">{t.conceptsTitle}</h2>
+    <dl>{t.concepts.map(([title, body]) => <div><dt>{title}</dt><dd>{body}</dd></div>)}</dl>
+  </section>
+  <section aria-labelledby="git-progress">
+    <h2 id="git-progress">{t.progressTitle}</h2>
+    <p>{t.progress}</p><p>{t.android}</p><p>{t.offline}</p>
+    <a class="text-link" href={asset} download="git-pocket.html">↓ {t.download}</a>
+  </section>
+  <section aria-labelledby="git-source">
+    <h2 id="git-source">{t.sourceTitle}</h2>
+    <p>{t.source}</p>
+    <div class="git-actions">
+      <a href="https://github.com/pcottle/learnGitBranching" target="_blank" rel="noopener noreferrer">{t.sourceLink} ↗</a>
+      <a href={withBase('/learn-assets/git-branching/LICENSE.txt')}>{t.license}</a>
+    </div>
+  </section>
+</article>
+<script>
+  const open = document.querySelector<HTMLButtonElement>('[data-git-open]');
+  const close = document.querySelector<HTMLButtonElement>('[data-git-close]');
+  const stage = document.getElementById('git-stage');
+  let previousOverflow = '';
+  function setExpanded(expanded: boolean) {
+    if (!stage || !open || !close) return;
+    if (expanded) previousOverflow = document.body.style.overflow;
+    stage.classList.toggle('is-expanded', expanded);
+    document.body.style.overflow = expanded ? 'hidden' : previousOverflow;
+    open.setAttribute('aria-expanded', String(expanded));
+    (expanded ? close : open).focus({ preventScroll: true });
+    // Iframe resize is observed by the simulator, including soft keyboard changes.
+  }
+  open?.addEventListener('click', () => setExpanded(true));
+  close?.addEventListener('click', () => setExpanded(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && stage?.classList.contains('is-expanded')) setExpanded(false);
+  });
+</script>
+<style>
+  .git-learning{min-width:0;overflow-wrap:anywhere}
+  .git-learning h1{font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.2}
+  .git-learning h2{margin:0 0 1rem;font-size:1.35rem}
+  .git-learning p,.git-learning li,.git-learning dd{line-height:1.85}
+  .git-meta{font-size:.85rem;opacity:.8}
+  .git-actions{display:flex;align-items:center;flex-wrap:wrap;gap:1rem;margin:1.5rem 0}
+  .git-actions button,.git-stage-bar button{font:inherit;cursor:pointer;min-height:44px;border:1px solid currentColor;border-radius:.65rem;padding:.6rem 1rem;color:var(--accent,#64ffda);background:var(--bg,#0f172a)}
+  .git-actions a{font-size:.9rem}
+  .git-stage{border:1px solid #789a9944;border-radius:1rem;overflow:hidden;background:#f5f7f2;min-width:0}
+  .git-stage iframe{display:block;width:100%;height:740px;height:clamp(560px,85svh,850px);border:0}
+  .git-stage-bar{display:none}
+  .git-stage.is-expanded{position:fixed;inset:0;z-index:10000;border:0;border-radius:0;display:flex;flex-direction:column;height:100dvh}
+  .is-expanded .git-stage-bar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:4px max(8px,env(safe-area-inset-right)) 4px max(8px,env(safe-area-inset-left));padding-top:max(4px,env(safe-area-inset-top));background:var(--bg,#0f172a);font-size:.8rem;flex-shrink:0}
+  .is-expanded iframe{flex:1;min-height:0;height:0}
+  .git-learning section{margin-top:2.75rem}
+  .git-learning ol{padding-left:1.4rem}.git-learning li+li{margin-top:.75rem}
+  .git-learning dl{display:grid;gap:1.25rem}.git-learning dt{font-weight:600;color:var(--heading,#e2e8f0)}.git-learning dd{margin:.3rem 0 0}
+  @media(max-width:600px){.git-stage{margin-inline:-8px}.git-stage.is-expanded{margin:0}.git-stage-bar span{max-width:48%;line-height:1.3}.git-stage-bar button{font-size:.75rem;padding:.35rem .6rem}}
+</style>

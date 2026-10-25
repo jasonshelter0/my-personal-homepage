@@ -1,0 +1,1638 @@
+diff --git a/.gitignore b/.gitignore
+index ffa0af7..3817c01 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -61,3 +61,7 @@ VendorLib/clang/lib/c++
+ # NYC test coverage output
+ .nyc_output/
+ 
++
++dist/
++test-results/
++*.tar.gz
+diff --git a/.openai/hosting.json b/.openai/hosting.json
+new file mode 100644
+index 0000000..f3be53b
+--- /dev/null
++++ b/.openai/hosting.json
+@@ -0,0 +1,6 @@
++{
++  "project_id": "appgprj_6adb87c1a6808191b28d98b80688d160",
++  "static": {
++    "directory": "dist"
++  }
++}
+diff --git a/README.mobile.md b/README.mobile.md
+new file mode 100644
+index 0000000..50b553a
+--- /dev/null
++++ b/README.mobile.md
+@@ -0,0 +1,57 @@
++# Git 掌上练习室
++
++基于 [pcottle/learnGitBranching](https://github.com/pcottle/learnGitBranching) 的手机适配版，保留原 Git 模拟引擎、36 个内置关卡、28 种语言及动画。默认简体中文。本项目是浏览器中的教学模拟器，不操作手机上的真实 Git 仓库。
++
++## 使用
++
++- `dist/index.html`：可直接部署的网页。
++- `dist/git-pocket-offline.html`：真正的单文件离线版。复制这一个 HTML 文件即可，内置脚本、中文和其他语言、所有关卡、图标字体，不依赖 CDN 或服务端。
++- Android 修复版：`dist/git-pocket-android-v2.html`。本地文件的存储访问可能被 Android 浏览器拒绝；现在自动进入临时模式，可以继续练习，关闭前请手动导出学习进度。
++- 手机用支持执行本地 HTML 的浏览器打开离线文件。iOS「文件」快速预览不一定执行 JavaScript；可改用在线网址，或者用支持 HTML 的本地浏览器。没有承诺所有手机文件管理器都能运行网页。
++- 进入「全部关卡」开始学习；「自由练习」回到沙盒；速查可以把命令填入输入框；点「运行」执行。
++- `git rebase -i` 弹窗可用 ↑ / ↓ 排序，无需拖拽。
++- 学习进度存储在当前浏览器。「使用说明」中可导出/导入 JSON。导入会替换当前进度；浏览器存储被清理时进度会丢失。
++- 外部 GitHub 链接和从 Gist 导入自定义关卡仍需联网。
++
++## 源码与开发
++
++上游快照：`8b1fd893f2c0168edd5c7a5c38204e47e2897b67`。
++旁边的 `../upstream/` 保留未修改的上游 Git 仓库，本目录是独立的手机改造副本。
++
++```bash
++# Node >= 20.19，使用上游锁定的 Yarn 1.22.22
++yarn install --frozen-lockfile
++yarn dev --host 0.0.0.0
++yarn build
++# 本地预览构建产物；同一 Wi-Fi 的手机可以访问电脑局域网 IP:8080
++python3 -m http.server 8080 --bind 0.0.0.0 --directory dist
++```
++
++`yarn build` 运行全部 Jasmine 测试、Vite 构建、静态资源处理和单文件打包。浏览器验收脚本为 `scripts/test-mobile.cjs`；可通过 `PLAYWRIGHT_MODULE` 指定已安装的 Playwright 模块位置。
++
++## 源码学习笔记
++
++原项目的数据流：`app/index.js` 启动 → `CommandPromptView` 提交文本 → EventBaton 路由 → Sandbox / Level 命令解析 → `git/index.js` 改变提交/分支模型 → `visuals/visualization.js` 和 Raphael 更新 SVG。关卡由 `src/levels/` 描述初始树、目标树、答案和中文教学页，`graph/treeCompare.js` 比较结果，`LevelStore` 保存进度。
++
++手机适配的主要修改：
++
++| 文件 | 作用 |
++| --- | --- |
++| `src/js/mobile/index.js` | 手机导航、命令按钮、真实输入、IME/回车处理、速查、进度导入导出、visualViewport 适配 |
++| `src/style/mobile.css` | 竖屏图形/终端布局、横屏与窄屏、软键盘空间、关卡弹窗、可点击面积 |
++| `src/js/app/index.js` | 加载手机壳、默认中文、去掉手机不支持警告及强制触屏聚焦 |
++| `src/js/views/commandViews.js` | 输入法组合输入保护，避免页面自动弹出手机键盘 |
++| `src/js/views/rebaseView.js` | 提交顺序的上下移动按钮 |
++| `src/js/visuals/index.js` | 为手机图形标题预留顶部空间 |
++| `vite.config.mjs` | 所有关卡和语言打包为 IIFE，避免 file:// 的 ES module/CORS 限制 |
++| `scripts/package-mobile.cjs` | 内联 CSS、字体、图标、脚本，输出可单独复制的 HTML |
++
++原站把输入框放在屏幕外，主要依赖键盘事件和桌面弹窗；手机适配将输入框直接显示，点击背景不再抢焦点。所有命令继续经过原事件链与 Git 引擎，没有另写简化版 Git。
++
++离线版选择一次装入全部关卡，体积约 3.8 MiB，后续学习不需要请求脚本。去掉原页面推广和远程统计脚本，保留 MIT 许可和作者署名。原英文 README 仍在 `README.md`。
++
++## Android 启动故障修复（v2）
++
++旧版 LevelStore 在 try/catch 外读取 window.localStorage，浏览器拒绝该属性时会在初始化阶段崩溃。已在模拟拒绝属性访问的环境复现旧版故障；新版在属性访问、写入失败时使用内存存储，并明确提示进度不会持久保存。构建语法目标降低到 Chrome 80，原生 dialog 不可用时提供替代显示方式（这不代表已完成 Chrome 80 真机兼容认证）。启动保护脚本在主脚本之前运行，显示错误诊断；禁用 JavaScript 时也保留静态使用指引。
++
++Android 文件管理器或 HTML 预览器如果完全禁用了脚本，HTML 本身无法开启权限；请用允许 JavaScript 的浏览器或在线版。浏览器版本及具体错误仍决定用户设备上的实际原因。
+diff --git a/VALIDATION.md b/VALIDATION.md
+new file mode 100644
+index 0000000..ad82ffa
+--- /dev/null
++++ b/VALIDATION.md
+@@ -0,0 +1,22 @@
++# 验收记录
++
++- 上游快照：8b1fd893f2c0168edd5c7a5c38204e47e2897b67。
++- `yarn build`：412 项 Jasmine 测试通过，Vite 构建及单文件打包通过。
++- `scripts/test-mobile.cjs`（Playwright Chromium）：320×568、390×844、390×430、844×390、1440×900 全部通过布局检查，无横向溢出，输入框和运行按钮均在视口内。
++- 常用命令填入、运行按钮、回车只执行一次、IME 组合输入保护通过。
++- 交互式 rebase 上下移动提交并确认通过。
++- 中文教学页导航、第一关通关、刷新保留进度、导出 JSON、拒绝无效 JSON、重新导入通过。
++- 远程关卡加载及 git clone 通过。
++- 整个功能验收使用 file:// 单文件，并把浏览器网络设为离线：0 次外部 HTTP 请求，0 个 JavaScript 异常。
++- HTTP 静态文件下载检查：200。
++- 浏览器截图位于未提交的 `test-results/`。
++
++限制：以上为 Chromium 桌面及手机视口/触摸模拟，尚未在实体 iPhone、Android 或 Safari 上测试。软键盘测试覆盖缩小视口与 visualViewport 处理，不能替代每种真实输入法的设备测试。手机文件管理器是否允许执行本地 HTML 由系统/应用决定；无法执行时使用在线版。
++
++## Android 本地文档修复 v2
++
++- 旧包复现：把 localStorage 属性 getter 设为抛出 SecurityError，出现启动异常、0 个 SVG、导航停在「准备中」。
++- 新版：415 项 Jasmine 测试通过。
++- `scripts/test-android-local.cjs`：拒绝 localStorage 属性访问、拒绝写入、缺少原生 dialog API 三种环境中，启动、提交、速查、进度导入导出均通过。
++- JavaScript 被禁用时显示静态指引；主应用启动异常时显示可读的错误详情。
++- 原手机尺寸/离线学习操作回归测试通过；仍未测试用户实体 Android 设备，不能把模拟复现断言为用户手机上的唯一根因。
+diff --git a/__tests__/appInit.spec.js b/__tests__/appInit.spec.js
+index b14ab1f..6fc16df 100644
+--- a/__tests__/appInit.spec.js
++++ b/__tests__/appInit.spec.js
+@@ -65,10 +65,10 @@ describe('detectLocale', function() {
+     expect(LocaleStore.getLocale()).toEqual('it_IT');
+   });
+ 
+-  it('falls back to the browser header', function() {
++  it('defaults to Chinese for the pocket edition', function() {
+     installBrowser('http://localhost/', null);
+     app.detectLocale();
+-    expect(LocaleStore.getLocale()).toEqual('fr_FR');
++    expect(LocaleStore.getLocale()).toEqual('zh_CN');
+   });
+ 
+   it('runs init and hides the loader after resolving the locale', function(done) {
+diff --git a/__tests__/generatedArtifacts.spec.js b/__tests__/generatedArtifacts.spec.js
+index 68c9e84..3de4f66 100644
+--- a/__tests__/generatedArtifacts.spec.js
++++ b/__tests__/generatedArtifacts.spec.js
+@@ -31,11 +31,12 @@ describe('generated artifacts', function() {
+     });
+   });
+ 
+-  it('routes node_modules into the vendor chunk', function() {
++  it('bundles all dynamic imports as a classic script for offline file access', function() {
+     return import('../vite.config.mjs').then(function(mod) {
+-      var manualChunks = mod.default.build.rollupOptions.output.manualChunks;
+-      expect(manualChunks('/app/src/js/app/index.js')).toBeUndefined();
+-      expect(manualChunks('/app/node_modules/react/index.js')).toEqual('vendor');
++      var output = mod.default.build.rollupOptions.output;
++      expect(output.format).toEqual('iife');
++      expect(output.inlineDynamicImports).toEqual(true);
++      expect(output.manualChunks).toBeUndefined();
+     });
+   });
+ 
+diff --git a/__tests__/storage.spec.js b/__tests__/storage.spec.js
+new file mode 100644
+index 0000000..f2349f8
+--- /dev/null
++++ b/__tests__/storage.spec.js
+@@ -0,0 +1,32 @@
++const createStorage = require('../src/js/util/storage').createStorage;
++describe('storage for local Android documents', function() {
++  it('survives a SecurityError from the localStorage property getter', function() {
++    const storage = createStorage(function() { throw new Error('SecurityError'); });
++    expect(storage.isPersistent()).toBe(false);
++    storage.setItem('progress', '{"intro1":true}');
++    expect(storage.getItem('progress')).toBe('{"intro1":true}');
++    storage.removeItem('progress');
++    expect(storage.getItem('progress')).toBe(null);
++  });
++  it('survives disabled writes and keeps progress in memory', function() {
++    const storage = createStorage(() => ({setItem() { throw new Error('QuotaExceededError'); }}));
++    storage.setItem('progress', 'complete');
++    expect(storage.getItem('progress')).toBe('complete');
++    expect(storage.isPersistent()).toBe(false);
++  });
++  it('keeps the latest value when writes start failing during a session', function() {
++    let blocked = false;
++    const data = {};
++    const storage = createStorage(() => ({
++      getItem(key) { return data[key] || null; },
++      setItem(key,value) { if (blocked) throw new Error('QuotaExceededError'); data[key] = value; },
++      removeItem(key) { delete data[key]; }
++    }));
++    expect(storage.isPersistent()).toBe(true);
++    storage.setItem('progress', 'old');
++    blocked = true;
++    storage.setItem('progress', 'new');
++    expect(storage.getItem('progress')).toBe('new');
++    expect(storage.isPersistent()).toBe(false);
++  });
++});
+diff --git a/__tests__/styles.spec.js b/__tests__/styles.spec.js
+index 98f20a8..6d0bcb4 100644
+--- a/__tests__/styles.spec.js
++++ b/__tests__/styles.spec.js
+@@ -2,13 +2,13 @@ var fs = require('fs');
+ var path = require('path');
+ 
+ describe('style entrypoint', function() {
+-  it('loads modern and legacy Font Awesome styles in their original order', function() {
++  it('loads the legacy icons and applies mobile styles last', function() {
+     var entryPath = path.join(__dirname, '../src/style/index.css');
+     var entry = fs.readFileSync(entryPath, 'utf8');
+-    var modern = entry.indexOf("@import './all.min.css';");
++    var mobile = entry.indexOf("@import './mobile.css';");
+     var legacy = entry.indexOf("@import './font-awesome.css';");
+ 
+-    expect(modern).toBeGreaterThan(-1);
+-    expect(legacy).toBeGreaterThan(modern);
++    expect(legacy).toBeGreaterThan(-1);
++    expect(mobile).toBeGreaterThan(legacy);
+   });
+ });
+diff --git a/index.html b/index.html
+index aad67a2..55cef7f 100644
+--- a/index.html
++++ b/index.html
+@@ -1,40 +1,55 @@
+ <!DOCTYPE html>
+-<html lang="en">
++<html lang="zh-CN">
+ <head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+-  <title>Learn Git Branching</title>
++  <title>Git 掌上练习室 · Learn Git Branching</title>
++  <meta name="pocket-build" content="website-trilingual-3">
++  <meta name="theme-color" content="#f5f7f2">
++  <meta name="description" content="在手机上动手学习 Git：中文关卡、分支可视化、触屏命令和完整离线练习。">
++  <meta name="robots" content="noindex">
+   <meta name="author" content="Peter Cottle">
+ 
+-  <meta property="og:title" content="Learn Git Branching"/>
++  <meta property="og:title" content="Git 掌上练习室"/>
+   <meta property="og:type" content="website"/>
+-  <meta property="og:url" content="https://pcottle.github.io/learnGitBranching/index.html?demo"/>
++  <meta property="og:url" content="https://www.jasonshelter.com/learn/git-branching/"/>
+   <meta property="og:image" content="https://pcottle.github.io/learnGitBranching/assets/learnGitBranching.png"/>
+-  <meta property="og:description" content="An interactive Git visualization tool to educate and challenge!"/>
++  <meta property="og:description" content="在手机上动手学习 Git：36 个关卡、中文讲解、图形化操作与离线练习。"/>
+ 
+-  <!-- just testing some stuff -->
+-  <meta property="og:temporal:status" content="active" />
+-  <meta property="og:temporal:next_update_time" content="2026-06-16T20:00:00Z" />
+-  <meta property="og:temporal:next_update_label" content="Next lesson released in <dynamic_time_string_placeholder>" />
+-
+-  <meta property="og:temporal:event_update" content="Remote lessons now available!" />
+-  <meta property="og:temporal:event_update:time" content="2022-11-09T18:45:00Z" />
+-  <meta property="og:temporal:event_update:description" content="We have added lessons related to managing remote repositories. Learn about git push and pull today :)" />
+-  <meta property="og:temporal:event_update:priority_level" content="major" />
+-
+-  <meta property="og:temporal:event_update" content="5 new languages available" />
+-  <meta property="og:temporal:event_update:time" content="2020-11-09T18:45:00Z" />
+-  <meta property="og:temporal:event_update:description" content="We have added five new languages to learn git branching in:)" />
+-  <meta property="og:temporal:event_update:priority_level" content="minor" />
+-
+-
+-  <!-- end testing -->
+-  <meta http-equiv="content-language" content="en">
++  <meta http-equiv="content-language" content="zh-CN">
+ 
+   <link rel="stylesheet" href="/src/style/index.css" type="text/css" charset="utf-8">
+   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+ 
+ 
++  <script>
++    (function () {
++      var ready = false;
++      var failure = '';
++      function report(message) {
++        if (ready) return;
++        failure = message;
++        var panel = document.getElementById('pocketStartup');
++        if (!panel) return;
++        panel.style.display = 'block';
++        document.getElementById('pocketStartupMessage').textContent = '页面未能正常启动';
++        document.getElementById('pocketStartupError').textContent = failure + '\n协议：' + location.protocol + '\n浏览器：' + navigator.userAgent;
++        var loader = document.getElementById('appLoading');
++        if (loader) loader.hidden = true;
++      }
++      var timer = setTimeout(function () { report(failure || '启动超时：请使用更新版本的浏览器，并确认允许 JavaScript。'); }, 20000);
++      window.pocketBootReady = function () {
++        ready = true;
++        clearTimeout(timer);
++        var panel = document.getElementById('pocketStartup');
++        if (panel) panel.style.display = 'none';
++      };
++      window.addEventListener('error', function (e) { if (e.message) report(e.message); });
++      window.addEventListener('unhandledrejection', function (e) { report(String(e.reason && e.reason.message || e.reason || '启动失败')); });
++      document.addEventListener('DOMContentLoaded', function () { if (failure) report(failure); });
++    }());
++  </script>
++
+   <!-- Templates from here on out... -->
+   <script type="text/html" id="modal-view-template">
+     <div class="contentHolder box vertical center flex1">
+@@ -316,7 +331,7 @@
+         </p>
+       <% } %>
+       <p class="helperText">
+-        (Drag and drop to re-order. Toggle the "Omit/Pick" button to omit or re-add a commit)
++        点击 ↑ ↓ 调整提交顺序；点击保留/丢弃按钮选择提交。
+       </p>
+       <div class="entryHolders">
+         <ul class="rebaseEntries">
+@@ -332,22 +347,22 @@
+   <script type="text/html" id="left-right-template">
+     <% if (!showLeft && lastNav ) { %>
+       <div class="box right">
+-        <button class="noStyle"><i aria-hidden="true" class="icon-ok exit"></i><span class="visuallyHidden hoverLabel">OK</span></button>
++        <button class="noStyle"><i aria-hidden="true" class="icon-ok exit"></i><span class="visuallyHidden hoverLabel">开始练习</span></button>
+       </div>
+     <% } else { %>
+       <% if (showLeft) { %>
+         <div class="box left">
+-          <button class="noStyle"><i aria-hidden="true" class="icon-circle-arrow-left"></i><span class="visuallyHidden hoverLabel">Back</span></button>
++          <button class="noStyle"><i aria-hidden="true" class="icon-circle-arrow-left"></i><span class="visuallyHidden hoverLabel">上一页</span></button>
+       <% } else { %>
+         <div class="box exit">
+-          <button class="noStyle"><i aria-hidden="true" class="icon-signout"></i><span class="visuallyHidden hoverLabel">Close</span></button>
++          <button class="noStyle"><i aria-hidden="true" class="icon-signout"></i><span class="visuallyHidden hoverLabel">关闭</span></button>
+       <% } %>
+       </div>
+       <div class="box right">
+         <% if (!lastNav) { %>
+-          <button class="noStyle"><i aria-hidden="true" class="icon-circle-arrow-right"></i><span class="visuallyHidden hoverLabel">Next</span></button>
++          <button class="noStyle"><i aria-hidden="true" class="icon-circle-arrow-right"></i><span class="visuallyHidden hoverLabel">下一页</span></button>
+         <% } else { %>
+-          <button class="noStyle"><i aria-hidden="true"  class="icon-ok"></i><span class="visuallyHidden hoverLabel">OK</span></button>
++          <button class="noStyle"><i aria-hidden="true"  class="icon-ok"></i><span class="visuallyHidden hoverLabel">开始练习</span></button>
+         <% } %>
+       </div>
+     <% } %>
+@@ -369,16 +384,16 @@
+   <script type="text/html" id="interactive-rebase-entry-template">
+     <li id="<%= id %>" class="rebaseEntry transitionOpacity">
+       <div class="wrapper">
+-        <i class="icon-align-justify"></i>
++        <button type="button" class="pocket-reorder" data-move="up" aria-label="上移提交">↑</button><button type="button" class="pocket-reorder" data-move="down" aria-label="下移提交">↓</button>
+         <span class="idwrapper">
+           <%= id %>
+         </span>
+         <button id="toggleButton" class="noStyle uiButton uiButtonPink">
+           <span class="showWhenPicked">
+-            Click to Drop/Omit
++            保留 ✓ · 点此丢弃
+           </span>
+           <span class="showWhenNotPicked">
+-            Click to Include/Pick
++            已丢弃 · 点此保留
+           </span>
+         </button>
+       </div>
+@@ -443,7 +458,20 @@
+     </div>
+   </noscript>
+ 
++  <section id="pocketStartup" style="position:fixed;inset:0;z-index:1000002;background:#f5f7f2;color:#193a33;padding:32px 24px;overflow:auto;font:16px/1.7 sans-serif;box-sizing:border-box">
++    <h2>Git 掌上练习室</h2>
++    <p id="pocketStartupMessage">正在启动离线练习，请稍候…</p>
++    <p>如果一直停在这里，当前应用可能只支持文件预览，或禁用了 JavaScript。请用浏览器打开这个 HTML 文件。</p>
++    <p><a href="https://www.jasonshelter.com/learn/git-branching/" style="color:#176f58">打开在线版（无需登录）</a></p>
++    <p>若浏览器仍无法启动，请把下方错误内容发给我。</p>
++    <pre id="pocketStartupError" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;user-select:text"></pre>
++    <small>Android 兼容修复版 v2</small>
++  </section>
+   <!-- The entire interface is within this div -->
++  <header id="pocketHeader">
++    <div class="pocket-brand"><span class="pocket-mark" aria-hidden="true">⑂</span><div><strong>Git 掌上练习室</strong><small>LEARN GIT BRANCHING · MOBILE</small></div><button id="pocketAbout" type="button" aria-label="使用说明与离线下载">使用说明</button></div>
++    <nav class="pocket-nav" aria-label="练习导航"><button id="pocketLevels" type="button">▦ 全部关卡</button><button id="pocketSandbox" type="button">⌘ 自由练习</button><button id="pocketReference" type="button">⌁ 命令速查</button><span id="pocketProgress" aria-live="polite">准备中</span></nav>
++  </header>
+   <div id="interfaceWrapper" class="box horizontal flex1">
+     <div id="controls" class="box vertical flex1 visBackgroundColor">
+       <div id="commandLineHistory" class="box vertical flex3">
+@@ -480,6 +508,7 @@
+           </div>
+         </div>
+ 
++        <div id="pocketStorageNotice" hidden role="status">临时模式：此浏览器不能保存进度。关闭前请在「使用说明」中导出。</div>
+         <div id="commandLineBar" class="box vertical flex0">
+           <div id="prompt" class="">
+             <span class="promptSign box">$</span>
+@@ -487,18 +516,23 @@
+             <p class="command"></p>
+             <div id="shadow"></div>
+           </div>
++          <div id="pocketQuick" aria-label="常用命令">
++            <button type="button" data-command="git commit">commit</button><button type="button" data-command="git branch ">branch</button><button type="button" data-command="git checkout ">checkout</button><button type="button" data-command="git merge ">merge</button><button type="button" data-command="git rebase ">rebase</button><button type="button" data-command="undo">撤销</button>
++          </div>
+           <textarea
+             autocomplete="off"
+             autocorrect="off"
+             autocapitalize="off"
+             spellcheck="false"
+-            id="commandTextField"></textarea>
++            id="commandTextField" aria-label="Git 命令" placeholder="输入 Git 命令…" rows="1" enterkeyhint="send"></textarea>
++          <button id="pocketRun" type="button" aria-label="运行命令">运行 ↵</button>
+         </div>
+ 
+       </div>
+     </div>
+ 
+     <div id="mainVisSpace" class="box flex2 horizontal transitionAll visBackgroundColor">
++      <div id="pocketGraphLabel"><span>BRANCH LAB</span><strong id="pocketMode">自由练习</strong><button id="pocketStart" type="button">从第 1 关开始 →</button></div>
+       <span class="modeText transitionOpacity gitMode">
+         Git
+       </span>
+@@ -548,139 +582,7 @@
+ </style>
+ 
+ 
+-  <!-- Google tag (gtag.js) -->
+-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-SF8FGS1DYX"></script>
+-  <script>
+-    window.dataLayer = window.dataLayer || [];
+-    function gtag(){dataLayer.push(arguments);}
+-    gtag('js', new Date());
+-
+-    gtag('config', 'G-SF8FGS1DYX');
+-  </script>
+-
+-  <script>
+-    (function () {
+-      var STORAGE_KEY = 'upsellDismissedAt';
+-      var LEGACY_STORAGE_KEY = 'biteReadUpsellDismissedAt';
+-      var DAYS_UNTIL_RESHOW = 14;
+-
+-      var UPSELLS = {
+-        biteRead: {
+-          href: 'https://biteread.ai/collection/learn-git-branching',
+-          image: 'assets/biteRead.png',
+-          alt: 'BiteRead',
+-          html: 'Learn more about Software Engineering at my new project, ' +
+-            '<a href="https://biteread.ai/collection/learn-git-branching" target="_blank" rel="noopener noreferrer" style="color: #6eb5ff; text-decoration: none;">BiteRead</a>!'
+-        },
+-        waitingFor: {
+-          href: 'https://waitingfor.ai/?utm_source=learngitbranching&utm_medium=referral&utm_campaign=upsell',
+-          image: 'assets/waitingFor.png',
+-          alt: 'WaitingFor.AI',
+-          html: 'Waiting on your coding agents? Catch a vibe at my new project, ' +
+-            '<a href="https://waitingfor.ai/?utm_source=learngitbranching&utm_medium=referral&utm_campaign=upsell" target="_blank" rel="noopener noreferrer" style="color: #6eb5ff; text-decoration: none;">WaitingFor.AI</a>!'
+-        }
+-      };
+-
+-      // 70/30 weighted toward WaitingFor.AI: cycle through this pattern one
+-      // step per visit, spread out so consecutive visits alternate as much as
+-      // the weighting allows.
+-      var ROTATION = [
+-        'waitingFor', 'biteRead', 'waitingFor', 'waitingFor', 'biteRead',
+-        'waitingFor', 'waitingFor', 'biteRead', 'waitingFor', 'waitingFor'
+-      ];
+-      var VISIT_KEY = 'upsellVisitCount';
+-
+-      // Show sparingly: 20% of first visits, 75% of visits after that.
+-      var SHOW_PROBABILITY_FIRST_VISIT = 0.2;
+-      var SHOW_PROBABILITY_RETURN_VISIT = 0.75;
+-
+-      // 1-based visit number, counted once per page load even when the
+-      // upsell ends up hidden (null when localStorage is unavailable).
+-      var visitNumber = null;
+-      try {
+-        var visitCount = parseInt(localStorage.getItem(VISIT_KEY), 10);
+-        if (isNaN(visitCount) || visitCount < 0) visitCount = 0;
+-        visitNumber = visitCount + 1;
+-        localStorage.setItem(VISIT_KEY, visitNumber.toString());
+-      } catch (e) {}
+-
+-      function pickUpsell() {
+-        if (visitNumber !== null) {
+-          return UPSELLS[ROTATION[(visitNumber - 1) % ROTATION.length]];
+-        }
+-        // localStorage not available — weighted random instead
+-        return Math.random() < 0.7 ? UPSELLS.waitingFor : UPSELLS.biteRead;
+-      }
+-
+-      var dismissButton = document.getElementById('upsellDismiss');
+-      var upsellCard = document.getElementById('upsell');
+-      var upsellImageLink = document.getElementById('upsellImageLink');
+-      var upsellImage = document.getElementById('upsellImage');
+-      var upsellText = document.getElementById('upsellText');
+-
+-      function hideUpsell() {
+-        if (upsellCard) upsellCard.style.display = 'none';
+-        if (upsellImageLink) upsellImageLink.style.display = 'none';
+-      }
+-
+-      function showUpsell() {
+-        var choice = pickUpsell();
+-        if (upsellImageLink) {
+-          upsellImageLink.href = choice.href;
+-          upsellImageLink.style.display = '';
+-        }
+-        if (upsellImage) {
+-          upsellImage.src = choice.image;
+-          upsellImage.alt = choice.alt;
+-        }
+-        if (upsellText) upsellText.innerHTML = choice.html;
+-        if (upsellCard) upsellCard.style.display = '';
+-      }
+-
+-      // Global function to reset the upsell state
+-      window.resetUpsell = function () {
+-        try {
+-          localStorage.removeItem(STORAGE_KEY);
+-          localStorage.removeItem(LEGACY_STORAGE_KEY);
+-        } catch (e) {}
+-        showUpsell();
+-        console.log('Upsell reset.');
+-      };
+-
+-      if (!dismissButton || !upsellCard) {
+-        return;
+-      }
+-
+-      // Check if dismissed within the reshow window (either key, so
+-      // dismissals from before the rename are still honored)
+-      try {
+-        var dismissedAt = localStorage.getItem(STORAGE_KEY) ||
+-          localStorage.getItem(LEGACY_STORAGE_KEY);
+-        if (dismissedAt) {
+-          var daysSinceDismissal = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60 * 24);
+-          if (daysSinceDismissal < DAYS_UNTIL_RESHOW) {
+-            return;
+-          }
+-        }
+-      } catch (e) {
+-        // localStorage not available, continue showing
+-      }
+ 
+-      var showProbability = (visitNumber !== null && visitNumber <= 1) ?
+-        SHOW_PROBABILITY_FIRST_VISIT : SHOW_PROBABILITY_RETURN_VISIT;
+-      if (Math.random() < showProbability) {
+-        showUpsell();
+-      }
+-
+-      dismissButton.addEventListener('click', function () {
+-        hideUpsell();
+-        try {
+-          localStorage.setItem(STORAGE_KEY, Date.now().toString());
+-        } catch (e) {
+-          // localStorage not available, dismiss for session only
+-        }
+-      });
+-    }());
+-  </script>
++<dialog id="pocketDialog" aria-labelledby="pocketDialogTitle"><div class="pocket-dialog-top"><h2 id="pocketDialogTitle"></h2><button id="pocketDialogClose" type="button" aria-label="关闭">✕</button></div><div id="pocketDialogBody"></div></dialog>
+ </body>
+ </html>
+diff --git a/package.json b/package.json
+index 51832ae..cd0b928 100644
+--- a/package.json
++++ b/package.json
+@@ -15,7 +15,7 @@
+     "predev": "node scripts/generate.js",
+     "prebuild": "node scripts/generate.js",
+     "pretest": "node scripts/generate.js",
+-    "build": "yarn test && vite build && node scripts/postbuild.js",
++    "build": "yarn test && vite build && node scripts/postbuild.js && node scripts/package-mobile.cjs",
+     "dev": "vite",
+     "test": "jasmine",
+     "test:coverage": "nyc jasmine",
+diff --git a/scripts/package-mobile.cjs b/scripts/package-mobile.cjs
+new file mode 100644
+index 0000000..39c0fd4
+--- /dev/null
++++ b/scripts/package-mobile.cjs
+@@ -0,0 +1,23 @@
++// Produce a genuinely portable HTML: one classic script, all locales/levels
++// inlined by Vite, embedded CSS/fonts, no fetch or ES modules for file://.
++const fs = require('node:fs');
++const path = require('node:path');
++const build = path.join(__dirname, '../build');
++const dist = path.join(__dirname, '../dist');
++fs.mkdirSync(dist, {recursive:true});
++let html = fs.readFileSync(path.join(build,'index.html'),'utf8');
++html = html.replace(/<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/g, (tag, src) => {
++  if (/^https?:/.test(src)) throw new Error('Unexpected external script: '+src);
++  const code = fs.readFileSync(path.join(build,src),'utf8').replace(/<\/script/gi,'<\\/script');
++  return '<script defer>'+code+'</script>';
++});
++html = html.replace(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g, (_, src) => '<style>'+fs.readFileSync(path.join(build,src),'utf8')+'</style>');
++html = html.replace(/<link\b[^>]*rel="modulepreload"[^>]*>/g,'');
++const icon = fs.readFileSync(path.join(build,'assets/favicon.ico')).toString('base64');
++html = html.replace(/<link\b[^>]*rel="icon"[^>]*>/g, '<link rel="icon" href="data:image/x-icon;base64,'+icon+'">');
++// Inline classic scripts execute in source order, and the app bootstraps at DOM ready.
++fs.writeFileSync(path.join(dist,'index.html'),html);
++fs.writeFileSync(path.join(dist,'git-pocket-offline.html'),html);
++fs.writeFileSync(path.join(dist,'git-pocket-android-v2.html'),html);
++fs.copyFileSync(path.join(__dirname,'../LICENSE.md'),path.join(dist,'LICENSE.txt'));
++console.log('Portable HTML: '+(Buffer.byteLength(html)/1024/1024).toFixed(2)+' MB; includes all built-in levels/locales.');
+diff --git a/scripts/test-android-local.cjs b/scripts/test-android-local.cjs
+new file mode 100644
+index 0000000..2c03fda
+--- /dev/null
++++ b/scripts/test-android-local.cjs
+@@ -0,0 +1,47 @@
++const assert = require('node:assert/strict');
++const path = require('node:path');
++const {pathToFileURL} = require('node:url');
++const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
++const file = pathToFileURL(path.resolve(__dirname,'../dist/git-pocket-offline.html')).href;
++(async()=>{
++  const browser = await chromium.launch();
++  for(const mode of ['getter-denied','writes-denied','dialog-fallback']) {
++    const context = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true});
++    await context.addInitScript(mode => {
++      if (mode === 'getter-denied') Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Access denied','SecurityError')}});
++      if (mode === 'writes-denied') Storage.prototype.setItem = function(){throw new DOMException('Storage disabled','QuotaExceededError')};
++      if (mode === 'dialog-fallback') {
++        HTMLDialogElement.prototype.showModal = undefined;
++        HTMLDialogElement.prototype.close = undefined;
++      }
++    },mode);
++    const page = await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
++    await page.goto(file);
++    await page.waitForFunction(()=>document.querySelector('#pocketStartup').style.display === 'none');
++    if(mode!=='dialog-fallback') assert(await page.locator('#pocketStorageNotice').isVisible());
++    await page.locator('#commandTextField').fill('git commit');await page.locator('#pocketRun').click();
++    await page.waitForFunction(()=>document.querySelector('#canvasHolder').textContent.includes('C2'));
++    await page.locator('#pocketReference').click();await page.locator('[data-fill="git branch feature"]').click();
++    assert.equal(await page.locator('#commandTextField').inputValue(),'git branch feature');
++    await page.locator('#pocketAbout').click();
++    await page.locator('#pocketImport').setInputFiles({name:'progress.json',mimeType:'application/json',buffer:Buffer.from('{"intro1":{"solved":true,"best":false}}')});
++    await page.waitForFunction(()=>document.getElementById('pocketProgress').textContent.includes('1 关'));
++    const downloaded = page.waitForEvent('download');await page.locator('#pocketExport').click();
++    const download = await downloaded;assert.equal(download.suggestedFilename(),'git-pocket-progress.json');
++    await page.locator('#pocketDialogClose').click();
++    await page.screenshot({path:path.resolve(__dirname,'../test-results/android-'+mode+'.png')});
++    assert.deepEqual(errors,[]);
++    console.log('PASS',mode,': startup, command, reference, progress import/export');
++    await context.close();
++  }
++  const noJS=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
++  const preview=await noJS.newPage();await preview.goto(file);
++  assert(await preview.locator('#pocketStartup').isVisible());
++  assert(await preview.locator('#pocketStartup a').isVisible());
++  console.log('PASS script-disabled preview has readable guidance and online link');
++  const failed=await browser.newPage();await failed.addInitScript(()=>{window.matchMedia=undefined});await failed.goto(file);
++  await failed.waitForFunction(()=>document.getElementById('pocketStartupError').textContent.length>0);
++  assert(await failed.locator('#pocketStartup').isVisible());
++  console.log('PASS startup error produces readable diagnostics');
++  await browser.close();
++})().catch(e=>{console.error(e);process.exit(1)});
+diff --git a/scripts/test-mobile.cjs b/scripts/test-mobile.cjs
+new file mode 100644
+index 0000000..79abe3a
+--- /dev/null
++++ b/scripts/test-mobile.cjs
+@@ -0,0 +1,110 @@
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const { pathToFileURL } = require('node:url');
++const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
++const root = path.resolve(__dirname, '..');
++const out = path.join(root, 'test-results'); fs.mkdirSync(out,{recursive:true});
++const url = pathToFileURL(path.join(root,'dist/git-pocket-offline.html')).href;
++(async () => {
++  const browser = await chromium.launch({headless:true});
++  const errors = [], network = [];
++  const context = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
++  await context.setOffline(true);
++  const page = await context.newPage();
++  page.setDefaultTimeout(8000);
++  page.on('pageerror',e=>errors.push(e.message));
++  page.on('request',r=>{if(/^https?:/.test(r.url())) network.push(r.url())});
++  page.on('dialog',d=>d.accept());
++  const settle = ms => page.waitForTimeout(ms || 1000);
++  const command = async (text, enter=false) => {
++    await page.locator('#commandTextField').fill(text);
++    if (enter) await page.locator('#commandTextField').press('Enter');
++    else await page.locator('#pocketRun').click();
++    await settle(1150);
++  };
++  await page.goto(url); await settle();
++  assert.equal(await page.title(),'Git 掌上练习室 · Learn Git Branching');
++  await page.screenshot({path:path.join(out,'mobile-home.png')});
++  for(const [name,width,height] of [['small',320,568],['portrait',390,844],['keyboard',390,430],['landscape',844,390],['desktop',1440,900]]){
++    await page.setViewportSize({width,height}); await settle(900);
++    const boxes=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,input:document.getElementById('commandTextField').getBoundingClientRect().toJSON(),run:document.getElementById('pocketRun').getBoundingClientRect().toJSON(),graph:document.getElementById('mainVisSpace').getBoundingClientRect().toJSON()}));
++    assert(boxes.scroll<=width+1,`${name}: horizontal overflow`);
++    assert(boxes.input.x>=0 && boxes.run.right<=width && boxes.run.bottom<=height,`${name}: composer clipped`);
++    assert(boxes.graph.height>80 && boxes.graph.width>100,`${name}: no graph space`);
++    await page.screenshot({path:path.join(out,name+'.png')});
++    console.log('PASS layout',name,width,height);
++  }
++  await page.setViewportSize({width:390,height:844});
++  await page.locator('[data-command="git commit"]').click();
++  assert.equal(await page.locator('#commandTextField').inputValue(),'git commit');
++  await page.locator('#pocketRun').click(); await settle(1100);
++  assert((await page.locator('#canvasHolder').innerText()).includes('C2'));
++  await command('git commit',true);
++  let tree=await page.locator('#canvasHolder').innerText();
++  assert(tree.includes('C3') && !tree.includes('C4'),'Enter must execute exactly once');
++  // Composition Enter must not execute; test real capture path, including keyup.
++  await page.locator('#commandTextField').fill('git commit');
++  await page.locator('#commandTextField').evaluate(el=>{
++    el.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',keyCode:229,isComposing:true,bubbles:true}));
++    el.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',keyCode:229,isComposing:true,bubbles:true}));
++  });
++  assert.equal(await page.locator('#commandTextField').inputValue(),'git commit');
++  assert(!(await page.locator('#canvasHolder').innerText()).includes('C4'));
++  await page.locator('#commandTextField').fill('');
++  await command('git rebase -i HEAD~2');
++  await page.locator('.rebaseEntries li').first().waitFor();
++  const before=await page.locator('.rebaseEntries li').evaluateAll(xs=>xs.map(x=>x.id));
++  await page.locator('.rebaseEntries li').first().locator('[data-move="down"]').click();
++  const after=await page.locator('.rebaseEntries li').evaluateAll(xs=>xs.map(x=>x.id));
++  assert.equal(before[0],after[1]);assert.equal(before[1],after[0]);
++  await page.screenshot({path:path.join(out,'rebase-touch.png')});
++  await page.locator('.modalView.show .confirmButton').click();await settle(1600);
++  assert.equal(await page.locator('.modalView.show').count(),0);
++  console.log('PASS commands, Enter, IME, touch rebase');
++  await page.locator('#pocketReference').click();
++  await page.locator('[data-fill="git branch feature"]').click();
++  assert.equal(await page.locator('#commandTextField').inputValue(),'git branch feature');
++  await page.locator('#commandTextField').fill('');
++  await page.locator('#pocketStart').click();
++  await page.locator('.modalView.show').waitFor({state:'visible'});await settle(800);
++  for(let n=0;n<8 && await page.locator('.modalView.show').count();n++){
++    const sheet=page.locator('.modalView.show');
++    const width=await sheet.locator('.terminal-window-holder').evaluate(el=>el.getBoundingClientRect().width);
++    assert(width>340,'lesson text must fit mobile width');
++    await page.screenshot({path:path.join(out,'lesson-page-'+n+'.png')});
++    await sheet.locator('.right button').click();await settle(1800);
++  }
++  assert.equal(await page.locator('.modalView.show').count(),0,'intro pages close');
++  await command('git commit');await command('git commit');
++  await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('solvedMap')||'{}');return s.intro1 && (s.intro1===true || s.intro1.solved)},{},{timeout:15000});
++  const progress=await page.evaluate(()=>JSON.parse(localStorage.getItem('solvedMap')));
++  assert(progress.intro1 === true || progress.intro1.solved,'first level saves completion');
++  await page.screenshot({path:path.join(out,'level-complete.png')});
++  // Reload is safe after solving, and must retain completion offline.
++  await page.reload();await settle();
++  assert((await page.locator('#pocketProgress').innerText()).includes('1 关'));
++  await page.locator('#pocketAbout').click();
++  const downloadEvent=page.waitForEvent('download');await page.locator('#pocketExport').click();
++  const download=await downloadEvent;await download.saveAs(path.join(out,'progress.json'));
++  assert(JSON.parse(fs.readFileSync(path.join(out,'progress.json'),'utf8')).intro1.solved);
++  await page.locator('#pocketImport').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{')});
++  await page.waitForFunction(()=>document.getElementById('pocketDataStatus').textContent.includes('无法导入'));
++  await page.locator('#pocketImport').setInputFiles(path.join(out,'progress.json'));
++  await page.waitForFunction(()=>document.getElementById('pocketDataStatus').textContent.includes('已导入'));
++  await page.locator('#pocketDialogClose').click();
++  console.log('PASS offline level completion, persistence, progress import/export');
++  await page.locator('#pocketLevels').click();await settle();
++  await page.screenshot({path:path.join(out,'levels-local.png')});
++  await page.locator('.modalView.show [data-id="remote"]').first().click();
++  await page.screenshot({path:path.join(out,'levels-remote.png')});
++  await page.locator('#levelIcon-remote1').click();await settle(1400);
++  await page.locator('.modalView.show .close').click();await settle(1000);
++  await command('git clone');
++  assert(!(await page.locator('#terminal').innerText()).includes('无法识别'));
++  await page.screenshot({path:path.join(out,'remote-clone.png')});
++  assert.equal(network.length,0,'no HTTP request is needed for offline use');
++  assert.deepEqual(errors,[]);
++  console.log('PASS remote level offline; no external requests or JavaScript errors');
++  await browser.close();
++})().catch(error=>{console.error(error);process.exit(1)});
+diff --git a/src/js/app/index.js b/src/js/app/index.js
+index 2b0e56f..6ba2e3f 100644
+--- a/src/js/app/index.js
++++ b/src/js/app/index.js
+@@ -73,6 +73,7 @@ var init = function() {
+     *   - initializing the command input bar
+     *   - handling window.focus and zoom events
+   **/
++  require('../mobile/localize').localizeDocument();
+   var Sandbox = require('../sandbox/').Sandbox;
+   var EventBaton = require('../util/eventBaton').EventBaton;
+   var LevelDropdownView = require('../views/levelDropdownView').LevelDropdownView;
+@@ -90,6 +91,7 @@ var init = function() {
+ 
+   initRootEvents(eventBaton);
+   initDemo(sandbox);
++  require("../mobile").init(exports);
+   // unfortunate global export for casper tests
+   window.LocaleStore = LocaleStore;
+   window.LocaleActions = LocaleActions;
+@@ -160,7 +162,8 @@ exports.getLocaleDirection = function(locale) {
+ var initRootEvents = function(eventBaton) {
+   // we always want to focus the text area to collect input
+   var focusTextArea = function() {
+-    $('#commandTextField').focus();
++    // Touch users explicitly focus the real input; background taps must not open the keyboard.
++    if (!window.matchMedia('(pointer: coarse)').matches) { $('#commandTextField').focus(); }
+   };
+   focusTextArea();
+ 
+@@ -210,12 +213,6 @@ var initDemo = function(sandbox) {
+   // being the smart programmer I am (not), I don't include a true value on demo, so
+   // I have to check if the key exists here
+   var commands;
+-  if (/(iPhone|iPod|iPad).*AppleWebKit/i.test(navigator.userAgent) || /android/i.test(navigator.userAgent)) {
+-    sandbox.mainVis.customEvents.on('gitEngineReady', function() {
+-      eventBaton.trigger('commandSubmitted', 'mobile alert');
+-    });
+-  }
+-
+   if (params.hasOwnProperty('demo')) {
+     commands = [
+       "git commit; git checkout -b bugFix C1; git commit; git merge main; git checkout main; git commit; git rebase bugFix;",
+@@ -291,10 +288,7 @@ var initDemo = function(sandbox) {
+       }
+     });
+   } else if (!params.hasOwnProperty('NODEMO')) {
+-    commands = [
+-      "help;",
+-      "levels"
+-    ];
++    commands = [];
+   }
+   if (params.hasOwnProperty('STARTREACT')) {
+     /*
+@@ -303,7 +297,7 @@ var initDemo = function(sandbox) {
+       document.getElementById(params['STARTREACT'])
+       );*/
+   }
+-  if (commands) {
++  if (commands && commands.length) {
+     sandbox.mainVis.customEvents.on('gitEngineReady', function() {
+       eventBaton.trigger('commandSubmitted', commands.join(''));
+     });
+@@ -346,7 +340,7 @@ function bootstrap(initFn) {
+ }
+ 
+ // Resolve the active locale before first render: an explicit ?locale= wins,
+-// then the user's stored preference, then the browser header. The locale
++// then the user's stored preference, then Chinese in the pocket edition. The locale
+ // strings can then be awaited before the first paint.
+ function detectLocale() {
+   var params = util.parseQueryString(window.location.href);
+@@ -359,7 +353,7 @@ function detectLocale() {
+     LocaleActions.changeLocale(stored);
+     return;
+   }
+-  tryLocaleDetect();
++  LocaleActions.changeLocale('zh_CN');
+ }
+ 
+ if (require('../util').isBrowser()) {
+diff --git a/src/js/mobile/index.js b/src/js/mobile/index.js
+new file mode 100644
+index 0000000..b2bd452
+--- /dev/null
++++ b/src/js/mobile/index.js
+@@ -0,0 +1,145 @@
++// Mobile shell around the upstream engine: all commands still use its normal event path.
++exports.init = function(Main) {
++  const t = require('./localize').t;
++  const LevelStore = require('../stores/LevelStore');
++  const storage = require('../util/storage');
++  const GlobalStateStore = require('../stores/GlobalStateStore');
++  const input = document.getElementById('commandTextField');
++  const prompt = Main.getCommandUI().commandPromptView;
++  const dialog = document.getElementById('pocketDialog');
++  const body = document.getElementById('pocketDialogBody');
++  const $id = id => document.getElementById(id);
++  const send = command => Main.getEventBaton().trigger('commandSubmitted', command);
++  const blur = () => input.blur();
++  const escapeHTML = text => text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
++  function show(title, html) {
++    blur();
++    $id('pocketDialogTitle').textContent = title;
++    body.innerHTML = html;
++    if (typeof dialog.showModal === 'function') dialog.showModal();
++    else dialog.setAttribute('open', '');
++  }
++  const closeDialog = () => {
++    if (typeof dialog.close === 'function') dialog.close();
++    else dialog.removeAttribute('open');
++  };
++  $id('pocketDialogClose').onclick = closeDialog;
++  dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
++  // Stop the upstream global keyboard listener while a native help dialog is open.
++  dialog.addEventListener('keydown', e => e.stopPropagation());
++  dialog.addEventListener('keyup', e => e.stopPropagation());
++  $id('pocketLevels').onclick = () => { blur(); send('levels'); };
++  $id('pocketStart').onclick = () => { blur(); send('level intro1'); };
++  $id('pocketSandbox').onclick = () => {
++    blur();
++    if (GlobalStateStore.getIsSolvingLevel()) send('exit level');
++    else send('clear');
++  };
++  function run() {
++    if (!input.value.trim()) { input.focus(); return; }
++    prompt.submit();
++    blur();
++  }
++  $id('pocketRun').onclick = run;
++  // IMEs may emit keyCode 229, or only beforeinput. Prevent the upstream
++  // keyup handler from submitting twice and never submit composed text.
++  input.addEventListener('keydown', e => {
++    if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
++      e.preventDefault(); e.stopImmediatePropagation(); run();
++    }
++  }, true);
++  input.addEventListener('keyup', e => {
++    if (e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); }
++  }, true);
++  input.addEventListener('beforeinput', e => {
++    if (!e.isComposing && (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph')) {
++      e.preventDefault(); run();
++    }
++  });
++  input.addEventListener('input', () => prompt.updatePrompt(input));
++  $id('pocketQuick').onclick = e => {
++    const button = e.target.closest('[data-command]');
++    if (!button) return;
++    const command = button.dataset.command;
++    if (command === 'undo') { blur(); send('undo'); return; }
++    prompt.setInputText(command);
++  };
++  const commands = [
++    ['git commit',t('创建一个新提交')], ['git branch feature',t('创建 feature 分支')],
++    ['git checkout feature',t('切换到 feature 分支')], ['git checkout -b feature',t('创建并切换到新分支')],
++    ['git merge feature',t('把 feature 合并到当前分支')], ['git rebase main',t('把当前分支变基到 main')],
++    ['git cherry-pick C2',t('复制指定提交到当前分支')], ['git rebase -i HEAD~2',t('交互式整理最近两个提交')],
++    ['git reset HEAD~1',t('把当前分支回退一个提交')], ['git revert HEAD',t('用新提交撤销 HEAD 的修改')],
++    ['git clone',t('克隆远程仓库（远程练习）')], ['git fetch',t('获取远程提交')],
++    ['git pull --rebase',t('获取远程提交，并变基')], ['git push',t('推送到远程仓库')],
++    ['undo',t('撤销上一步模拟操作')], ['reset',t('重置当前练习')],
++    ['show goal',t('查看目标图')], ['objective',t('重新查看本关说明')],
++    ['show solution',t('把本关参考答案填入命令框')], ['levels',t('选择关卡')]
++  ];
++  $id('pocketReference').onclick = () => {
++    show(t('命令速查'), t('<p class="pocket-note">点击命令填入输入框，修改分支名或提交编号后运行。这里是模拟仓库，不会改动你的文件。</p><div class="pocket-reference">')+commands.map(([cmd, desc]) => '<button type="button" data-fill="'+escapeHTML(cmd)+'"><code>'+escapeHTML(cmd)+'</code><span>'+desc+'</span></button>').join('')+'</div>');
++    body.querySelectorAll('[data-fill]').forEach(button => button.onclick = () => {
++      closeDialog(); prompt.setInputText(button.dataset.fill);
++    });
++  };
++  $id('pocketAbout').onclick = () => {
++    const download = /^https?:$/.test(location.protocol) ? t('<a class="pocket-download" href="./simulator.html" download="git-pocket-android-v2.html">↓ 下载单文件离线版</a>') : t('<p class="pocket-offline">✓ 正在使用单文件离线版，全部内置关卡无需联网。</p>');
++    show(t('随时打开，动手学 Git'), t('<div class="pocket-about"><span class="pocket-eyebrow">A LITTLE PRACTICE, EVERY DAY</span><p>先点「全部关卡」学习概念，再在命令框中尝试。上方是仓库图，下方是命令记录。每个圆点代表一次提交，分支标签指向提交。</p><ol><li>选关卡，阅读中文讲解与目标。</li><li>输入命令，或点常用命令后修改。</li><li>点击「运行」，观察分支图变化。</li></ol><p>允许存储时，通关进度保存在当前浏览器。如果下方显示临时模式，请在关闭前导出进度，下次再导入。导入会替换当前进度。</p><div class="pocket-data"><button id="pocketExport" type="button">导出学习进度</button><label class="pocket-import">导入进度<input id="pocketImport" type="file" accept="application/json,.json"></label></div><p id="pocketDataStatus" role="status"></p>')+download+t('<p class="pocket-note">离线文件请用支持本地 HTML 的浏览器打开；Android / iPhone 的文件预览器可能禁用脚本，导致按钮无反应；请用真正的浏览器打开，或使用在线版。清理浏览器数据会清除进度。外部 GitHub / Gist 链接需要网络。</p><p class="pocket-credit">基于 <a href="https://github.com/pcottle/learnGitBranching" target="_blank" rel="noopener noreferrer">Peter Cottle / Learn Git Branching</a> · MIT 开源许可。保留原 Git 引擎、关卡和翻译，新增手机界面。</p></div>'));
++    const languages = document.createElement('p');
++    languages.innerHTML = '<a href="?locale=zh_CN">简体中文</a> · <a href="?locale=en_US">English</a> · <a href="?locale=fr_FR">Français</a>';
++    body.appendChild(languages);
++    $id('pocketExport').onclick = () => {
++      const blob = new Blob([LevelStore.exportLevelProgress()], {type:'application/json'});
++      const url = URL.createObjectURL(blob); const link = document.createElement('a');
++      link.href = url; link.download = 'git-pocket-progress.json'; link.click();
++      setTimeout(() => URL.revokeObjectURL(url), 1000);
++    };
++    $id('pocketImport').onchange = async e => {
++      const file = e.target.files[0]; if (!file) return;
++      try {
++        if (file.size > 1000000) throw new Error(t('文件过大'));
++        LevelStore.importLevelProgress(JSON.parse(await file.text()));
++        $id('pocketDataStatus').textContent = t('学习进度已导入。');
++        updateProgress();
++      } catch (error) { $id('pocketDataStatus').textContent = t('无法导入：请选择有效的进度 JSON 文件。'); }
++    };
++  };
++  function updateProgress() {
++    const map = JSON.parse(LevelStore.exportLevelProgress());
++    const count = Object.values(map).filter(value => value === true || value.solved).length;
++    $id('pocketProgress').textContent = count + t(' 关已完成') + (storage.isPersistent() ? '' : t(' · 临时'));
++    $id('pocketStorageNotice').hidden = storage.isPersistent();
++  }
++  LevelStore.subscribe(updateProgress);
++  updateProgress();
++  function updateMode() {
++    const solving = GlobalStateStore.getIsSolvingLevel();
++    $id('pocketMode').textContent = solving ? t('关卡练习') : t('自由练习');
++    $id('pocketStart').hidden = solving;
++  }
++  GlobalStateStore.subscribe(updateMode);
++  updateMode();
++  // Use the visual viewport so the composer stays above the software keyboard.
++  let pending;
++  function resize() {
++    cancelAnimationFrame(pending);
++    pending = requestAnimationFrame(() => {
++      const viewport = window.visualViewport;
++      document.documentElement.style.setProperty('--pocket-height', (viewport ? viewport.height : innerHeight) + 'px');
++      document.documentElement.style.setProperty('--pocket-top', (viewport ? viewport.offsetTop : 0) + 'px');
++      // Refresh all upstream SVGs after the CSS viewport update. jQuery's
++      // triggerHandler avoids re-entering this native resize listener.
++      window.jQuery(window).triggerHandler('resize');
++    });
++  }
++  window.addEventListener('resize', resize);
++  if (window.visualViewport) {
++    window.visualViewport.addEventListener('resize', resize);
++    window.visualViewport.addEventListener('scroll', resize);
++  }
++  resize();
++  document.title = t('Git 掌上练习室 · Learn Git Branching');
++  Main.getSandbox().mainVis.customEvents.on('gitEngineReady', function() {
++    if (window.pocketBootReady) window.pocketBootReady();
++  });
++};
+diff --git a/src/js/mobile/localize.js b/src/js/mobile/localize.js
+new file mode 100644
+index 0000000..1289e68
+--- /dev/null
++++ b/src/js/mobile/localize.js
+@@ -0,0 +1,26 @@
++// Shell translations; the upstream engine still supplies level and command translations.
++const phrases = require('./translations.json');
++const keys = Object.keys(phrases).sort((a, b) => b.length - a.length);
++function language() {
++  const locale = require('../stores/LocaleStore').getLocale();
++  return locale.startsWith('fr') ? 'fr' : locale.startsWith('en') ? 'en' : 'zh';
++}
++exports.t = function(text) {
++  const lang = language();
++  if (lang === 'zh') return text;
++  // One pass prevents a short phrase from re-translating a longer replacement.
++  const pattern = new RegExp(keys.map(key => key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
++  return text.replace(pattern, key => phrases[key][lang]);
++};
++exports.localizeDocument = function() {
++  if (language() === 'zh') return;
++  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
++  let node;
++  while ((node = walk.nextNode())) {
++    if (!['SCRIPT', 'STYLE'].includes(node.parentElement.tagName)) node.nodeValue = exports.t(node.nodeValue);
++  }
++  document.querySelectorAll('script[type="text/html"]').forEach(el => { el.textContent = exports.t(el.textContent); });
++  document.querySelectorAll('[aria-label], [placeholder]').forEach(el => {
++    ['aria-label', 'placeholder'].forEach(attr => { if (el.hasAttribute(attr)) el.setAttribute(attr, exports.t(el.getAttribute(attr))); });
++  });
++};
+diff --git a/src/js/mobile/translations.json b/src/js/mobile/translations.json
+new file mode 100644
+index 0000000..68d65e4
+--- /dev/null
++++ b/src/js/mobile/translations.json
+@@ -0,0 +1,322 @@
++{
++  "Git 掌上练习室": {
++    "en": "Git Pocket Lab",
++    "fr": "Atelier Git mobile"
++  },
++  "页面未能正常启动": {
++    "en": "The practice could not start",
++    "fr": "Impossible de démarrer l’exercice"
++  },
++  "启动超时：请使用更新版本的浏览器，并确认允许 JavaScript。": {
++    "en": "Startup timed out. Update your browser and enable JavaScript.",
++    "fr": "Délai de démarrage dépassé. Mettez le navigateur à jour et activez JavaScript."
++  },
++  "正在启动离线练习，请稍候…": {
++    "en": "Starting the practice…",
++    "fr": "Démarrage de l’exercice…"
++  },
++  "如果一直停在这里，当前应用可能只支持文件预览，或禁用了 JavaScript。请用浏览器打开这个 HTML 文件。": {
++    "en": "If this stays visible, your app may only preview files or block JavaScript. Open this HTML file in a browser.",
++    "fr": "Si ce message reste affiché, l’application affiche peut-être un simple aperçu ou bloque JavaScript. Ouvrez ce fichier HTML dans un navigateur."
++  },
++  "打开在线版（需要联网及登录）": {
++    "en": "Open the online version",
++    "fr": "Ouvrir la version en ligne"
++  },
++  "若浏览器仍无法启动，请把下方错误内容发给我。": {
++    "en": "If startup still fails, share the error below.",
++    "fr": "Si le démarrage échoue encore, transmettez l’erreur ci-dessous."
++  },
++  "Android 兼容修复版 v2": {
++    "en": "Android compatibility edition",
++    "fr": "Édition compatible Android"
++  },
++  "使用说明与离线下载": {
++    "en": "Help and offline download",
++    "fr": "Aide et téléchargement hors ligne"
++  },
++  "使用说明": {
++    "en": "Help",
++    "fr": "Aide"
++  },
++  "练习导航": {
++    "en": "Practice navigation",
++    "fr": "Navigation des exercices"
++  },
++  "全部关卡": {
++    "en": "Levels",
++    "fr": "Niveaux"
++  },
++  "自由练习": {
++    "en": "Sandbox",
++    "fr": "Bac à sable"
++  },
++  "命令速查": {
++    "en": "Commands",
++    "fr": "Commandes"
++  },
++  "准备中": {
++    "en": "Loading",
++    "fr": "Chargement"
++  },
++  "临时模式：此浏览器不能保存进度。关闭前请在「使用说明」中导出。": {
++    "en": "Temporary mode: progress cannot be saved here. Export it from Help before closing.",
++    "fr": "Mode temporaire : la progression ne peut pas être enregistrée. Exportez-la depuis Aide avant de fermer."
++  },
++  "常用命令": {
++    "en": "Quick commands",
++    "fr": "Commandes rapides"
++  },
++  "撤销": {
++    "en": "Undo",
++    "fr": "Annuler"
++  },
++  "Git 命令": {
++    "en": "Git command",
++    "fr": "Commande Git"
++  },
++  "输入 Git 命令…": {
++    "en": "Enter a Git command…",
++    "fr": "Saisissez une commande Git…"
++  },
++  "运行命令": {
++    "en": "Run command",
++    "fr": "Exécuter la commande"
++  },
++  "运行 ↵": {
++    "en": "Run ↵",
++    "fr": "Exécuter ↵"
++  },
++  "从第 1 关开始 →": {
++    "en": "Start level 1 →",
++    "fr": "Niveau 1 →"
++  },
++  "关闭": {
++    "en": "Close",
++    "fr": "Fermer"
++  },
++  "点击 ↑ ↓ 调整提交顺序；点击保留/丢弃按钮选择提交。": {
++    "en": "Use ↑ ↓ to reorder commits; use the keep/drop button to choose commits.",
++    "fr": "Utilisez ↑ ↓ pour réordonner les commits, puis le bouton garder/retirer pour les sélectionner."
++  },
++  "开始练习": {
++    "en": "Practice",
++    "fr": "Pratiquer"
++  },
++  "上一页": {
++    "en": "Previous",
++    "fr": "Précédent"
++  },
++  "下一页": {
++    "en": "Next",
++    "fr": "Suivant"
++  },
++  "上移提交": {
++    "en": "Move commit up",
++    "fr": "Monter le commit"
++  },
++  "下移提交": {
++    "en": "Move commit down",
++    "fr": "Descendre le commit"
++  },
++  "保留 ✓ · 点此丢弃": {
++    "en": "Keep ✓ · Tap to drop",
++    "fr": "Gardé ✓ · Retirer"
++  },
++  "已丢弃 · 点此保留": {
++    "en": "Dropped · Tap to keep",
++    "fr": "Retiré · Garder"
++  },
++  "创建一个新提交": {
++    "en": "Create a new commit",
++    "fr": "Créer un commit"
++  },
++  "创建 feature 分支": {
++    "en": "Create the feature branch",
++    "fr": "Créer la branche feature"
++  },
++  "切换到 feature 分支": {
++    "en": "Switch to the feature branch",
++    "fr": "Passer sur la branche feature"
++  },
++  "创建并切换到新分支": {
++    "en": "Create and switch to a new branch",
++    "fr": "Créer une branche et s’y placer"
++  },
++  "把 feature 合并到当前分支": {
++    "en": "Merge feature into the current branch",
++    "fr": "Fusionner feature dans la branche courante"
++  },
++  "把当前分支变基到 main": {
++    "en": "Rebase the current branch onto main",
++    "fr": "Rebaser la branche courante sur main"
++  },
++  "复制指定提交到当前分支": {
++    "en": "Copy the selected commit onto this branch",
++    "fr": "Copier le commit sélectionné dans cette branche"
++  },
++  "交互式整理最近两个提交": {
++    "en": "Reorder the last two commits interactively",
++    "fr": "Réorganiser les deux derniers commits"
++  },
++  "把当前分支回退一个提交": {
++    "en": "Move the current branch back one commit",
++    "fr": "Reculer la branche courante d’un commit"
++  },
++  "用新提交撤销 HEAD 的修改": {
++    "en": "Undo HEAD with a new commit",
++    "fr": "Annuler HEAD avec un nouveau commit"
++  },
++  "克隆远程仓库（远程练习）": {
++    "en": "Clone a remote repository (remote exercises)",
++    "fr": "Cloner un dépôt distant (exercices distants)"
++  },
++  "获取远程提交，并变基": {
++    "en": "Fetch remote commits and rebase",
++    "fr": "Récupérer les commits distants et rebaser"
++  },
++  "获取远程提交": {
++    "en": "Fetch remote commits",
++    "fr": "Récupérer les commits distants"
++  },
++  "推送到远程仓库": {
++    "en": "Push to the remote repository",
++    "fr": "Pousser vers le dépôt distant"
++  },
++  "撤销上一步模拟操作": {
++    "en": "Undo the last simulated operation",
++    "fr": "Annuler la dernière opération simulée"
++  },
++  "重置当前练习": {
++    "en": "Reset this exercise",
++    "fr": "Réinitialiser cet exercice"
++  },
++  "查看目标图": {
++    "en": "Show the target graph",
++    "fr": "Afficher le graphe cible"
++  },
++  "重新查看本关说明": {
++    "en": "Read the current objective again",
++    "fr": "Relire l’objectif du niveau"
++  },
++  "把本关参考答案填入命令框": {
++    "en": "Fill the command field with the solution",
++    "fr": "Insérer la solution dans le champ de commande"
++  },
++  "选择关卡": {
++    "en": "Choose a level",
++    "fr": "Choisir un niveau"
++  },
++  "点击命令填入输入框，修改分支名或提交编号后运行。这里是模拟仓库，不会改动你的文件。": {
++    "en": "Tap a command to fill the input, edit branch names or commit IDs, then run it. This simulated repository does not change your files.",
++    "fr": "Touchez une commande, adaptez les noms de branches ou identifiants de commits, puis exécutez-la. Ce dépôt simulé ne modifie pas vos fichiers."
++  },
++  "↓ 下载单文件离线版": {
++    "en": "↓ Download the standalone HTML",
++    "fr": "↓ Télécharger le fichier HTML autonome"
++  },
++  "✓ 正在使用单文件离线版，全部内置关卡无需联网。": {
++    "en": "✓ Standalone edition: all built-in levels work offline.",
++    "fr": "✓ Édition autonome : tous les niveaux intégrés fonctionnent hors ligne."
++  },
++  "随时打开，动手学 Git": {
++    "en": "Learn Git by doing",
++    "fr": "Apprendre Git par la pratique"
++  },
++  "先点「全部关卡」学习概念，再在命令框中尝试。上方是仓库图，下方是命令记录。每个圆点代表一次提交，分支标签指向提交。": {
++    "en": "Choose Levels to learn a concept, then try it in the command field. The repository graph is above the command history. Each circle is a commit; branch labels point to commits.",
++    "fr": "Choisissez Niveaux pour découvrir un concept, puis testez-le dans le champ de commande. Le graphe du dépôt se trouve au-dessus de l’historique. Chaque cercle est un commit ; les étiquettes de branches pointent vers des commits."
++  },
++  "选关卡，阅读中文讲解与目标。": {
++    "en": "Choose a level and read its explanation and objective.",
++    "fr": "Choisissez un niveau et lisez l’explication et l’objectif."
++  },
++  "输入命令，或点常用命令后修改。": {
++    "en": "Type a command, or tap a quick command and edit it.",
++    "fr": "Saisissez une commande ou touchez un raccourci et adaptez-le."
++  },
++  "点击「运行」，观察分支图变化。": {
++    "en": "Tap Run and watch the graph change.",
++    "fr": "Touchez Exécuter et observez le graphe."
++  },
++  "允许存储时，通关进度保存在当前浏览器。如果下方显示临时模式，请在关闭前导出进度，下次再导入。导入会替换当前进度。": {
++    "en": "Progress is saved in this browser when storage is allowed. In temporary mode, export before closing and import next time. Importing replaces your current progress.",
++    "fr": "La progression est enregistrée dans ce navigateur si le stockage est autorisé. En mode temporaire, exportez-la avant de fermer et importez-la la prochaine fois. L’import remplace la progression actuelle."
++  },
++  "导出学习进度": {
++    "en": "Export progress",
++    "fr": "Exporter la progression"
++  },
++  "导入进度": {
++    "en": "Import progress",
++    "fr": "Importer la progression"
++  },
++  "离线文件请用支持本地 HTML 的浏览器打开；Android / iPhone 的文件预览器可能禁用脚本，导致按钮无反应；请用真正的浏览器打开，或使用在线版。清理浏览器数据会清除进度。外部 GitHub / Gist 链接需要网络。": {
++    "en": "Open offline files in a browser that supports local HTML. Android / iPhone file previewers may disable scripts and buttons; use a browser or the online edition. Clearing browser data erases progress. External GitHub / Gist links require a connection.",
++    "fr": "Ouvrez les fichiers hors ligne dans un navigateur prenant en charge le HTML local. Les aperçus de fichiers Android / iPhone peuvent désactiver les scripts et les boutons ; utilisez un navigateur ou la version en ligne. Effacer les données du navigateur supprime la progression. Les liens GitHub / Gist externes nécessitent une connexion."
++  },
++  "基于 ": {
++    "en": "Based on ",
++    "fr": "Basé sur "
++  },
++  " · MIT 开源许可。保留原 Git 引擎、关卡和翻译，新增手机界面。": {
++    "en": " · MIT license. Original Git engine, levels and translations with a new mobile interface.",
++    "fr": " · Licence MIT. Moteur Git, niveaux et traductions d’origine avec une nouvelle interface mobile."
++  },
++  "文件过大": {
++    "en": "File too large",
++    "fr": "Fichier trop volumineux"
++  },
++  "学习进度已导入。": {
++    "en": "Progress imported.",
++    "fr": "Progression importée."
++  },
++  "无法导入：请选择有效的进度 JSON 文件。": {
++    "en": "Import failed: choose a valid progress JSON file.",
++    "fr": "Échec de l’import : choisissez un fichier JSON de progression valide."
++  },
++  " 关已完成": {
++    "en": " levels completed",
++    "fr": " niveaux terminés"
++  },
++  " · 临时": {
++    "en": " · temporary",
++    "fr": " · temporaire"
++  },
++  "关卡练习": {
++    "en": "Level practice",
++    "fr": "Exercice guidé"
++  },
++  "Reset Animation": {
++    "en": "Reset animation",
++    "fr": "Relancer l’animation"
++  },
++  "Rebasing <%= num %> Commits": {
++    "en": "Rebasing <%= num %> commits",
++    "fr": "Rebasage de <%= num %> commits"
++  },
++  "For the solution, order the commits as": {
++    "en": "For the solution, order the commits as",
++    "fr": "Pour la solution, ordonnez les commits ainsi :"
++  },
++  "You may need to omit or pick commits.": {
++    "en": "You may need to omit or pick commits.",
++    "fr": "Vous devrez peut-être retirer ou sélectionner des commits."
++  },
++  "A LITTLE PRACTICE, EVERY DAY": {
++    "en": "A LITTLE PRACTICE, EVERY DAY",
++    "fr": "UN PEU DE PRATIQUE CHAQUE JOUR"
++  },
++  "LEARN GIT BRANCHING · MOBILE": {
++    "en": "LEARN GIT BRANCHING · MOBILE",
++    "fr": "APPRENDRE LES BRANCHES GIT"
++  },
++  "BRANCH LAB": {
++    "en": "BRANCH LAB",
++    "fr": "ATELIER GIT"
++  },
++  "打开在线版（无需登录）": {
++    "en": "Open the online version (no login)",
++    "fr": "Ouvrir la version en ligne (sans connexion)"
++  }
++}
+diff --git a/src/js/stores/LevelStore.js b/src/js/stores/LevelStore.js
+index f4ba8e9..e6c6e5b 100644
+--- a/src/js/stores/LevelStore.js
++++ b/src/js/stores/LevelStore.js
+@@ -20,30 +20,7 @@ var levelSequences = {};
+ var _solvedMap = {};
+ var _sequences = [];
+ 
+-if (!util.isBrowser()) {
+-  // https://stackoverflow.com/a/26177872/6250402
+-  var storage = {};
+-  var localStorage = {
+-    setItem: function(key, value) {
+-      storage[key] = value || '';
+-    },
+-    getItem: function(key) {
+-      return key in storage ? storage[key] : null;
+-    },
+-    removeItem: function(key) {
+-      delete storage[key];
+-    },
+-    get length() {
+-      return Object.keys(storage).length;
+-    },
+-    key: function(i) {
+-      const keys = Object.keys(storage);
+-      return keys[i] || null;
+-    }
+-  };
+-} else {
+-  var localStorage = window.localStorage;
+-}
++var localStorage = require('../util/storage');
+ 
+ try {
+   _solvedMap = JSON.parse(
+diff --git a/src/js/util/storage.js b/src/js/util/storage.js
+new file mode 100644
+index 0000000..cee0b06
+--- /dev/null
++++ b/src/js/util/storage.js
+@@ -0,0 +1,44 @@
++'use strict';
++
++// Accessing the localStorage property itself can throw for Android content://
++// documents and other opaque origins. Keep the simulator usable in memory.
++function createStorage(getStorage) {
++  var memory = Object.create(null);
++  var nativeStorage = null;
++  try {
++    nativeStorage = getStorage();
++    var probe = '__git_pocket_storage_probe__';
++    nativeStorage.setItem(probe, '1');
++    nativeStorage.removeItem(probe);
++  } catch (error) { nativeStorage = null; }
++  return {
++    isPersistent: function() { return !!nativeStorage; },
++    getItem: function(key) {
++      if (nativeStorage) {
++        try {
++          var value = nativeStorage.getItem(key);
++          if (value !== null) { memory[key] = value; } else { delete memory[key]; }
++          return value;
++        } catch (error) { nativeStorage = null; }
++      }
++      return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null;
++    },
++    setItem: function(key, value) {
++      memory[key] = String(value);
++      if (nativeStorage) {
++        try { nativeStorage.setItem(key, String(value)); }
++        catch (error) { nativeStorage = null; }
++      }
++    },
++    removeItem: function(key) {
++      delete memory[key];
++      if (nativeStorage) {
++        try { nativeStorage.removeItem(key); }
++        catch (error) { nativeStorage = null; }
++      }
++    }
++  };
++}
++var storage = createStorage(function() { return window.localStorage; });
++storage.createStorage = createStorage;
++module.exports = storage;
+diff --git a/src/js/views/commandViews.js b/src/js/views/commandViews.js
+index 3f8ba23..9ed8665 100644
+--- a/src/js/views/commandViews.js
++++ b/src/js/views/commandViews.js
+@@ -159,7 +159,7 @@ class CommandPromptView {
+   }
+ 
+   focus() {
+-    this.$('#commandTextField').focus();
++    if (!window.matchMedia('(pointer: coarse)').matches) { this.$('#commandTextField').focus(); }
+     this.showCursor();
+   }
+ 
+@@ -176,6 +176,7 @@ class CommandPromptView {
+   }
+ 
+   onKeyDown(e) {
++    if (e.isComposing || (e.originalEvent && e.originalEvent.isComposing)) { return; }
+     var el = e.target;
+ 
+     const { lastCommand, prefixBeforeLast } = splitCommands(el.value);
+@@ -225,6 +226,7 @@ class CommandPromptView {
+   }
+ 
+   onKeyUp(e) {
++    if (e.isComposing || (e.originalEvent && e.originalEvent.isComposing)) { return; }
+     // Bug fix: was calling this.onKeyDown(e) which ran the entire keydown
+     // pipeline 2-3 times per keystroke (triple DOM reflow). Now just sync
+     // shadow hint + prompt directly.
+diff --git a/src/js/views/rebaseView.js b/src/js/views/rebaseView.js
+index b1246d5..c835139 100644
+--- a/src/js/views/rebaseView.js
++++ b/src/js/views/rebaseView.js
+@@ -105,6 +105,13 @@ class InteractiveRebaseView extends ContainedBase {
+       appendTo: 'parent'
+     });
+ 
++    // Native buttons make reordering usable with touch and keyboard, without mouse dragging.
++    listHolder.on('click', '[data-move]', function(e) {
++      e.preventDefault();
++      var item = $(e.currentTarget).closest('li');
++      if ($(e.currentTarget).attr('data-move') === 'up') { item.prev().before(item); }
++      else { item.next().after(item); }
++    });
+     this.makeButtons();
+   }
+ 
+diff --git a/src/js/visuals/index.js b/src/js/visuals/index.js
+index 05bcbe8..df05dfd 100644
+--- a/src/js/visuals/index.js
++++ b/src/js/visuals/index.js
+@@ -139,7 +139,7 @@ GitVisuals.prototype.getScreenPadding = function() {
+   // for now we return the node radius subtracted from the walls
+   return {
+     widthPadding: GRAPHICS.nodeRadius * 1.5,
+-    topHeightPadding: GRAPHICS.nodeRadius * topFactor,
++    topHeightPadding: (this.visualization.el && this.visualization.el.id === "mainVisSpace") ? 82 : GRAPHICS.nodeRadius * topFactor,
+     // we pad the bottom a lot more so the branches won't go off screen
+     bottomHeightPadding: GRAPHICS.nodeRadius * 5
+   };
+@@ -852,7 +852,13 @@ GitVisuals.prototype.animateEdges = function(speed) {
+ };
+ 
+ GitVisuals.prototype.getMinLayers = function() {
+-  return (this.options.smallCanvas) ? 2 : 7;
++  if (this.options.smallCanvas) { return 2; }
++  if (this.paper && this.paper.height) {
++    var padding = this.getScreenPadding();
++    var available = this.paper.height - padding.topHeightPadding - padding.bottomHeightPadding;
++    return Math.max(2, Math.min(7, Math.floor(available / 48)));
++  }
++  return 7;
+ };
+ 
+ GitVisuals.prototype.getDepthIncrement = function(maxDepth) {
+diff --git a/src/style/font-awesome.css b/src/style/font-awesome.css
+index 7dea744..d3f28cf 100644
+--- a/src/style/font-awesome.css
++++ b/src/style/font-awesome.css
+@@ -23,8 +23,7 @@
+     */
+ @font-face {
+   font-family: "FontAwesome";
+-  src: url('/assets/font/fontawesome-webfont.eot');
+-  src: url('/assets/font/fontawesome-webfont.eot?#iefix') format('eot'), url('/assets/font/fontawesome-webfont.woff') format('woff'), url('/assets/font/fontawesome-webfont.ttf') format('truetype'), url('/assets/font/fontawesome-webfont.svg#FontAwesome') format('svg');
++  src: url('/assets/font/fontawesome-webfont.woff') format('woff');
+   font-weight: normal;
+   font-style: normal;
+ }
+diff --git a/src/style/index.css b/src/style/index.css
+index 50f8dc5..d05d7c5 100644
+--- a/src/style/index.css
++++ b/src/style/index.css
+@@ -1,5 +1,7 @@
+ /* Entry stylesheet processed by Vite. Import order matters. */
+-@import './all.min.css';
++/* Mobile shell replaces the Font Awesome 6 helper bar. */
+ @import './font-awesome.css';
+ @import './main.css';
+ @import './rainbows.css';
++
++@import './mobile.css';
+diff --git a/src/style/mobile.css b/src/style/mobile.css
+new file mode 100644
+index 0000000..4b81f13
+--- /dev/null
++++ b/src/style/mobile.css
+@@ -0,0 +1,60 @@
++:root{--pocket-height:100dvh;--pocket-top:0px;--pocket-header:112px;--ink:#193a33;--accent:#176f58;--paper:#f5f7f2;--line:#dce4d9}
++html,body{width:100%;height:100%;background:var(--paper);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
++*{box-sizing:border-box}button,a,input,textarea{-webkit-tap-highlight-color:transparent}button{touch-action:manipulation}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #f2b65e;outline-offset:2px}
++#pocketHeader{position:fixed;top:var(--pocket-top);left:0;right:0;height:var(--pocket-header);padding:12px 22px 0;z-index:10;background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line);padding-top:max(12px,env(safe-area-inset-top))}
++.pocket-brand{display:flex;align-items:center;gap:12px;height:48px}.pocket-mark{display:grid;place-items:center;width:38px;height:38px;background:var(--accent);color:#e6efb8;border-radius:12px;font:32px monospace}.pocket-brand strong{display:block;font-size:19px;letter-spacing:.5px}.pocket-brand small{display:block;font-size:9px;letter-spacing:1.8px;margin-top:4px;color:#718277}
++#pocketAbout{margin-left:auto;background:none;border:0;color:#537367;font-size:12px;min-height:44px;padding:8px}
++.pocket-nav{display:flex;gap:8px;align-items:center;height:50px}.pocket-nav button{background:none;color:#456052;border:0;padding:8px 14px;font:600 13px inherit;min-height:40px;border-radius:9px;white-space:nowrap}.pocket-nav button:first-child{background:var(--ink);color:white}.pocket-nav button:hover{background:#dde7dc;color:var(--ink)}#pocketProgress{margin-left:auto;font-size:12px;color:#607c68;white-space:nowrap}
++#interfaceWrapper{position:fixed;top:calc(var(--pocket-top) + var(--pocket-header));left:0;width:100%;height:calc(var(--pocket-height) - var(--pocket-header));min-height:0;min-width:0;display:flex;flex-direction:row;padding:0;gap:0}
++#controls{width:390px;max-width:42%;flex:0 0 390px;min-height:0;background:transparent;z-index:4;padding:16px 0 16px 16px}
++#commandLineHistory{display:flex;flex-direction:column;flex:1;margin:0;min-width:0;min-height:0;border:1px solid #cfdacc;border-radius:16px;box-shadow:0 8px 32px #193a330c;overflow:hidden;background:#182d29}
++#commandLineHistory>.toolbar{display:flex;min-height:40px;align-items:center;justify-content:center;background:#213d35;border:0;color:#b6d0bb;border-radius:0;font-size:11px;letter-spacing:1px;padding:8px}#commandLineHistory>.toolbar .controls{display:none}
++#terminal{display:block;flex:1;min-height:0;overflow:auto!important;background:#182d29;border:0;padding:6px 12px;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.6}#commandDisplay{min-width:0}#commandDisplay p{overflow-wrap:anywhere}#commandDisplay .commandLine{color:#dcebd7}p.commandError,p.errorResult{color:#ffad9e}p.commandLine span.prompt{color:#b8da93}
++#commandLineBar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:0 0 auto;min-height:108px;padding:0 10px 12px;gap:8px;background:#213d35;border:0}#prompt{display:none}#commandLineBar #commandTextField{display:block;position:static;top:auto;left:auto;resize:none;min-width:0;width:100%;height:46px;padding:12px 10px;border-radius:9px;border:1px solid #567364;background:#152c24;color:#f0f7e9;font:16px/20px Menlo,Consolas,monospace;box-shadow:none}#commandTextField::placeholder{color:#9cb2a1}#pocketRun{height:46px;min-width:70px;padding:8px 12px;border:0;border-radius:9px;background:#d7eca5;color:#203b2b;font-size:14px;font-weight:700}
++#pocketQuick{grid-column:1/-1;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:8px}#pocketQuick button{flex-shrink:0;height:38px;padding:0 12px;background:#2b483f;color:#d2e3d3;border:1px solid #446354;border-radius:7px;font:12px Menlo,Consolas,monospace}#pocketQuick button:last-child{color:#e3caa7}
++#mainVisSpace{display:block;flex:1;min-width:0;min-height:0;background:radial-gradient(#afc6ae77 .7px,transparent .7px) 0 0/18px 18px,var(--paper)!important;transition:none}#mainVisSpace .modeText{display:none}#pocketGraphLabel{position:absolute;z-index:2;top:16px;left:22px;right:22px;display:flex;align-items:center;gap:12px;pointer-events:none;color:var(--ink)}#pocketGraphLabel>span{font-size:9px;letter-spacing:2px;color:#718572}#pocketMode{font-size:13px}#pocketStart{pointer-events:auto;margin-left:auto;border:1px solid #bdceb8;border-radius:20px;background:#eaf0df;color:#426140;min-height:36px;padding:6px 12px;font-size:12px}#pocketStart[hidden]{display:none}
++#canvasHolder{pointer-events:none}#canvasHolder svg{pointer-events:auto}#helperBarMount,.github-corner,.upsell,.upsellImage{display:none!important}#goalPlaceholder{display:none!important}
++.level-toolbar{background:#29483c!important;color:#d5e5d7!important;border:0!important;padding:8px!important;font-size:12px!important;min-height:72px!important;flex-shrink:0}.level-toolbar.hidden{display:flex!important}.level-toolbar button{min-height:36px;border:1px solid #65836b;border-radius:6px;background:#3c5b48;color:#f1f7ed;padding:4px 10px;margin-top:4px}
++.modalView{height:var(--pocket-height);top:var(--pocket-top);backdrop-filter:blur(5px);background:#112c2570}.modalView .terminal-window{margin:16px auto;width:100%;min-width:0;max-height:calc(var(--pocket-height) - 32px);display:flex;flex:0 1 auto}.modalView .terminal-window>.box.flex3{display:none}.modalView .terminal-window-holder{display:flex;flex:1;min-width:0;max-width:820px;width:calc(100% - 24px);margin:auto;border-radius:16px;overflow:hidden}.modalView .terminal-window-holder>.wrapper{display:flex;flex-direction:column;width:100%;min-height:0;max-height:calc(var(--pocket-height) - 32px)}.modalView .toolbar{background:#e8eee2;border:0;color:var(--ink);padding:14px;flex-shrink:0;min-height:48px}.modalView .inside{background:#213b32;padding:16px;overflow-y:auto;min-height:0;border:0;box-shadow:none;font-size:14px;line-height:1.65}.modalView .inside h2{font-size:21px}.modalView .inside code{background:#385743;border:0;border-radius:4px;padding:3px 5px;overflow-wrap:anywhere}.modalView .controls{left:8px;top:4px}.modalView .controls .close,div.canvasTerminalHolder .close{height:40px;width:40px;min-width:40px;border:0;border-radius:10px;background:#d1dfca;position:relative}.modalView .controls .close:after,div.canvasTerminalHolder .close:after{content:'×';font:25px/38px sans-serif;color:#264330;display:block;text-align:center}.modalView .minimize,.modalView .plus{display:none}.modalView button{min-height:44px;min-width:44px}.modalView div.displayName h3{font-size:16px}.modalView .levelDropdownTab{min-height:44px;padding:8px 16px;margin:0 4px;border:0;box-shadow:none;background:#d5e5c5}.modalView .levelDropdownTab.deselected{opacity:.65;background:#9eae9b}.modalView .seriesView p.about,.modalView .seriesView p.levelInfo{font-size:12px;line-height:1.5;color:#b8d0bc}.modalView .levelIcon{min-width:46px;min-height:46px}.modalView .iconHolder{flex-wrap:wrap}.modalView .leftRightView{flex-shrink:0}.modalView .gitDemonstrationView{max-width:100%;min-width:0}
++div.canvasTerminalHolder{top:calc(var(--pocket-top) + var(--pocket-header) + 8px);right:12px;width:min(360px,calc(100vw - 24px));z-index:8}div.canvasTerminalHolder>.terminal-window-holder{min-width:0;max-width:100%;width:100%;height:calc((var(--pocket-height) - var(--pocket-header)) * .65)!important;left:0!important;top:0!important}div.canvasTerminalHolder>.terminal-window-holder>.wrapper{border-radius:14px;overflow:hidden;box-shadow:0 6px 35px #15362955}div.canvasTerminalHolder .toolbar{min-height:48px;padding:14px;background:#edcfc1;color:#613e2c;border:0}div.canvasTerminalHolder .terminal-text{font-size:11px;color:#613e2c;background:#f7e5d7!important}div.canvasTerminalHolder>.terminal-window-holder div.inside{min-height:80px;background:#f7e5d7}div.canvasTerminalHolder .controls{top:3px;left:8px}
++.pocket-reorder{background:#526749;color:white;border:1px solid #9cba8b;border-radius:7px;font-size:18px}.rebaseEntry .wrapper{display:flex;gap:6px;align-items:center;justify-content:space-between}.rebaseEntry .idwrapper{min-width:25px}.rebaseEntry #toggleButton{font-size:12px;padding:6px}.rebaseEntry{margin:8px 0!important}.iRebaseDialog .entryHolders{padding:0}.iRebaseDialog ul{padding:0}
++#pocketDialog{position:fixed;inset:0;width:min(560px,calc(100% - 24px));max-height:calc(var(--pocket-height) - 32px);margin:auto;padding:0;border:1px solid #ccd8c5;border-radius:20px;background:var(--paper);color:var(--ink);box-shadow:0 20px 70px #122c2540;font-size:14px;line-height:1.7;overflow:auto}#pocketDialog::backdrop{background:#112c2588;backdrop-filter:blur(5px)}.pocket-dialog-top{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--paper);border-bottom:1px solid var(--line)}.pocket-dialog-top h2{font-size:18px;margin:0}.pocket-dialog-top button{border:0;border-radius:10px;background:#e5ecdd;color:var(--ink);height:44px;width:44px;font-size:18px}#pocketDialogBody{padding:16px 20px 24px}.pocket-note,.pocket-credit{font-size:12px;color:#6a7b68}.pocket-reference{display:flex;flex-direction:column;gap:8px}.pocket-reference button{text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);min-height:60px}.pocket-reference code{display:block;padding:0;border:0;background:none;font:14px/24px Menlo,Consolas,monospace;color:var(--accent)}.pocket-reference span{font-size:12px;color:#71836b}.pocket-eyebrow{font-size:10px;letter-spacing:2px;color:#7b8969}.pocket-data{display:flex;gap:10px}.pocket-data button,.pocket-import{display:inline-flex;align-items:center;min-height:44px;border:1px solid #b9cbb2;background:#edf2e5;color:var(--ink);padding:8px 12px;border-radius:9px;font-size:13px;cursor:pointer}.pocket-import input{position:absolute;width:1px;height:1px;opacity:0}.pocket-import:focus-within{outline:3px solid #f2b65e}.pocket-download{display:block;background:var(--accent);border-radius:10px;color:white;text-align:center;text-decoration:none;padding:12px}.pocket-credit a{color:var(--accent)}
++#appLoading{background:var(--paper)!important}
++@media(max-width:760px){
++:root{--pocket-header:108px}#pocketHeader{padding-left:14px;padding-right:14px}.pocket-brand{gap:9px}.pocket-brand strong{font-size:17px}.pocket-brand small{font-size:8px;letter-spacing:1.1px}.pocket-mark{width:34px;height:34px}.pocket-nav{gap:3px}.pocket-nav button{padding:7px 9px;font-size:12px}#pocketProgress{font-size:10px}#interfaceWrapper{flex-direction:column-reverse}#controls{flex:0 0 43%;width:100%;max-width:100%;padding:0 8px max(8px,env(safe-area-inset-bottom));min-height:205px}#commandLineHistory{border-radius:14px}#mainVisSpace{flex:1}#pocketGraphLabel{top:8px;left:16px;right:16px;gap:8px}#pocketGraphLabel>span{font-size:8px;letter-spacing:1.2px}#pocketMode{font-size:11px}#pocketStart{font-size:11px;min-height:32px;padding:4px 10px}#commandLineHistory>.toolbar{min-height:28px;padding:4px;font-size:9px}#terminal{font-size:11px;line-height:1.55;padding:4px 10px}#commandLineBar{min-height:104px;padding:0 8px 8px;gap:6px}#pocketQuick button{height:38px}div.canvasTerminalHolder>.terminal-window-holder{height:calc((var(--pocket-height) - var(--pocket-header)) * .55)!important}.modalView .inside{padding:12px;font-size:13px}.modalView .terminal-window{margin:8px auto;max-height:calc(var(--pocket-height) - 16px)}.modalView .terminal-window-holder>.wrapper{max-height:calc(var(--pocket-height) - 16px)}.modalView .levelDropdownView{font-size:13px}.level-toolbar{min-height:65px!important;padding:4px!important;font-size:10px!important}.level-toolbar button{min-height:32px;margin-top:2px}.modalView .inside p{line-height:1.65}.modalView .gitDemonstrationView{display:flex;flex-direction:column}.modalView .gitDemonstrationView>.visHolder{min-height:200px}
++}
++@media(max-height:540px){:root{--pocket-header:64px}.pocket-brand{height:26px}.pocket-brand small,.pocket-mark,#pocketAbout{display:none}.pocket-brand strong{font-size:13px}.pocket-nav{height:30px}.pocket-nav button{min-height:26px;padding:3px 9px}#pocketHeader{padding-top:4px}#pocketGraphLabel{display:none}#interfaceWrapper{flex-direction:row}#controls{flex:0 0 53%;max-width:53%;padding:6px;min-height:0}#commandLineHistory>.toolbar{display:none}#commandLineBar{min-height:96px}.level-toolbar{min-height:50px!important}.level-toolbar .buttonsWrapper{display:none}}
++@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.transitionAll,.transitionAllSlow,.transitionTransform{transition:none!important}}
++
++/* SVGs span the stage; only actual graph elements should receive touches. */
++#canvasHolder svg{pointer-events:none}#canvasHolder svg circle,#canvasHolder svg rect,#canvasHolder svg text,#canvasHolder svg path{pointer-events:auto}
++#pocketGraphLabel{z-index:6}
++#commandDisplay>div:empty::before{content:'试试 git commit，创建你的第一个提交。\A常用命令点一下填入，修改后运行。';display:block;white-space:pre-line;color:#8faa97;line-height:2;padding:14px 0;font-family:inherit}
++#commandDisplay .commandLine .icons{background:none;color:#8bbd86;width:auto;padding-left:8px}
++/* Replace the desktop dialog's spacer columns with one readable mobile sheet. */
++.modalView .terminal-window>.box.flex2,.modalView .terminal-window>.box.flex3{display:none}
++.modalView .terminal-window-holder{flex:0 1 auto;width:calc(100% - 24px);margin:0 auto}
++.modalView .modalTerminal{width:100%;min-width:0}
++.modalView .toolbar>.controls,div.canvasTerminalHolder .toolbar>.controls{width:44px;height:44px;top:2px;left:6px}
++.modalView .toolbar>.controls>.box:not(:first-child),div.canvasTerminalHolder .toolbar>.controls>.box:not(:first-child){display:none}
++.modalView .toolbar>.controls .box .close,div.canvasTerminalHolder .toolbar>.controls .box .close{display:block;min-width:40px;width:40px;height:40px;text-indent:0;border-radius:10px;background:#d1dfca;box-shadow:none;margin:0}
++.modalView .leftRightView{position:sticky;bottom:-12px;background:#213b32;padding:8px 0;margin-top:16px;min-height:56px}
++.modalView .leftRightView button{display:flex;align-items:center;justify-content:center;gap:6px;width:auto;min-width:80px;border-radius:9px;background:#3c5946;padding:7px 12px}
++.modalView .leftRightView span.hoverLabel{position:static;clip:auto;clip-path:none;width:auto;height:auto;opacity:1;white-space:nowrap;font-size:13px;transform:none;background:none;color:#e1edd8;padding:0}
++.modalView .leftRightView div i{font-size:20px}
++div.toolbar.level-toolbar.hidden{opacity:1;height:auto}
++div.toolbar.level-toolbar .clearfix{margin:0}div.toolbar.level-toolbar .levelNameWrapper{margin:0;top:0;text-align:center;padding:0}div.toolbar.level-toolbar .buttonsWrapper{position:static;display:flex;justify-content:center;gap:8px;width:auto}div.toolbar.level-toolbar .buttonsWrapper>div{float:none;margin:0}
++
++.modalView{overflow-x:hidden}.modalView:not(.inFront){visibility:hidden;pointer-events:none}
++.modalView .iconHolder{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}.modalView .iconHolder .levelIcon{margin:5px;min-width:44px;width:50px;flex:0 0 50px}
++html{overflow:hidden;min-width:0}#canvasHolder{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
++@media(max-width:760px){.modalView .gitDemonstrationView>div.demonstrationText{width:100%;max-width:none;max-height:none;margin:0;overflow:visible}.modalView .gitDemonstrationView>div.visHolder{flex:0 0 210px;background:#e5efdb;border:0;box-shadow:none}.modalView .gitDemonstrationView>div.visHolder>.visHolderInside{width:100%;height:210px}}
++
++#pocketStorageNotice{background:#f6e9c5;color:#5c471e;padding:7px 10px;font:11px/1.5 sans-serif;flex-shrink:0}#pocketStorageNotice[hidden]{display:none}
++#pocketDialog{z-index:1000010}#pocketDialog:not([open]){display:none}
++
++@media(max-width:760px){#pocketProgress{max-width:74px;white-space:normal;text-align:right}}
++
++html[lang="en"] #commandDisplay>div:empty::before{content:'Try git commit to create your first commit.\A Tap a quick command, edit it, then run.'}
++html[lang="fr"] #commandDisplay>div:empty::before{content:'Essayez git commit pour créer un commit.\A Touchez une commande, adaptez-la, exécutez-la.'}
++@media(max-width:760px){.pocket-nav button{padding-left:6px;padding-right:6px}.pocket-brand strong{font-size:16px}.pocket-nav{gap:1px}#pocketProgress{max-width:65px;font-size:9px}.pocket-brand small{letter-spacing:.5px}}
+diff --git a/vite.config.mjs b/vite.config.mjs
+index 2fc1c96..889307f 100644
+--- a/vite.config.mjs
++++ b/vite.config.mjs
+@@ -102,22 +102,17 @@ export default defineConfig({
+   },
+   build: {
+     outDir: 'build',
++    target: 'chrome80',
++    assetsInlineLimit: 1000000,
++    cssCodeSplit: false,
+     // Vite 8's default Lightning CSS minifier collapses the legacy vendor
+     // fallbacks in main.css (dropping `display: flex`, `-webkit-box-flex`,
+     // ...), which breaks the page layout. esbuild keeps them intact.
+     cssMinify: 'esbuild',
+     rollupOptions: {
+       output: {
+-        // Keep third-party code in a stable chunk. This does not shrink the
+-        // first load (the vendor chunk is still a static import) but an
+-        // app-only deploy no longer invalidates the ~143 KB (gzip) vendor
+-        // bundle, so repeat visitors re-download far less.
+-        manualChunks: function(id) {
+-          if (id.indexOf('node_modules') !== -1) {
+-            return 'vendor';
+-          }
+-          return undefined;
+-        },
++        format: 'iife',
++        inlineDynamicImports: true,
+       },
+     },
+   },

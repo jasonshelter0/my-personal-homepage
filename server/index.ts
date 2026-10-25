@@ -91,7 +91,11 @@ function serveWebsite(
     dotfiles: 'deny',
     index: 'index.html',
     extensions: ['html'],
-    setHeaders: (response) => {
+    setHeaders: (response, filePath) => {
+      // This reviewed, self-contained simulator is embedded by the learning
+      // page. Every other resource, including the editor, keeps DENY.
+      if (filePath === join(directory, 'learn-assets/git-branching/simulator.html'))
+        response.setHeader('X-Frame-Options', 'SAMEORIGIN');
       if (privatePreview) response.setHeader('Cache-Control', 'no-store');
     },
   })(req, res, (error) => {
