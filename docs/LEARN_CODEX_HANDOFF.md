@@ -1,5 +1,7 @@
 # 学习页面开发交接
 
+2026-10-25 更新：Git 目标窗口手机宽度修复已发布并验收，运行源码 `34cf36e`、内容 `mvntcxim-e5d321e2`。当前镜像、备份与回滚以 `RELEASE_HANDOFF.md` 顶部 Git 修复章节为准。
+
 项目：`/home/jasonshelter/Projects/personal-website`。仓库：`https://github.com/jasonshelter0/my-personal-homepage`。部署状态、实际版本、产物校验和与生产操作说明以仓库根目录 `RELEASE_HANDOFF.md` 为准。
 
 ## 本次已实现

@@ -1,5 +1,41 @@
 # Folio Studio 生产发布交接
 
+## Git 手机目标窗口修复（2026-10-25，当前部署）
+
+已于 `2026-10-25T12:40:09.235Z` 完成真实 HTTPS 私有预览、发布及匿名公网验收。
+修复上游桌面样式的 400px 最小宽度覆盖手机样式的问题；目标图按实际容器重绘，
+横竖屏切换及隐藏后重开仍受当前宽度约束，长目标说明可换行。
+以下为本次当前状态；下方此前发布章节保留历史，不代表此刻的镜像/内容。
+
+- 入口：<https://www.jasonshelter.com/learn/git-branching/>（中文、英文、法文）。
+- 运行源码 `34cf36e02d6e75117d0b74350aeb3671841c3e48`；只从隔离 worktree 构建，未纳入同期未发布的翻译/图标功能。
+- 镜像 `sha256:96395dee4359fa6a1c119f953b65d3cf9202c6492fe5c10c36ceed31b5dbf255`。
+- runtime `/www/dk_project/folio-studio/releases/git-width-20261025-34cf36e`；`current` 指向此目录。
+- 冻结内容 `mvntcxim-e5d321e2`；基于部署时现场已发布版本 `mvnrtyk6-9f73620e` 重建，保留用户后续内容更新与 Mamba 三语课程。
+- 持久数据仍为 `/www/dk_project/folio-studio/shared/data`，草稿 revision 14 和 SHA-256 发布前后完全一致，无数据库迁移。
+- 旧镜像 `sha256:ba0946ac153a012703a077e6ebaddd96b3669892e3e80a1249e364528f6ac728`、旧 runtime `releases/learn-20261025-8ff2c4d` 均保留。
+- 一致性备份 `/www/backup/site/folio-studio/20261025T123743Z-learning/data.tar.gz`，应用短暂停止时归档，排除可再生 build-cache，权限0600/目录0700；SHA-256 `4afbcbb4845bbdce81a9a925df6ec8a103aff12f617613b64118e76a92e8ac35`。已检查归档可完整列出，未做恢复演练。
+- 运行包 SHA-256 `f9722ec618a8ba774e1fa6a2a9350fc7630183057d5d41f4d1203bf60baead77`，上传后校验一致。
+- 模拟器 SHA-256 `8f7226b2da11ec8e5e75192e8a14aa78531dc166ff99dd50be2cc9c4ce753815`，预览和公网与本地逐字节一致。
+
+验证：npm ci/typecheck/build、27 项网站测试、原有13项浏览器测试、新增3项中英法目标窗口回归、415项上游测试通过；全部36个英文关卡的目标图和目标说明在320px检查通过。
+真实 HTTPS 中英法各检查320px、844px横屏、隐藏后在320px重开、关闭按钮、目标说明和搜索；预览通过才发布，随后匿名重复检查，脚本/资源错误0。
+首页、Mamba课程、后台和health200；匿名草稿/私有预览401，数据库/快照404。未更改Nginx、DNS、证书、端口或其他服务。
+
+本次回滚分为内容和应用两步（执行前协调唯一写入者并持有 `config/deployment.lock`）：
+
+```bash
+ssh aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvnrtyk6-9f73620e')).id);
+JS
+ssh aliyun-web 'bash /www/backup/site/folio-studio/20261025T123743Z-learning/rollback-application.sh'
+ssh aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+回滚脚本恢复旧 image.env、runtime 链接并重建固定 Compose 服务；不覆盖数据或草稿。
+源码与可重建补丁见 `docs/GIT_BRANCHING.md`。部署锁在记录更新与验收完成后释放。
+
 ## 最新学习课程发布（2026-10-25）
 
 **已发布并通过真实 HTTPS 验收，完成时间 `2026-10-25T07:49:11.541Z`。** 本节为当前状态；下方首次建站记录保留作历史，旧镜像和初始内容 ID 不代表当前版本。两个开发会话协调后，由 Mamba 会话持有服务器 `flock` 独占完成统一部署。

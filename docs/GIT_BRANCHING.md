@@ -93,3 +93,7 @@ portrait/landscape/reopen regression tests; the existing 13 browser tests,
 27 website tests and 415 upstream tests pass. The imported standalone file is
 4,019,515 bytes, SHA-256
 `8f7226b2da11ec8e5e75192e8a14aa78531dc166ff99dd50be2cc9c4ce753815`.
+
+Live verification: `2026-10-25T12:40:09.235Z`; source `34cf36e02d6e75117d0b74350aeb3671841c3e48`, content
+`mvntcxim-e5d321e2`, image `sha256:96395dee4359fa6a1c119f953b65d3cf9202c6492fe5c10c36ceed31b5dbf255`.
+Exact backup and rollback references are in the newest `RELEASE_HANDOFF.md` section.
