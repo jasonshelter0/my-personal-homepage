@@ -1,0 +1,63 @@
+---
+import { href, type Locale } from '../lib/data';
+import { learningUI, formatLearning } from '../lib/learning-ui.js';
+import '../styles/learning.css';
+interface Lesson {
+  slug: string;
+  label: string;
+  title: string;
+  lede: string;
+  body: string;
+  minutes: number | string;
+}
+interface Props {
+  locale: Locale;
+  lesson: Lesson;
+  lessons: Lesson[];
+}
+const { locale, lesson, lessons } = Astro.props;
+const t = learningUI[locale];
+const path = (slug: string) => href(locale, `learn/mamba-tta-irstd${slug === 'index' ? '' : `/${slug}`}`);
+const title = lesson.title.replace(/<[^>]*>/g, ' ');
+const position = lessons.findIndex(item => item.slug === lesson.slug);
+const previous = lessons[position - 1];
+const next = lessons[position + 1];
+const isUnit = !['index', 'references'].includes(lesson.slug);
+---
+<article class="learning-course" data-lesson={lesson.slug} data-locale={locale}>
+  <a class="learning-back" href={href(locale, 'learn')}>← {t.back}</a>
+  <p class="learning-eyebrow">{t.course}</p>
+  <h1 data-pagefind-meta="title">{title}</h1>
+  <p class="learning-lede">{lesson.lede}</p>
+  <p class="learning-duration">{formatLearning(t.minutes, { n: lesson.minutes })}</p>
+  <details class="learning-chapters" data-pagefind-ignore>
+    <summary>{t.chapters}</summary>
+    <nav aria-label={t.chapters}>
+      {lessons.map((item) => (
+        <a href={path(item.slug)} data-chapter={item.slug} aria-current={item.slug === lesson.slug ? 'page' : undefined}>{item.label}</a>
+      ))}
+    </nav>
+    <div class="learning-progress">
+      <span class="progress-label"></span>
+      <div class="progress-track"><div class="progress-bar"></div></div>
+      <small>{t.localOnly}</small>
+    </div>
+  </details>
+  <div class="learning-body" set:html={lesson.body} />
+  {isUnit && (
+    <section class="section notes" data-pagefind-ignore>
+      <h2>{t.noteTitle}</h2>
+      <label for={`learning-note-${lesson.slug}`}>{t.notePrompt}</label>
+      <textarea id={`learning-note-${lesson.slug}`} data-note={lesson.slug} rows="4" placeholder={t.notePlaceholder}></textarea>
+      <p class="note-status" aria-live="polite">{t.localOnly}</p>
+      <button type="button" class="mark-complete" data-id={lesson.slug}>{t.complete}</button>
+    </section>
+  )}
+  <nav class="chapter-nav" aria-label={t.chapters} data-pagefind-ignore>
+    {previous ? <a href={path(previous.slug)}>← {previous.label}</a> : <span />}
+    {next && <a href={path(next.slug)}>{next.label} →</a>}
+  </nav>
+</article>
+<script>
+  import '../lib/learning-interactions.js';
+</script>

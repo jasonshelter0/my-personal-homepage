@@ -7,8 +7,8 @@
 - `https://www.jasonshelter.com/learn/` 是稳定入口，跳转到后台配置的默认语言（当前为简体中文）。无尾斜杠的 `/learn` 由静态服务规范化。
 - 完整语言页为 `/zh-cn/learn/`、`/en/learn/`、`/fr/learn/`，语言切换保持学习栏目。
 - 学习主页复用正式站的深色配色、柔和鼠标光晕、导航、搜索与页底备案链接。
-- 当前显示真实的“学习空间准备中”状态，没有虚构课程、学习进度、成绩或已发布学习文章。现有文章入口可正常点击。
-- 学习页进入各语言 Pagefind 搜索索引和 sitemap。当前只提供入口，不包含学习追踪、测验或课程功能。
+- 学习主页由 `lib/learning-catalog.ts` 列出源码课程：`mamba-tta-irstd`（11 章 × 3 语言）与 `git-branching`（3 语言及本地模拟器）。现有文章入口保留。
+- 课程详情进入各语言 Pagefind 和 sitemap。Mamba 课程提供公式演示、测验、协议导出及浏览器本地笔记/进度；Git 提供同源 iframe 模拟器。教学模拟不执行真实机器学习训练，也不访问真实 Git 仓库。
 
 ## 文件位置
 
@@ -24,12 +24,20 @@
 | `shared/types.ts`、`server/schema.ts`             | CMS 内容模型及服务端校验                          |
 | `server/store.ts`、`server/publisher.ts`          | SQLite 草稿持久化、冻结发布、预览和回滚           |
 
+## 当前源码课程
+
+- Mamba：`docs/MAMBA_TTA_IRSTD.md`；完整三语 JSON 位于 `apps/site/src/content/learn/mamba-tta-irstd/`。
+- Git：`docs/GIT_BRANCHING.md`；`GitLearningLesson.astro` 与 `public/learn-assets/git-branching/`。
+- 详情路由：`pages/[locale]/learn/[...lesson].astro`；默认语言别名：`pages/learn/[...lesson].astro`。
+- 共享目录 `learning-catalog.ts` 同时驱动主页卡片、别名与 sitemap；增加课程时也要更新详情路由映射。
+- 静态课程来自已审核源码；CMS 草稿模型保持不变。浏览器学习记录不上传服务器。
+
 ## 后续添加学习内容
 
 先确认内容范围，再选择扩展方式。不要为了添加学习文章另建数据库或绕过现有编辑审核流程。
 
 1. 普通学习笔记可以先作为现有 `page` 或 `post` 条目存储，使用统一的 `learn` 标签分类。它们已经拥有三语言正文、封面、Markdown、草稿、审核和数据库持久化能力。下一位 Codex 可以让学习主页从已发布条目中筛选该标签；在这一步完成前，添加标签本身不会自动改变学习主页。
-2. 若需要学习栏目专属 URL，预留 `/<locale>/learn/<slug>/`，例如 `/zh-cn/learn/linear-algebra/`。在 Astro 的路由生成中添加明确映射并处理 slug 唯一性；可用 `apps/site/src/pages/[locale]/learn/[slug].astro` 承载详情。将 `/learn/<slug>/` 作为默认语言别名时也要显式实现，不能依赖 SPA 回退。当前这些详情路由尚未实现。
+2. 若需要学习栏目专属 URL，预留 `/<locale>/learn/<slug>/`，例如 `/zh-cn/learn/linear-algebra/`。在 Astro 的路由生成中添加明确映射并处理 slug 唯一性；可用 `apps/site/src/pages/[locale]/learn/[slug].astro` 承载详情。将 `/learn/<slug>/` 作为默认语言别名时也要显式实现，不能依赖 SPA 回退。目前已通过上述 catch-all 路由实现；新增课程应扩展其显式映射，避免建立冲突路由。
 3. 路由别名与既有 `/pages/`、`/posts/` URL 共存时，选定一个 canonical 地址，更新卡片链接、sitemap、RSS 和语言切换；有公开旧链接时保留兼容重定向。
 4. 若需要课程层级、章节关系或学习进度，再设计向后兼容的字段和迁移。当前内容保存在 SQLite 的草稿快照中，发布版本和媒体另存在持久目录。新增类型必须同时修改 TypeScript 类型、Zod 校验、后台编辑 UI、三语言文案、完整性检查、静态路由、搜索过滤和回归测试。不能只改前台类型断言。
 5. 学习页面应调用 `Layout` 并传入正确的 `locale`、`path`、标题和摘要；所有语言都要提供完整内容。保留 `data-pagefind-body`、标题元数据及 ICP 页脚。Markdown 使用现有 `markdown()` 消毒器，禁止直接渲染未处理 HTML。
@@ -43,6 +51,12 @@
 - 客户端资源通过 `import.meta.env.BASE_URL` 获取构建根路径。Pagefind 导入路径及 `baseUrl` 选项都要跟随这个前缀。
 - 不要在学习页接入后台 `/api/` 读取草稿。公开页面只来自已经审核、冻结并发布的快照。
 - 学习页面不能占用 `/admin/`、`/api/`、`/preview/`、`/healthz`、`/media/`、`/pagefind/` 及 `/_astro/` 命名空间。
+
+## 应用更新时保持生产内容与草稿
+
+更新镜像后，当前公开网站仍指向旧的冻结产物。先记录实际 `current` ID，再在新容器运行 `node --import tsx scripts/rebuild-published.ts --expected-current <verified-id>`。此命令只从现有已发布快照构建，不覆盖数据库草稿，也不自动发布。打开并验证真实 HTTPS 私有预览之后，通过正常发布 API 切换。不要用后台普通“生成预览”替代此流程，因为它读取已保存草稿；不要使用未提供生产快照的演示初始化命令。
+
+具体镜像、备份、内容 ID、最终验收与回滚参见根目录 `RELEASE_HANDOFF.md` 的最新记录。
 
 ## 验证与交付
 

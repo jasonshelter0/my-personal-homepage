@@ -1,9 +1,10 @@
 import { entries, LOCALES, publicHref, entryHref, withoutBase, siteUrl } from '../lib/data';
+import { allLearningPaths } from '../lib/learning-catalog';
 const esc = (s: string) =>
   s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
 export function GET() {
   const urls = LOCALES.flatMap((locale) =>
-    ['', 'projects', 'posts', 'pages', 'resume', 'learn']
+    ['', 'projects', 'posts', 'pages', 'resume', 'learn', ...allLearningPaths]
       .map((path) => publicHref(locale, path))
       .concat(entries.map((entry) => withoutBase(entryHref(locale, entry)))),
   );

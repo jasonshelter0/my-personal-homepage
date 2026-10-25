@@ -13,7 +13,7 @@
     "build:site": "astro build --root apps/site && pagefind --site apps/site/dist",
     "build": "npm run build:admin && npm run build:site",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
     "test:e2e": "playwright test",
     "setup": "npm run build:admin && tsx scripts/setup.ts",
     "export": "tsx scripts/export.ts",

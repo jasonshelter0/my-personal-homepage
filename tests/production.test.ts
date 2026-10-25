@@ -111,6 +111,17 @@ test(
       html.includes(`/preview/${release.id}/fr/`),
       'language links must retain private prefix',
     );
+    for (const locale of ['zh-cn', 'en', 'fr']) {
+      const course = `/preview/${release.id}/${locale}/learn/mamba-tta-irstd/tent/`;
+      assert.equal((await request(course)).status, 401);
+      const lesson = await request(course, 'GET', undefined, true);
+      assert.equal(lesson.status, 200);
+      const content = await lesson.text();
+      assert.ok(content.includes(`href="/preview/${release.id}/${locale}/learn/mamba-tta-irstd/`));
+      assert.match(content, /data-demo="entropy"/);
+      assert.ok(content.includes(`rel="canonical" href="${seed.settings.siteUrl}/${locale}/learn/mamba-tta-irstd/tent/"`));
+      assert.ok(!content.match(/rel="canonical" href="[^"]*\/preview\//));
+    }
     const asset = html.match(/src="([^"]+\/_astro\/[^\"]+\.js)"/)?.[1];
     assert.ok(asset, 'preview contains a module asset');
     assert.equal((await request(asset!, 'GET', undefined, true)).status, 200);
@@ -145,5 +156,14 @@ test(
     assert.ok(!publicHTML.includes(`/preview/${release.id}/`));
     assert.equal((await request('/.folio/studio.sqlite')).status, 404);
     assert.equal((await request('/snapshot.json')).status, 404);
+    for (const locale of ['zh-cn', 'en', 'fr']) {
+      assert.equal((await request(`/${locale}/learn/mamba-tta-irstd/`)).status, 200);
+      assert.equal((await request(`/${locale}/learn/mamba-tta-irstd/lab/`)).status, 200);
+    }
+    assert.equal((await request('/learn/mamba-tta-irstd/')).status, 200);
+    assert.equal((await request('/en/learn/mamba-tta-irstd/not-a-chapter/')).status, 404);
+    const sitemap = await (await request('/sitemap.xml')).text();
+    assert.match(sitemap, /\/fr\/learn\/mamba-tta-irstd\/tent\//);
+    assert.doesNotMatch(sitemap, /\/preview\//);
   },
 );

@@ -1,0 +1,33 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import LearningLesson from '../../../components/LearningLesson.astro';
+import GitLearningLesson from '../../../components/GitLearningLesson.astro';
+import { LOCALES, localePath, href, type Locale } from '../../../lib/data';
+import { lessonsByLocale, lessonPath, plainLessonTitle, renderLessonBody } from '../../../lib/learning';
+import { gitLearningCopy, gitLearningPath } from '../../../lib/git-learning';
+export function getStaticPaths() {
+  return LOCALES.flatMap((locale) =>
+    [...lessonsByLocale[locale].map((lesson) => ({
+      params: { locale: localePath(locale), lesson: lessonPath(lesson.slug).slice('learn/'.length) },
+      props: { locale, slug: lesson.slug, course: 'mamba' },
+    })), {
+      params: { locale: localePath(locale), lesson: 'git-branching' },
+      props: { locale, slug: 'index', course: 'git' },
+    }],
+  );
+}
+const { locale, slug, course } = Astro.props as { locale: Locale; slug: string; course: 'mamba' | 'git' };
+const raw = lessonsByLocale[locale].find((lesson) => lesson.slug === slug)!;
+const lesson = {
+  ...raw,
+  title: plainLessonTitle(raw.title),
+  body: renderLessonBody(raw.body, (path) => href(locale, path)),
+};
+const title = course === 'git' ? gitLearningCopy[locale].title : lesson.title;
+const description = course === 'git' ? gitLearningCopy[locale].summary : lesson.lede;
+const path = course === 'git' ? gitLearningPath : lessonPath(slug);
+---
+<Layout locale={locale} title={title} description={description} path={path} category="page">
+  {course === 'git' ? <GitLearningLesson locale={locale} /> :
+    <LearningLesson locale={locale} lesson={lesson} lessons={lessonsByLocale[locale]} />}
+</Layout>
