@@ -56,6 +56,7 @@ test.beforeAll(async ({ request }) => {
 async function moveGlow(page: Page, x: number, y: number) {
   await page.mouse.move(x, y);
   await expect(page.locator('.cursor-glow')).toHaveAttribute('data-active', 'true');
+  await expect(page.locator('.cursor-glow')).toHaveCSS('opacity', '1');
   await expect
     .poll(() =>
       page
@@ -77,6 +78,64 @@ async function pixel(page: Page) {
       .toBuffer()),
   ];
 }
+
+test('admin glow appears on login and previews draft theme and radius without blocking editing', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/admin/');
+  await moveGlow(page, 8, 300);
+  const near = await pixel(page);
+  await moveGlow(page, 1400, 300);
+  const far = await pixel(page);
+  expect(near.reduce((sum, value, i) => sum + value - far[i], 0)).toBeGreaterThan(40);
+  await page.getByLabel('密码', { exact: true }).fill('local-demo-password');
+  await page.getByRole('button', { name: '登录工作室' }).click();
+  await page.getByRole('combobox', { name: '界面语言', exact: true }).selectOption('en');
+  await page
+    .locator('.sidebar')
+    .getByRole('button', { name: /Appearance/ })
+    .click();
+  const glow = page.locator('.cursor-glow');
+  await moveGlow(page, 8, 300);
+  const workspaceNear = await pixel(page);
+  await moveGlow(page, 1400, 300);
+  const workspaceFar = await pixel(page);
+  expect(workspaceNear.reduce((sum, value, i) => sum + value - workspaceFar[i], 0)).toBeGreaterThan(
+    40,
+  );
+  await expect(glow).toHaveCSS('pointer-events', 'none');
+  const initialColor = await glow.evaluate((el) => el.style.getPropertyValue('--glow-rgb'));
+  await page.getByRole('button', { name: /Violet/ }).click();
+  await expect
+    .poll(() => glow.evaluate((el) => el.style.getPropertyValue('--glow-rgb')))
+    .not.toBe(initialColor);
+  const radius = page.getByRole('spinbutton', { name: 'Cursor glow radius', exact: true });
+  await radius.fill('320');
+  await expect(glow).toHaveCSS('background-image', /^radial-gradient\(320px /);
+  await radius.focus();
+  await moveGlow(page, 8, 300);
+  await expect(radius).toBeFocused();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await moveGlow(page, 80, 400);
+  await expect(glow).toHaveCSS('transition-duration', '0s');
+  // Preview the local draft immediately; neither the saved draft nor public
+  // release changes until the owner explicitly saves and publishes it.
+  const saved = await (await page.request.get('/api/snapshot')).json();
+  expect(saved.settings.cursorGlowRadius).toBe(600);
+  expect(saved.settings.accent).toBe('#5eead4');
+  expect(await (await page.request.get(`${live}/en/`)).text()).toContain('--glow-radius:600px');
+  await page.getByRole('button', { name: 'Reset to 600 px', exact: true }).click();
+  await expect(glow).toHaveCSS('background-image', /^radial-gradient\(600px /);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await moveGlow(page, 8, 300);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+  ).toBeTruthy();
+  await page.locator('body').dispatchEvent('touchstart');
+  await page.locator('body').dispatchEvent('mousemove', { clientX: 8, clientY: 300 });
+  await expect(glow).toHaveCSS('opacity', '0');
+});
 
 test('mouse glow visibly follows the pointer across languages, pages and scrolling', async ({
   page,

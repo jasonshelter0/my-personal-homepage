@@ -14,6 +14,7 @@ import {
 } from '../../../shared/types';
 import { messages, localeLabels, localizeServerMessage, type MessageKey } from './i18n';
 import './style.css';
+import { CursorGlow } from './CursorGlow';
 
 const blankTranslation = () => ({
   title: '',
@@ -506,6 +507,7 @@ function App() {
   if (!session.authenticated)
     return (
       <main className="login-page">
+        <CursorGlow />
         <div className="login-brand">
           F<span>·</span>
         </div>
@@ -571,6 +573,10 @@ function App() {
   const navs = ['dashboard', 'content', 'profile', 'appearance', 'media', 'releases'] as const;
   return (
     <div className="studio" style={{ '--accent': snap.settings.accent } as React.CSSProperties}>
+      <CursorGlow
+        accent={snap.settings.accent}
+        radius={snap.settings.cursorGlowRadius ?? CURSOR_GLOW_RADIUS.default}
+      />
       <aside className="sidebar">
         <a className="brand" href="/admin/">
           Folio<span> / studio</span>

@@ -1,3 +1,5 @@
+@import '../../../../shared/cursor-glow.css';
+
 :root {
   --background: #0f172a;
   --accent: #5eead4;
@@ -111,21 +113,6 @@ img {
 }
 .skip-link:focus {
   transform: none;
-}
-.cursor-glow {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 30;
-  opacity: 0;
-  background: radial-gradient(
-    var(--glow-radius, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 30%),
-    rgba(var(--glow-rgb, 94, 234, 212), 0.16),
-    transparent 80%
-  );
-}
-.cursor-glow[data-active='true'] {
-  opacity: 1;
 }
 .site-shell {
   max-width: 1200px;

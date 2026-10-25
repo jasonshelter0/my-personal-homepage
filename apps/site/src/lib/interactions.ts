@@ -1,46 +1,8 @@
+import { attachCursorGlow } from '../../../../shared/cursor-glow';
+
 const glow = document.querySelector<HTMLElement>('.cursor-glow');
-let frame = 0;
-let mouseX = 0;
-let mouseY = 0;
-let lastTouch = -Infinity;
-function hideGlow() {
-  cancelAnimationFrame(frame);
-  frame = 0;
-  if (glow) glow.dataset.active = 'false';
-}
-window.addEventListener(
-  'mousemove',
-  (event) => {
-    if (!glow) return;
-    // Touch browsers may synthesize mouse events after a tap. Actual mouse
-    // tracking remains available regardless of the reduced-motion preference,
-    // matching the reference site without adding any autonomous animation.
-    if (Date.now() - lastTouch < 800) return;
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-    if (frame) return;
-    frame = requestAnimationFrame(() => {
-      glow.style.setProperty('--mouse-x', `${mouseX}px`);
-      glow.style.setProperty('--mouse-y', `${mouseY}px`);
-      glow.dataset.active = 'true';
-      frame = 0;
-    });
-  },
-  { passive: true },
-);
-for (const event of ['touchstart', 'touchmove', 'touchend'] as const)
-  window.addEventListener(
-    event,
-    () => {
-      lastTouch = Date.now();
-      hideGlow();
-    },
-    { passive: true },
-  );
-window.addEventListener('pointerout', (event) => {
-  if (!event.relatedTarget) hideGlow();
-});
-window.addEventListener('blur', hideGlow);
+if (glow) attachCursorGlow(glow);
+
 const nav = [...document.querySelectorAll<HTMLAnchorElement>('[data-nav]')];
 if (nav.length) {
   const sections = nav
