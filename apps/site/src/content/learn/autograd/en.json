@@ -116,7 +116,7 @@
       "title": "Make the model learn",
       "short": "Repair the training loop",
       "intro": "Fit y = 2x + 1 using four points and two scalar parameters. The starter loop updates before it has computed any gradients.",
-      "goal": "Reorder the four operations so 12 steps reduce loss on the visible dataset and a second dataset.",
+      "goal": "Reorder the four operations so 12 steps bring mean squared error below 2% of its initial value on both the visible dataset and a second dataset.",
       "concept": "A typical step clears old gradients, computes a fresh loss, calls backward, then updates parameters. optimizer.step() does not calculate gradients or clear them.",
       "hint": "Use clear → forward → backward → update. Start with learning rate 0.1, then compare a much larger rate.",
       "transfer": "Why does clearing gradients immediately after backward prevent learning? Export the repaired loop and check it in real PyTorch."

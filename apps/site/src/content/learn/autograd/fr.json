@@ -116,7 +116,7 @@
       "title": "Faire apprendre le modèle",
       "short": "Réparer la boucle",
       "intro": "Ajustez y = 2x + 1 avec quatre points et deux paramètres scalaires. La boucle initiale met à jour avant de calculer les gradients.",
-      "goal": "Réordonnez les quatre opérations pour réduire la perte en 12 étapes sur le jeu visible et sur un second jeu.",
+      "goal": "Réordonnez les quatre opérations pour que, après 12 étapes, l’erreur quadratique moyenne soit inférieure à 2 % de sa valeur initiale sur le jeu visible et un second jeu.",
       "concept": "Une étape habituelle efface les anciens gradients, calcule une nouvelle perte, appelle backward, puis met à jour les paramètres. optimizer.step() ne calcule ni n’efface les gradients.",
       "hint": "Essayez effacer → calcul direct → rétropropagation → mise à jour. Commencez avec un taux de 0.1, puis comparez un taux beaucoup plus élevé.",
       "transfer": "Pourquoi effacer les gradients juste après backward empêche-t-il l’apprentissage ? Exportez la boucle réparée et vérifiez-la dans PyTorch."

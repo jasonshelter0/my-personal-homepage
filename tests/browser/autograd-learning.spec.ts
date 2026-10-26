@@ -86,3 +86,15 @@ test('three localized mobile pages, hub, alias, search and authenticated preview
 test('storage denial and reduced motion leave all controls usable',async({page})=>{
  await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw Error('disabled');}}));await page.emulateMedia({reducedMotion:'reduce'});await page.goto(live+route);await expect(page.locator('[data-ag-storage]')).toBeVisible();await expect(page.locator('[data-ag-play]')).toBeDisabled();await page.locator('[data-ag-mission="detach"]').click();await page.locator('[data-ag-detach]').uncheck();await page.locator('[data-ag-backward]').click();await page.locator('[data-ag-all]').click();await page.locator('[data-ag-check]').click();await expect(page.locator('[data-ag-success]')).toBeVisible();
 });
+
+test('autograd resizes in immersive reading and fullscreen without losing experiment state',async({page})=>{
+ await page.setViewportSize({width:2560,height:1440});await page.goto(live+route);
+ await page.locator('[data-ag-prediction]').fill('-16');await page.locator('[data-ag-backward]').click();await page.locator('[data-ag-all]').click();
+ await page.locator('[data-reader-toggle]').click();await expect(page.locator('.profile-panel')).toBeHidden();await expect(page.locator('[data-ag-buffer-w]')).toHaveText('-16');
+ await page.locator('[data-reader-fullscreen]').click();await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBeTruthy();
+ await page.locator('[data-ag-node="0"]').click();await expect(page.locator('[data-ag-inspector]')).toContainText('Stored parameter .grad: -16');
+ await page.locator('[data-ag-mission="training"]').click();await page.locator('[data-ag-stage="backward"] [data-ag-move="-1"]').click();await page.locator('[data-ag-train]').click();await page.locator('[data-ag-all]').click();
+ await page.screenshot({path:'test-results/autograd-immersive.png'});
+ await page.locator('[data-reader-fullscreen]').click();await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBeFalsy();
+ await page.setViewportSize({width:320,height:800});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();await page.locator('[data-ag-check]').click();await expect(page.locator('[data-ag-success]')).toBeVisible();
+});
