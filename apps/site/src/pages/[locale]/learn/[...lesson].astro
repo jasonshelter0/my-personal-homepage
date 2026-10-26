@@ -1,4 +1,6 @@
 ---
+import AutogradLearningLesson from '../../../components/AutogradLearningLesson.astro';
+import { autogradCopy, autogradPath } from '../../../lib/autograd-learning';
 import Layout from '../../../layouts/Layout.astro';
 import LearningLesson from '../../../components/LearningLesson.astro';
 import GitLearningLesson from '../../../components/GitLearningLesson.astro';
@@ -18,21 +20,24 @@ export function getStaticPaths() {
     }, {
       params: { locale: localePath(locale), lesson: 'learnpytorch' },
       props: { locale, slug: 'index', course: 'tensor' },
+    }, {
+      params: { locale: localePath(locale), lesson: 'learnpytorch/autograd' },
+      props: { locale, slug: 'index', course: 'autograd' },
     }],
   );
 }
-const { locale, slug, course } = Astro.props as { locale: Locale; slug: string; course: 'mamba' | 'git' | 'tensor' };
+const { locale, slug, course } = Astro.props as { locale: Locale; slug: string; course: 'mamba' | 'git' | 'tensor' | 'autograd' };
 const raw = lessonsByLocale[locale].find((lesson) => lesson.slug === slug)!;
 const lesson = {
   ...raw,
   title: plainLessonTitle(raw.title),
   body: renderLessonBody(raw.body, (path) => href(locale, path)),
 };
-const title = course === 'tensor' ? tensorLearningCopy[locale].title : course === 'git' ? gitLearningCopy[locale].title : lesson.title;
-const description = course === 'tensor' ? tensorLearningCopy[locale].summary : course === 'git' ? gitLearningCopy[locale].summary : lesson.lede;
-const path = course === 'tensor' ? tensorLearningPath : course === 'git' ? gitLearningPath : lessonPath(slug);
+const title = course === 'autograd' ? autogradCopy[locale].title : course === 'tensor' ? tensorLearningCopy[locale].title : course === 'git' ? gitLearningCopy[locale].title : lesson.title;
+const description = course === 'autograd' ? autogradCopy[locale].summary : course === 'tensor' ? tensorLearningCopy[locale].summary : course === 'git' ? gitLearningCopy[locale].summary : lesson.lede;
+const path = course === 'autograd' ? autogradPath : course === 'tensor' ? tensorLearningPath : course === 'git' ? gitLearningPath : lessonPath(slug);
 ---
 <Layout locale={locale} title={title} description={description} path={path} category="page">
-  {course === 'tensor' ? <TensorLearningLesson locale={locale} /> : course === 'git' ? <GitLearningLesson locale={locale} /> :
+  {course === 'autograd' ? <AutogradLearningLesson locale={locale} /> : course === 'tensor' ? <TensorLearningLesson locale={locale} /> : course === 'git' ? <GitLearningLesson locale={locale} /> :
     <LearningLesson locale={locale} lesson={lesson} lessons={lessonsByLocale[locale]} />}
 </Layout>

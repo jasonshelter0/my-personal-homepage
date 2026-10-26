@@ -1,0 +1,57 @@
+---
+import { href, type Locale } from '../lib/data';
+import { autogradCopy } from '../lib/autograd-learning';
+import '../styles/autograd-lab.css';
+const { locale } = Astro.props as {locale: Locale};
+const t=autogradCopy[locale],u=t.ui;
+const ids=['chain','detach','accumulation','training'];
+---
+<article class="autograd-learning">
+  <a class="back-link" href={href(locale,'learn')}>{u.back} ↗</a>
+  <p class="eyebrow">{t.eyebrow}</p><h1 data-pagefind-meta="title">{t.title}</h1>
+  <p class="detail-summary">{t.summary}</p><p>{t.intro}</p>
+  <a class="text-link" href={href(locale,'learn/learnpytorch')}>{u.tensorLink} →</a>
+  <div data-autograd-lab class="ag-lab" data-pagefind-ignore>
+    <script type="application/json" data-ag-copy set:html={JSON.stringify(t).replace(/</g,'\\u003c')}/>
+    <div class="ag-toolbar"><span data-ag-progress>{u.progress} 0 / 4</span><button type="button" data-ag-reset>{u.reset}</button></div>
+    <nav class="ag-missions" aria-label={u.mission}>{t.missions.map((m,i)=><button type="button" data-ag-mission={ids[i]}><span>{i+1}</span> {m.short}</button>)}</nav>
+    <h2 data-ag-title>{t.missions[0].title}</h2><p data-ag-intro>{t.missions[0].intro}</p>
+    <div class="ag-goal"><strong>{u.mission}</strong><p data-ag-goal>{t.missions[0].goal}</p></div>
+    <div data-ag-graph-controls>
+      <label>{u.example} <select data-ag-example>{[0,1,2,3].map(i=><option value={i}>{i+1}</option>)}</select></label>
+      <p class="ag-formula"><code>prediction = w * x + b<br/>loss = (prediction - target)²</code></p>
+      <label data-ag-predict-wrap>{u.predictionLabel}<input data-ag-prediction type="number" step="any" inputmode="decimal" autocomplete="off"/></label>
+      <label data-ag-detach-wrap hidden><input type="checkbox" data-ag-detach/>{u.detach}</label>
+      <label data-ag-clear-wrap hidden><input type="checkbox" data-ag-clear/>{u.clear}</label>
+      <button type="button" data-ag-backward class="ag-primary">{u.backward} →</button>
+      <p data-ag-passes></p>
+      <h3>{u.graphTitle}</h3><p>{u.gradientNote}</p><p data-ag-cut-note hidden>{u.cutNote}</p>
+      <div data-ag-graph class="ag-graph"></div>
+      <section class="ag-inspector" data-ag-inspector aria-live="polite"><p>{u.selectNode}</p></section>
+      <dl class="ag-buffers" data-ag-buffers></dl>
+    </div>
+    <div data-ag-training-controls hidden>
+      <h3>{u.order}</h3><ol data-ag-order class="ag-order"></ol>
+      <label>{u.rate}<input data-ag-rate type="number" min="0.001" max="1" step="0.01" value="0.1"/></label>
+      <button type="button" data-ag-train class="ag-primary">{u.trainingRun} →</button>
+      <h3>{u.trainTitle}</h3>
+      <div class="ag-plots"><div data-ag-fit></div><div data-ag-loss></div></div>
+      <p data-ag-training-metrics></p><p>{u.chartNote}</p>
+      <details><summary>{u.dataset} / {u.parameters}</summary><div class="ag-table" data-ag-table></div></details>
+    </div>
+    <div class="ag-playback"><button type="button" data-ag-prev aria-label={u.previous}>←</button><button type="button" data-ag-play>{u.play}</button><button type="button" data-ag-next aria-label={u.next}>→</button><button type="button" data-ag-all>{u.all}</button><span data-ag-frame role="status"></span></div>
+    <p class="ag-event" data-ag-event aria-live="polite"></p>
+    <div class="ag-actions"><button type="button" data-ag-check>{u.check}</button><button type="button" data-ag-hint>{u.hint}</button><button type="button" data-ag-export>{u.export} ↓</button></div>
+    <p data-ag-feedback class="ag-feedback" role="status" aria-live="polite">{u.empty}</p>
+    <p data-ag-hint-text hidden></p><section data-ag-success class="ag-success" hidden><h3>{u.success} ✓</h3><p data-ag-transfer></p></section>
+    <p data-ag-storage hidden>{u.storage}</p>
+    <details class="ag-code"><summary>{u.code}</summary><pre><code data-ag-code></code></pre></details>
+    <noscript><p>{t.scope}</p></noscript>
+  </div>
+  {t.missions.map(m=><section class="ag-outline"><h2>{m.short}</h2><p>{m.goal}</p><p>{m.concept}</p><p>{m.transfer}</p></section>)}
+  <section class="ag-outline"><h2>{u.scopeTitle}</h2><p>{t.scope}</p><p>{t.privacy}</p>
+    <a class="text-link" href="https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html" target="_blank" rel="noopener noreferrer">{u.docs} · autograd ↗</a><br/>
+    <a class="text-link" href="https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html" target="_blank" rel="noopener noreferrer">{u.docs} · zero_grad ↗</a>
+  </section>
+</article>
+<script>import '../lib/autograd-lab/app.js';</script>

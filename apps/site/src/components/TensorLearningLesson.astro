@@ -1,6 +1,7 @@
 ---
 import { href, type Locale } from '../lib/data';
 import { tensorLearningCopy } from '../lib/tensor-learning';
+import { autogradCopy, autogradPath } from '../lib/autograd-learning';
 import Icon from './Icon.astro';
 import { lessons } from '../lib/tensor-lab/lessons.mjs';
 import '../styles/tensor-lab.css';
@@ -14,6 +15,7 @@ const api = ['x.permute(2, 0, 1)', 'x.transpose(-2, -1)', 'x.reshape(3, -1)', 'x
   <h1 data-pagefind-meta="title">{t.title}</h1>
   <p class="detail-summary">{t.summary}</p>
   <p>{t.intro}</p>
+  <a class="text-link" href={href(locale,autogradPath)}>{autogradCopy[locale].read} →</a>
   <p class="tensor-workflow">{t.workflow}</p>
   <div class="tensor-lab" data-tensor-lab data-locale={locale} data-pagefind-ignore>
     <script type="application/json" data-tensor-copy set:html={JSON.stringify(t).replace(/</g, '\u003c')} />
