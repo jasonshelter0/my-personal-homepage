@@ -1,0 +1,55 @@
+---
+import { href, type Locale } from '../lib/data';
+import { tensorLearningCopy } from '../lib/tensor-learning';
+import Icon from './Icon.astro';
+import '../styles/tensor-lab.css';
+const { locale } = Astro.props as { locale: Locale };
+const t = tensorLearningCopy[locale], u = t.ui;
+const api = ['x.permute(2, 0, 1)', 'x.transpose(-2, -1)', 'x.reshape(3, -1)', 'x.unsqueeze(1) / x.squeeze(1)', 'x.mean(dim=1, keepdim=True) / x.sum(dim=0)', 'x + y / x - y / x * y / x / y / x @ y', 'torch.tensor([[1, 2], [3, 4]]) / torch.arange(12)', 'torch.ones(2, 3) / torch.zeros(2, 3)'];
+---
+<article class="tensor-learning">
+  <a class="back-link" href={href(locale, 'learn')}><Icon name="back" size={16} />{t.back}</a>
+  <p class="eyebrow">{t.eyebrow}</p>
+  <h1 data-pagefind-meta="title">{t.title}</h1>
+  <p class="detail-summary">{t.summary}</p>
+  <p>{t.intro}</p>
+  <p class="tensor-workflow">{t.workflow}</p>
+  <div class="tensor-lab" data-tensor-lab data-locale={locale} data-pagefind-ignore>
+    <script type="application/json" data-tensor-copy set:html={JSON.stringify(t).replace(/</g, '\u003c')} />
+    <div class="tl-toolbar"><span data-progress>{u.progress} 0 / 3</span><button type="button" data-expand aria-expanded="false">{u.expand} ↗</button></div>
+    <nav class="tl-lessons" aria-label={u.lesson}>
+      {t.lessons.map((lesson, i) => <button type="button" data-lesson={['axes','broadcast','batch'][i]}><span>{i+1}</span>{lesson.short}</button>)}
+      <button type="button" data-lesson="sandbox">{u.sandbox} ↗</button>
+    </nav>
+    <h2 data-title>{t.lessons[0].title}</h2><p data-intro>{t.lessons[0].intro}</p>
+    <div class="tl-mission"><strong>{u.mission}</strong><p data-goal>{t.lessons[0].goal}</p></div>
+    <div class="tl-workspace">
+      <section class="tl-code" aria-label={u.editor}>
+        <div class="tl-editor-head"><label for="tensor-code">experiment.py</label><button type="button" data-reset>{u.reset} ↺</button></div>
+        <textarea id="tensor-code" data-editor aria-label={u.editor} spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">{t.lessons[0].starter}</textarea>
+        <div class="tl-editor-foot"><small>{u.shortcut}</small><button type="button" data-run>{u.run} →</button></div>
+        <p class="tl-feedback" data-feedback role="status" aria-live="polite">{u.ready}</p>
+        <div class="tl-actions"><button type="button" data-hint>{u.hint}</button><button type="button" data-export>{u.export} ↓</button><button type="button" data-share>{u.share} ↗</button></div>
+        <p class="tl-hint" data-hint-box hidden></p>
+        <label class="tl-share" data-share-box hidden>{u.copyLink}<textarea data-share-url readonly></textarea></label>
+      </section>
+      <section class="tl-visual" aria-label={u.result}>
+        <div class="tl-view"><button type="button" data-result aria-pressed="true">{u.result}</button><button type="button" data-target aria-pressed="false">{u.target}</button></div>
+        <div data-canvas class="tl-canvas"></div>
+        <p data-cell-info class="tl-cell-info">{u.cell}</p>
+        <dl data-details class="tl-details"></dl>
+      </section>
+    </div>
+    <div class="tl-trace-wrap"><h3>{u.trace}</h3><div data-trace class="tl-trace"></div><p data-note></p></div>
+    <div class="tl-concept"><strong>{u.concept}</strong><p data-concept>{t.lessons[0].concept}</p></div>
+    <section data-success class="tl-success" hidden><h3>{u.complete} ✓</h3><p data-takeaway></p><strong>{u.transfer}</strong><p data-transfer></p><button type="button" data-next>{u.next} →</button></section>
+    <p data-storage-notice class="tl-storage-notice" hidden>{u.storageUnavailable}</p>
+    <noscript><p>{u.disabledScript}</p></noscript>
+  </div>
+  <section class="tensor-outline"><h2>{t.outline}</h2>{t.lessons.map((l) => <section><h3>{l.short}</h3><p>{l.goal}</p><p>{l.concept}</p><p>{l.transfer}</p></section>)}</section>
+  <details class="tensor-api"><summary>{t.apiTitle}</summary><dl>{api.map((code, i) => <div><dt><code>{code}</code></dt><dd>{t.api[i]}</dd></div>)}</dl></details>
+  <section><h2>{t.scopeTitle}</h2><p>{t.scope}</p><p>{t.privacy}</p><p>{t.independent}</p><a class="text-link" href="https://docs.pytorch.org/docs/stable/tensors.html" target="_blank" rel="noopener noreferrer">{u.docs} ↗</a></section>
+</article>
+<script>
+  import '../lib/tensor-lab/app.js';
+</script>
