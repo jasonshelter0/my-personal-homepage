@@ -15,10 +15,10 @@ function init(root) {
   const free = {...sandbox,...t.sandbox};
   const drafts = new Map();
   let current, inputs, trace=[], selected=-1, inputIndex=0, slice=0, target=false, result, hints=0, progress=[], expanded=false, oldOverflow='', savedFocus;
-  try { const value=JSON.parse(localStorage.getItem('learnpytorch-progress-v1') || '[]'); if(Array.isArray(value)) progress=value.filter(id=>courses.some(l=>l.id===id)); } catch { $('storage-notice').hidden=false; }
+  try { const value=JSON.parse(localStorage.getItem('learnpytorch-progress-v1') || '[]'); if(Array.isArray(value)) progress=[...new Set(value.filter(id=>courses.some(l=>l.id===id)))]; } catch { $('storage-notice').hidden=false; }
   function message(text,kind='info') { $('feedback').textContent=text; $('feedback').dataset.kind=kind; }
   function updateProgress() {
-    $('progress').textContent=`${u.progress} ${progress.length} / 3`;
+    $('progress').textContent=`${u.progress} ${progress.length} / ${courses.length}`;
     root.querySelectorAll('[data-lesson]').forEach(b=>{ b.setAttribute('aria-current', b.dataset.lesson===current.id?'step':'false'); b.classList.toggle('is-complete',progress.includes(b.dataset.lesson)); });
   }
   function choose(id,code) {
@@ -43,6 +43,8 @@ function init(root) {
   }
   function note(tensor) {
     const s=tensor.note;
+    if(/Flatten merges/.test(s)) return t.notes.flatten;
+    if(/Softmax normalizes/.test(s)) return t.notes.softmax;
     if(/Axes reordered/.test(s)) return t.notes.permute;
     if(/Logical element/.test(s)) return t.notes.reshape;
     if(/^(A size-one|Size-one axes removed)/.test(s)) return t.notes.singleton;
@@ -83,7 +85,7 @@ function init(root) {
           message(u.success,'success');if(!progress.includes(current.id))progress.push(current.id);
           try{localStorage.setItem('learnpytorch-progress-v1',JSON.stringify(progress));}catch{$('storage-notice').hidden=false;}
           $('success').hidden=false;$('takeaway').textContent=current.takeaway;$('transfer').textContent=current.transfer;
-          $('next').textContent=(current.id==='batch'?u.sandbox:u.next)+' →';updateProgress();
+          $('next').textContent=(current.id===courses.at(-1).id?u.sandbox:u.next)+' →';updateProgress();
         } else message(/fresh input|fresh inputs/.test(check.message)?u.freshError:/Assign/.test(check.message)?u.missing:/Expected y/.test(check.message)?u.shapeError:/shape matches/.test(check.message)?u.valueError:errorMessage(check.message),'error');
       } else message(u.executed,'success');
     } catch(e) {trace=e.trace||[];selected=trace.length-1;result=undefined;message(errorMessage(e.message),'error');}
@@ -117,7 +119,7 @@ function init(root) {
     const cell=e.target.closest('[data-address]');if(cell)$('cell-info').textContent=`${u.index} ${cell.dataset.coordinates} → ${u.value} ${cell.dataset.value} · ${u.offset} ${cell.dataset.address}`;
   };
   $('hint').onclick=()=>{hints=Math.min(hints+1,current.hints.length);$('hint').textContent=`${u.hint} ${hints}/${current.hints.length}`;$('hint-box').hidden=false;$('hint-box').textContent=current.hints[hints-1];};
-  $('next').onclick=()=>navigate(current.id==='batch'?'sandbox':courses[courses.indexOf(current)+1].id);
+  $('next').onclick=()=>navigate(current.id===courses.at(-1).id?'sandbox':courses[courses.indexOf(current)+1].id);
   $('export').onclick=()=>{
     const source=exportPython(current,$('editor').value),url=URL.createObjectURL(new Blob([source],{type:'text/x-python'}));
     const a=document.createElement('a');a.href=url;a.download=`learnpytorch-${current.id}.py`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message(u.exported);

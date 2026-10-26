@@ -41,8 +41,59 @@ export const lessons = [
     takeaway: 'Each batch now contains a query-by-key score matrix. You contracted feature axes while keeping batches independent—the shape pattern behind attention scores.',
     transfer: 'For q [B, H, Q, D] and k [B, H, K, D], predict the result shape of q @ k.transpose(-2, -1).',
     docs: 'https://docs.pytorch.org/docs/stable/generated/torch.matmul.html'
+  },
+  {
+    id: 'flatten', number: '04', title: 'One row per example',
+    starter: '# x: [batch, height, width] = [2, 2, 3]\ny = x.flatten()',
+    solution: 'y = x.flatten(start_dim=1)',
+    initial(seed = 0) { const shape = seed ? [seed + 1, 2 + seed % 2, 3] : [2, 2, 3]; return { x: values(shape, seed, ['batch', 'height', 'width']) }; },
+    target: ({x}) => x.flatten(1),
+    docs: 'https://docs.pytorch.org/docs/stable/generated/torch.flatten.html'
+  },
+  {
+    id: 'squeeze', number: '05', title: 'Keep the single example',
+    starter: '# x: [batch, feature, singleton] = [1, 3, 1]\ny = x.squeeze()',
+    solution: 'y = x.squeeze(-1)',
+    initial(seed = 0) { return { x: values(seed ? [1 + seed % 2, 3 + seed, 1] : [1, 3, 1], seed, ['batch', 'feature', 'singleton']) }; },
+    target: ({x}) => x.squeeze(-1),
+    docs: 'https://docs.pytorch.org/docs/stable/generated/torch.squeeze.html'
+  },
+  {
+    id: 'channel-bias', number: '06', title: 'A bias for each channel',
+    starter: '# x: [batch, channel, height, width] = [2, 3, 2, 3]\n# bias: [channel] = [3]\ny = x + bias',
+    solution: 'y = x + bias.reshape(1, -1, 1, 1)',
+    initial(seed = 0) { const channels = seed ? seed + 2 : 3; return { x: values([2, channels, 2, seed ? 4 : 3], seed, ['batch', 'channel', 'height', 'width']), bias: new Tensor(Array.from({length:channels}, (_,i) => (i + 1) * 4 + seed), [channels], {axes:['channel']}) }; },
+    target: ({x,bias}) => binary(x, bias.reshape(1, -1, 1, 1), '+'),
+    docs: 'https://docs.pytorch.org/docs/stable/notes/broadcasting.html'
+  },
+  {
+    id: 'pool', number: '07', title: 'Summarize the image, keep its channels',
+    starter: '# x: [batch, channel, height, width] = [2, 3, 2, 2]\ny = x.mean(dim=1)',
+    solution: 'y = x.mean(dim=-1).mean(dim=-1)',
+    initial(seed = 0) { return { x: values(seed ? [1 + seed % 2, 3, 2 + seed, 4] : [2, 3, 2, 2], seed, ['batch', 'channel', 'height', 'width']) }; },
+    target: ({x}) => x.reduce(-1, false, true).reduce(-1, false, true),
+    docs: 'https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html'
+  },
+  {
+    id: 'linear', number: '08', title: 'A linear layer from tensor operations',
+    starter: '# x: [batch, time, input] = [2, 3, 3]\n# weight: [output, input] = [4, 3]; bias: [output] = [4]\ny = x @ weight + bias',
+    solution: 'y = x @ weight.transpose(-2, -1) + bias',
+    initial(seed = 0) { const input = seed ? 2 + seed : 3, output = seed ? 3 + seed : 4; return { x: values([2, seed ? 2 + seed : 3, input], seed, ['batch', 'time', 'feature']), weight: values([output, input], seed + 2, ['output', 'feature']), bias: values([output], seed + 4, ['output']) }; },
+    target: ({x,weight,bias}) => binary(matmul(x, weight.transpose(-2, -1)), bias, '+'),
+    docs: 'https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html'
+  },
+  {
+    id: 'softmax', number: '09', title: 'Choose what competes for probability',
+    starter: '# scores: [batch, query, key] = [2, 3, 3]\n# For each query, probabilities over keys must sum to one.\ny = scores.softmax(dim=1)',
+    solution: 'y = scores.softmax(dim=-1)',
+    initial(seed = 0) { const shape = seed ? [2, 2 + seed, 4] : [2, 3, 3]; return { scores: new Tensor(Array.from({length:shape.reduce((a,b)=>a*b,1)}, (_,i) => ((i * 7 + seed * 3) % 13) - 6 + (seed === 2 ? 1000 : seed === 3 ? -1000 : 0)), shape, {axes:['batch','query','key']}) }; },
+    target: ({scores}) => scores.softmax(-1),
+    docs: 'https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html'
   }
 ];
+function values(shape, seed, axes) {
+  return new Tensor(Array.from({length:shape.reduce((a,b)=>a*b,1)}, (_,i) => ((i * 7 + seed * 3) % 19) - 5), shape, {axes});
+}
 export const sandbox = {
   id: 'sandbox', number: '∞', title: 'Follow your curiosity', short: 'Open playground', category: 'FREE EXPLORATION', duration: 'Your pace',
   intro: 'A small space for big “what ifs”. Create a tensor, change its shape, or try an operation from the API guide. Every step leaves a trace.',

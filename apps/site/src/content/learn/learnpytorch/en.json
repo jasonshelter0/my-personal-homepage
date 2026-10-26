@@ -1,7 +1,7 @@
 {
   "title": "LearnPyTorch · Tensor Lab",
-  "summary": "Build tensor intuition by changing code and inspecting values. Three guided lessons cover axis order, broadcasting, and batched matrix multiplication.",
-  "detail": "3 interactive lessons · Browser-only tensor simulator · Python export",
+  "summary": "Nine guided lessons build tensor intuition: axes, broadcasting, batched products, flattening, safe squeeze, channel bias, pooling, linear layers, and softmax.",
+  "detail": "9 interactive lessons · Browser-only tensor simulator · Python export",
   "read": "Open the tensor lab",
   "back": "Back to learning",
   "eyebrow": "INTERACTIVE LEARNING · PYTORCH",
@@ -12,18 +12,261 @@
   "scopeTitle": "A focused learning environment",
   "scope": "This is a PyTorch-style simulator, not a full Python runtime. It supports numeric tensors of rank 0–4 with up to 4096 elements and positive dimensions. The canvas shows up to 8 × 8 cells per slice. Indexing, loops, autograd, devices, dtypes, empty tensors, and in-place changes are outside this release. Noncontiguous reshape conservatively copies here; real PyTorch can sometimes return a view. Export uses floating-point tensors explicitly.",
   "apiTitle": "Supported expressions",
-  "api": ["Reorder axes while preserving which element belongs where.", "Swap two axes; negative axes count from the end.", "Regroup the logical element sequence; one -1 can infer a dimension.", "Insert or remove a size-one axis.", "Reduce an axis; keepdim=True retains its position for broadcasting.", "Elementwise arithmetic with broadcasting, or matrix multiplication with @.", "Create a tensor from nested lists or the numbers 0 through n−1.", "Create tensors filled with ones or zeros."],
+  "api": [
+    "Reorder axes while preserving which element belongs where.",
+    "Swap two axes; negative axes count from the end.",
+    "Regroup the logical element sequence; one -1 can infer a dimension.",
+    "Insert or remove a size-one axis.",
+    "Reduce an axis; keepdim=True retains its position for broadcasting.",
+    "Elementwise arithmetic with broadcasting, or matrix multiplication with @.",
+    "Create a tensor from nested lists or the numbers 0 through n−1.",
+    "Create tensors filled with ones or zeros.",
+    "Merge a contiguous range of axes; axes outside the range stay in place.",
+    "Normalize exponentials along an explicit axis; each group sums to one."
+  ],
   "independent": "Independent learning project, inspired by Learn Git Branching; not affiliated with PyTorch.",
   "ui": {
-    "lesson": "Lesson", "sandbox": "Playground", "progress": "Completed", "mission": "Your mission", "editor": "PyTorch experiment", "run": "Run code", "reset": "Reset", "hint": "Get a hint", "export": "Export Python", "share": "Share", "expand": "Expand lab", "close": "Exit expanded view", "input": "Input", "result": "Your result", "target": "Target", "trace": "Follow the transformation", "step": "Step", "slice": "Slice", "previous": "Previous slice", "nextSlice": "Next slice", "cell": "Select a tile to inspect its coordinates and storage offset.", "index": "Index", "value": "Value", "offset": "Storage offset", "mismatch": "Outlined values differ from the target.", "truncated": "Showing at most 8 rows and 8 columns in this slice.", "elements": "Elements", "strides": "Strides", "layout": "Layout", "contiguous": "Contiguous", "noncontiguous": "Noncontiguous", "storage": "Storage", "shared": "Shared with input", "newStorage": "New allocation", "concept": "One idea to keep", "complete": "Lesson complete", "transfer": "Try it in a notebook", "next": "Next lesson", "ready": "Run the starter code. What do you notice?", "changed": "Code changed. Run again to update the canvas.", "success": "Shape and values match on this example and three fresh inputs.", "executed": "Executed. Select any step to inspect its values.", "empty": "Add a tensor expression or assignment, then run it.", "missing": "Assign your lesson answer to y.", "shapeError": "The output shape is different from the target. Follow the labeled axes.", "valueError": "The shape matches, but values differ. Compare the result with the target.", "freshError": "The solution fails on fresh inputs. Use the supplied tensors rather than hard-coded answers.", "exported": "Python file exported. Run it with PyTorch installed.", "copied": "Experiment link copied. It includes your code, not your progress.", "copyLink": "Copy this experiment link:", "invalidLink": "This shared link is invalid. The original lesson is ready.", "shortcut": "Ctrl / ⌘ + Enter to run", "docs": "PyTorch documentation", "initialNote": "Run your code, then select a step to see what changed.", "targetNote": "This is the target arrangement. Your solution must also work on fresh inputs.", "storageUnavailable": "Browser storage is unavailable; progress lasts only for this session.", "disabledScript": "Enable JavaScript to run the lab. The lesson explanations remain available below."
+    "lesson": "Lesson",
+    "sandbox": "Playground",
+    "progress": "Completed",
+    "mission": "Your mission",
+    "editor": "PyTorch experiment",
+    "run": "Run code",
+    "reset": "Reset",
+    "hint": "Get a hint",
+    "export": "Export Python",
+    "share": "Share",
+    "expand": "Expand lab",
+    "close": "Exit expanded view",
+    "input": "Input",
+    "result": "Your result",
+    "target": "Target",
+    "trace": "Follow the transformation",
+    "step": "Step",
+    "slice": "Slice",
+    "previous": "Previous slice",
+    "nextSlice": "Next slice",
+    "cell": "Select a tile to inspect its coordinates and storage offset.",
+    "index": "Index",
+    "value": "Value",
+    "offset": "Storage offset",
+    "mismatch": "Outlined values differ from the target.",
+    "truncated": "Showing at most 8 rows and 8 columns in this slice.",
+    "elements": "Elements",
+    "strides": "Strides",
+    "layout": "Layout",
+    "contiguous": "Contiguous",
+    "noncontiguous": "Noncontiguous",
+    "storage": "Storage",
+    "shared": "Shared with input",
+    "newStorage": "New allocation",
+    "concept": "One idea to keep",
+    "complete": "Lesson complete",
+    "transfer": "Try it in a notebook",
+    "next": "Next lesson",
+    "ready": "Run the starter code. What do you notice?",
+    "changed": "Code changed. Run again to update the canvas.",
+    "success": "Shape and values match on this example and three fresh inputs.",
+    "executed": "Executed. Select any step to inspect its values.",
+    "empty": "Add a tensor expression or assignment, then run it.",
+    "missing": "Assign your lesson answer to y.",
+    "shapeError": "The output shape is different from the target. Follow the labeled axes.",
+    "valueError": "The shape matches, but values differ. Compare the result with the target.",
+    "freshError": "The solution fails on fresh inputs. Use the supplied tensors rather than hard-coded answers.",
+    "exported": "Python file exported. Run it with PyTorch installed.",
+    "copied": "Experiment link copied. It includes your code, not your progress.",
+    "copyLink": "Copy this experiment link:",
+    "invalidLink": "This shared link is invalid. The original lesson is ready.",
+    "shortcut": "Ctrl / ⌘ + Enter to run",
+    "docs": "PyTorch documentation",
+    "initialNote": "Run your code, then select a step to see what changed.",
+    "targetNote": "This is the target arrangement. Your solution must also work on fresh inputs.",
+    "storageUnavailable": "Browser storage is unavailable; progress lasts only for this session.",
+    "disabledScript": "Enable JavaScript to run the lab. The lesson explanations remain available below."
   },
-  "axes": {"axis": "axis", "height": "height", "width": "width", "channel": "channel", "row": "row", "feature": "feature", "batch": "batch", "query": "query", "key": "key", "column": "column", "singleton": "singleton", "scalar": "scalar"},
-  "notes": {"permute": "Axes are reordered while values keep their identity. The underlying storage is shared, not rearranged.", "reshape": "The logical element sequence is regrouped. Contiguous inputs share storage; this simulator copies noncontiguous inputs.", "singleton": "Size-one axes were inserted or removed. Storage is shared.", "reduction": "Values are reduced along the selected axis. keepdim=True leaves a size-one axis for broadcasting.", "matmul": "The inner matrix axes contract. Each output cell is a dot product; leading batch axes broadcast.", "arithmetic": "Axes align from the right. Size-one axes reuse input values; the output gets new storage.", "new": "A new tensor with its own storage."},
-  "errors": {"broadcast": "Cannot broadcast these shapes. Align axes from the right: dimensions must match or one must be 1. Try keepdim=True or unsqueeze().", "matmul": "Matrix multiplication needs matching inner dimensions and rank 2–4 tensors. Try transpose(-2, -1) on the second operand.", "reshape": "reshape must preserve the number of elements. Use positive integer dimensions and at most one -1.", "axis": "The axes are invalid. Use an in-range integer; permute must include every axis exactly once.", "limit": "Keep code under 6000 characters, use at most 100 operations, and keep tensors within rank 4 and 4096 elements.", "finite": "Values must be finite numbers and nested rows must have equal lengths. Check division by zero.", "syntax": "This expression is not supported or is incomplete. Check the API guide, variable names, brackets, and arguments. Use one assignment per line."},
+  "axes": {
+    "axis": "axis",
+    "height": "height",
+    "width": "width",
+    "channel": "channel",
+    "row": "row",
+    "feature": "feature",
+    "batch": "batch",
+    "query": "query",
+    "key": "key",
+    "column": "column",
+    "singleton": "singleton",
+    "scalar": "scalar",
+    "time": "time",
+    "output": "output"
+  },
+  "notes": {
+    "permute": "Axes are reordered while values keep their identity. The underlying storage is shared, not rearranged.",
+    "reshape": "The logical element sequence is regrouped. Contiguous inputs share storage; this simulator copies noncontiguous inputs.",
+    "singleton": "Size-one axes were inserted or removed. Storage is shared.",
+    "reduction": "Values are reduced along the selected axis. keepdim=True leaves a size-one axis for broadcasting.",
+    "matmul": "The inner matrix axes contract. Each output cell is a dot product; leading batch axes broadcast.",
+    "arithmetic": "Axes align from the right. Size-one axes reuse input values; the output gets new storage.",
+    "new": "A new tensor with its own storage.",
+    "flatten": "Flatten merges the selected axes in logical order while preserving the other axes. Noncontiguous inputs may need a copy.",
+    "softmax": "Softmax normalizes along the chosen axis. Each group sums to one; subtracting its maximum keeps exponentials stable."
+  },
+  "errors": {
+    "broadcast": "Cannot broadcast these shapes. Align axes from the right: dimensions must match or one must be 1. Try keepdim=True or unsqueeze().",
+    "matmul": "Matrix multiplication needs matching inner dimensions and rank 2–4 tensors. Try transpose(-2, -1) on the second operand.",
+    "reshape": "reshape must preserve the number of elements. Use positive integer dimensions and at most one -1.",
+    "axis": "The axes are invalid. Use an in-range integer; permute must include every axis exactly once.",
+    "limit": "Keep code under 6000 characters, use at most 100 operations, and keep tensors within rank 4 and 4096 elements.",
+    "finite": "Values must be finite numbers and nested rows must have equal lengths. Check division by zero.",
+    "syntax": "This expression is not supported or is incomplete. Check the API guide, variable names, brackets, and arguments. Use one assignment per line."
+  },
   "lessons": [
-    {"title": "A change of perspective", "short": "Reorder the axes", "intro": "An image is more than a list of numbers. Move its axes without losing the relationship between pixels and channels.", "goal": "Turn x from [height, width, channel] into y with [channel, height, width]. Keep every pixel in the right place.", "concept": "reshape changes how a sequence is grouped. permute changes which axis comes first. Equal shapes do not guarantee equal values.", "starter": "# x: [height, width, channel] = [2, 3, 2]\n# Move channels to the first axis.\ny = x.reshape(2, 2, 3)", "hints": ["The original axes are 0 = height, 1 = width, 2 = channel.", "The new order is old axis 2, then old axis 0, then old axis 1.", "Try y = x.permute(2, 0, 1). Inspect the values, not just the shape."], "takeaway": "You preserved which pixel each value belongs to. permute reorders axes and shares storage; reshape alone cannot perform this swap.", "transfer": "Convert [batch, height, width, channel] into [batch, channel, height, width]. Which axis stays in place?"},
-    {"title": "Give every row its space", "short": "Understand broadcasting", "intro": "Subtract each row’s average. The shape of the means determines where their values are reused.", "goal": "Create y by subtracting each row’s mean from that same row of x. Every output row should have mean zero.", "concept": "Broadcasting aligns axes from the right. Dimensions must match or one must be 1. keepdim=True retains the reduced axis with size 1.", "starter": "# x has shape [3, 3]\n# This runs, but does it center each row?\nmeans = x.mean(dim=1)\ny = x - means", "hints": ["For a square input, [3] aligns with columns. Code can run while subtracting the wrong values.", "You need one mean per row with shape [3, 1]. Retain axis 1 when reducing.", "Use means = x.mean(dim=1, keepdim=True), then y = x - means."], "takeaway": "Each row reuses its own mean. This solution also works on rectangular inputs, where the original code fails.", "transfer": "For x [batch, time, features], subtract the mean over time for each batch and feature. Which dim should you reduce?"},
-    {"title": "Keep the batch together", "short": "Multiply batched matrices", "intro": "Compare every query to every key, independently for each batch item. Each batch has its own matrix multiplication.", "goal": "Produce y [batch, query, key]. Each score must be the dot product of a query and a key from the same batch.", "concept": "With @, the last two axes are matrix axes and earlier axes are batch axes. Swap the key and feature axes of k so feature dimensions contract.", "starter": "# q: [batch, query, feature] = [2, 2, 3]\n# k: [batch, key, feature] = [2, 4, 3]\ny = q @ k", "hints": ["The feature axes both have size 3. They must be q’s last axis and k’s second-last axis.", "Change k from [2, 4, 3] to [2, 3, 4], keeping the batch axis in place.", "Try y = q @ k.transpose(-2, -1)."], "takeaway": "Each batch contains a query-by-key score matrix. Feature axes contract while batches stay independent—the shape pattern behind attention scores.", "transfer": "For q [B, H, Q, D] and k [B, H, K, D], predict the shape of q @ k.transpose(-2, -1)."}
+    {
+      "title": "A change of perspective",
+      "short": "Reorder the axes",
+      "intro": "An image is more than a list of numbers. Move its axes without losing the relationship between pixels and channels.",
+      "goal": "Turn x from [height, width, channel] into y with [channel, height, width]. Keep every pixel in the right place.",
+      "concept": "reshape changes how a sequence is grouped. permute changes which axis comes first. Equal shapes do not guarantee equal values.",
+      "starter": "# x: [height, width, channel] = [2, 3, 2]\n# Move channels to the first axis.\ny = x.reshape(2, 2, 3)",
+      "hints": [
+        "The original axes are 0 = height, 1 = width, 2 = channel.",
+        "The new order is old axis 2, then old axis 0, then old axis 1.",
+        "Try y = x.permute(2, 0, 1). Inspect the values, not just the shape."
+      ],
+      "takeaway": "You preserved which pixel each value belongs to. permute reorders axes and shares storage; reshape alone cannot perform this swap.",
+      "transfer": "Convert [batch, height, width, channel] into [batch, channel, height, width]. Which axis stays in place?"
+    },
+    {
+      "title": "Give every row its space",
+      "short": "Understand broadcasting",
+      "intro": "Subtract each row’s average. The shape of the means determines where their values are reused.",
+      "goal": "Create y by subtracting each row’s mean from that same row of x. Every output row should have mean zero.",
+      "concept": "Broadcasting aligns axes from the right. Dimensions must match or one must be 1. keepdim=True retains the reduced axis with size 1.",
+      "starter": "# x has shape [3, 3]\n# This runs, but does it center each row?\nmeans = x.mean(dim=1)\ny = x - means",
+      "hints": [
+        "For a square input, [3] aligns with columns. Code can run while subtracting the wrong values.",
+        "You need one mean per row with shape [3, 1]. Retain axis 1 when reducing.",
+        "Use means = x.mean(dim=1, keepdim=True), then y = x - means."
+      ],
+      "takeaway": "Each row reuses its own mean. This solution also works on rectangular inputs, where the original code fails.",
+      "transfer": "For x [batch, time, features], subtract the mean over time for each batch and feature. Which dim should you reduce?"
+    },
+    {
+      "title": "Keep the batch together",
+      "short": "Multiply batched matrices",
+      "intro": "Compare every query to every key, independently for each batch item. Each batch has its own matrix multiplication.",
+      "goal": "Produce y [batch, query, key]. Each score must be the dot product of a query and a key from the same batch.",
+      "concept": "With @, the last two axes are matrix axes and earlier axes are batch axes. Swap the key and feature axes of k so feature dimensions contract.",
+      "starter": "# q: [batch, query, feature] = [2, 2, 3]\n# k: [batch, key, feature] = [2, 4, 3]\ny = q @ k",
+      "hints": [
+        "The feature axes both have size 3. They must be q’s last axis and k’s second-last axis.",
+        "Change k from [2, 4, 3] to [2, 3, 4], keeping the batch axis in place.",
+        "Try y = q @ k.transpose(-2, -1)."
+      ],
+      "takeaway": "Each batch contains a query-by-key score matrix. Feature axes contract while batches stay independent—the shape pattern behind attention scores.",
+      "transfer": "For q [B, H, Q, D] and k [B, H, K, D], predict the shape of q @ k.transpose(-2, -1)."
+    },
+    {
+      "title": "One row per example",
+      "short": "Flatten without mixing batches",
+      "intro": "A model often needs one feature vector per example. Flatten the image axes while keeping examples separate.",
+      "goal": "Turn x [batch, height, width] into y [batch, height × width], keeping each example’s values in their original order.",
+      "concept": "flatten(start_dim=1) merges the axes after the batch axis. Flattening everything also removes the batch boundary.",
+      "starter": "# x: [batch, height, width] = [2, 2, 3]\ny = x.flatten()",
+      "hints": [
+        "Which axis identifies independent examples? It must survive.",
+        "The axes to merge begin at axis 1 and continue to the last axis.",
+        "Try y = x.flatten(start_dim=1). This also works when the batch size changes."
+      ],
+      "takeaway": "Every row now contains one complete example. A semantic axis boundary is more robust than a fixed reshape size.",
+      "transfer": "For x [B, C, H, W], predict x.flatten(1).shape. How would you merge only H and W?"
+    },
+    {
+      "title": "Keep the single example",
+      "short": "Squeeze one axis safely",
+      "intro": "A batch of one is still a batch. Remove an unnecessary trailing axis without removing the example axis.",
+      "goal": "Turn x [batch, feature, 1] into y [batch, feature]. Keep axis 0 even when its size is 1.",
+      "concept": "squeeze() removes every size-one axis. squeeze(-1) names the axis to remove and preserves other singleton axes.",
+      "starter": "# x: [batch, feature, singleton] = [1, 3, 1]\ny = x.squeeze()",
+      "hints": [
+        "The visible batch contains one example. Which two axes currently have size 1?",
+        "Removing all singleton axes turns [1, 3, 1] into [3], losing the batch axis.",
+        "Try y = x.squeeze(-1). Only the trailing axis should disappear."
+      ],
+      "takeaway": "The output retains its batch dimension for both one and multiple examples. Naming the axis prevents a batch-size-dependent shape bug.",
+      "transfer": "Why might a model work during training but fail on its last batch if it uses squeeze() without dim?"
+    },
+    {
+      "title": "A bias for each channel",
+      "short": "Broadcast a channel bias",
+      "intro": "A channel bias belongs to every pixel of one channel. A vector aligns with the last axis unless you place singleton axes around it.",
+      "goal": "Add bias [channel] to x [batch, channel, height, width], reusing each channel’s bias across its pixels and all examples.",
+      "concept": "Broadcasting aligns dimensions from the right, without reading axis names. Reshape the bias to [1, channel, 1, 1]. The visible channel and width sizes happen to match.",
+      "starter": "# x: [batch, channel, height, width] = [2, 3, 2, 3]\n# bias: [channel] = [3]\ny = x + bias",
+      "hints": [
+        "The starter runs because width equals the number of channels. Inspect which values actually change.",
+        "The bias needs four axes, with the channel axis in position 1 and size-one axes elsewhere.",
+        "Try y = x + bias.reshape(1, -1, 1, 1). The inferred size also handles a new channel count."
+      ],
+      "takeaway": "The bias now follows channel identity rather than column position. Fresh inputs deliberately change channel and spatial sizes.",
+      "transfer": "For channels-last x [B, H, W, C], would adding a [C] bias directly be correct? Explain the alignment."
+    },
+    {
+      "title": "Summarize the image, keep its channels",
+      "short": "Pool spatial dimensions",
+      "intro": "Compress each feature map into its average value. Keep a separate summary for every example and channel.",
+      "goal": "Average x [batch, channel, height, width] over height and width to produce y [batch, channel].",
+      "concept": "A reduction removes an axis unless keepdim=True. After reducing the last axis, the previous second-last axis becomes the last axis.",
+      "starter": "# x: [batch, channel, height, width] = [2, 3, 2, 2]\ny = x.mean(dim=1)",
+      "hints": [
+        "Which two axes describe image positions, rather than examples or channels?",
+        "Average width first. Height then becomes the last axis of the intermediate tensor.",
+        "Try y = x.mean(dim=-1).mean(dim=-1). Inspect both reduction steps."
+      ],
+      "takeaway": "Each channel now has one spatial average per example. This is the value computation of global average pooling.",
+      "transfer": "How would you keep a [B, C, 1, 1] result so it can broadcast back over the original image?"
+    },
+    {
+      "title": "A linear layer from tensor operations",
+      "short": "Build a linear layer",
+      "intro": "Apply the same learned projection to every time step. The stored weight matrix puts output features before input features.",
+      "goal": "Compute y [batch, time, output] from x, weight [output, input], and bias [output]. Use one projection at every time step.",
+      "concept": "A PyTorch linear layer computes x @ weight.T + bias on the final feature axis. Leading axes survive, and the bias broadcasts across them.",
+      "starter": "# x: [batch, time, input] = [2, 3, 3]\n# weight: [output, input] = [4, 3]; bias: [output] = [4]\ny = x @ weight + bias",
+      "hints": [
+        "Which dimensions must meet inside the matrix multiplication? Both must describe input features.",
+        "Transpose weight to [input, output]. The output vector bias already aligns with the final axis.",
+        "Try y = x @ weight.transpose(-2, -1) + bias."
+      ],
+      "takeaway": "One weight matrix and bias are reused across batches and time steps. You reconstructed a linear layer’s forward computation.",
+      "transfer": "For x [B, H, T, D] and weight [O, D], what shape does the output have? Which axes share the same parameters?"
+    },
+    {
+      "title": "Choose what competes for probability",
+      "short": "Normalize attention scores",
+      "intro": "For each query, turn its key scores into a probability distribution. Choosing the wrong dim can produce valid-looking values with the wrong meaning.",
+      "goal": "Create y with the same shape as scores [batch, query, key], with softmax applied across keys independently for each query.",
+      "concept": "softmax(dim) exponentiates and normalizes within that axis. Each group sums to one. The implementation subtracts the group maximum to avoid overflow for large finite scores.",
+      "starter": "# scores: [batch, query, key] = [2, 3, 3]\n# For each query, probabilities over keys must sum to one.\ny = scores.softmax(dim=1)",
+      "hints": [
+        "Which choices compete for one query: other queries, or its keys?",
+        "Keys occupy the final axis. Normalizing query axis 1 solves a different problem.",
+        "Try y = scores.softmax(dim=-1). In the playground, sum the result over the last axis to check it."
+      ],
+      "takeaway": "Each query distributes probability over its keys. The same code also handles large positive or negative scores in the fresh inputs.",
+      "transfer": "If you add the same constant to every score within one query, should its probabilities change? Try scores + 1000 in the playground."
+    }
   ],
-  "sandbox": {"title": "Follow your curiosity", "intro": "Create a tensor, change its shape, and follow each operation. Reset restores the starting experiment.", "goal": "Explore freely. Try a different dim, add keepdim=True, or transpose before reshaping.", "concept": "Select a step to inspect values, axes, and storage. The API guide lists the supported expressions.", "starter": "x = torch.arange(12).reshape(3, 4)\nmeans = x.mean(dim=1, keepdim=True)\ny = x - means", "hints": ["Try y = x.transpose(0, 1).", "Try y = x.sum(dim=0, keepdim=True).", "Create an input with torch.tensor([[1, 2], [3, 4]])."]}
+  "sandbox": {
+    "title": "Follow your curiosity",
+    "intro": "Create a tensor, change its shape, and follow each operation. Reset restores the starting experiment.",
+    "goal": "Explore freely. Try a different dim, add keepdim=True, or transpose before reshaping.",
+    "concept": "Select a step to inspect values, axes, and storage. The API guide lists the supported expressions.",
+    "starter": "x = torch.arange(12).reshape(3, 4)\nmeans = x.mean(dim=1, keepdim=True)\ny = x - means",
+    "hints": [
+      "Try y = x.transpose(0, 1).",
+      "Try y = x.sum(dim=0, keepdim=True).",
+      "Create an input with torch.tensor([[1, 2], [3, 4]])."
+    ]
+  }
 }

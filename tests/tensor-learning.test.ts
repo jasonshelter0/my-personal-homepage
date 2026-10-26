@@ -6,7 +6,7 @@ test('tensor engine, interpreter, lesson validation and Python export', () => {
   const env = { ...process.env };
   delete env.NODE_TEST_CONTEXT;
   const output = execFileSync(process.execPath, ['--test', 'tests/tensor-lab/engine.test.mjs'], { encoding: 'utf8', env });
-  assert.match(output, /tests 11/);
+  assert.match(output, /tests 14/);
 });
 test('all tensor lesson translations have the same complete schema', () => {
   function paths(value: unknown, prefix = ''): string[] {
@@ -14,5 +14,10 @@ test('all tensor lesson translations have the same complete schema', () => {
     return Object.entries(value as object).flatMap(([key, child]) => paths(child, `${prefix}.${key}`));
   }
   const expected = paths(tensorLearningCopy.en);
-  for (const copy of Object.values(tensorLearningCopy)) assert.deepEqual(paths(copy), expected);
+  for (const copy of Object.values(tensorLearningCopy)) {
+    assert.deepEqual(paths(copy), expected);
+    assert.equal(copy.lessons.length, 9);
+    assert.equal(copy.api.length, 10);
+    for (const lesson of copy.lessons) assert.equal(lesson.hints.length, 3);
+  }
 });

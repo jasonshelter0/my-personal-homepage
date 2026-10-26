@@ -1,8 +1,10 @@
 {
   "title": "LearnPyTorch · Laboratoire de tenseurs",
-  "summary": "Développez votre intuition en modifiant le code et en inspectant les valeurs. Trois leçons guidées abordent l’ordre des axes, la diffusion et la multiplication matricielle par lots.",
-  "detail": "3 leçons interactives · Simulation dans le navigateur · Export Python",
-  "read": "Ouvrir le laboratoire", "back": "Retour aux cours", "eyebrow": "APPRENTISSAGE INTERACTIF · PYTORCH",
+  "summary": "Neuf leçons pour comprendre les tenseurs : axes, diffusion, produits par lots, aplatissement, squeeze ciblé, biais par canal, pooling, couches linéaires et softmax.",
+  "detail": "9 leçons interactives · Simulateur dans le navigateur · Export Python",
+  "read": "Ouvrir le laboratoire",
+  "back": "Retour aux cours",
+  "eyebrow": "APPRENTISSAGE INTERACTIF · PYTORCH",
   "intro": "Chaque case représente une valeur, chaque axe lui donne une position. Prédisez l’effet d’une opération, exécutez-la, puis inspectez le résultat. Les programmes de départ contiennent des erreurs volontaires : un programme peut fonctionner tout en disposant les données incorrectement.",
   "outline": "Ce que vous allez pratiquer",
   "workflow": "Choisissez une leçon, modifiez le code et sélectionnez Exécuter. Comparez votre résultat à la cible, puis sélectionnez une étape intermédiaire pour l’inspecter. Les indices vont d’une idée à une solution. Une leçon est validée lorsque les formes et les valeurs correspondent pour l’exemple visible et trois nouvelles entrées.",
@@ -10,18 +12,261 @@
   "scopeTitle": "Un environnement centré sur les fondamentaux",
   "scope": "Ce simulateur utilise une syntaxe proche de PyTorch, mais ne constitue pas un environnement Python complet. Il accepte des tenseurs numériques de rang 0 à 4, avec au plus 4096 éléments et des dimensions positives. Chaque tranche affiche au plus 8 × 8 cases. L’indexation, les boucles, l’autograd, les périphériques, les types, les tenseurs vides et les modifications en place ne sont pas pris en charge. Ici, reshape copie prudemment les entrées non contiguës ; PyTorch peut parfois renvoyer une vue. L’export utilise explicitement des tenseurs flottants.",
   "apiTitle": "Expressions prises en charge",
-  "api": ["Réordonner les axes tout en conservant l’identité des éléments.", "Permuter deux axes ; les axes négatifs se comptent depuis la fin.", "Regrouper la séquence logique ; un seul -1 peut déduire une dimension.", "Insérer ou retirer un axe de taille 1.", "Réduire un axe ; keepdim=True conserve sa position pour la diffusion.", "Calcul élément par élément avec diffusion, ou multiplication matricielle avec @.", "Créer un tenseur à partir de listes imbriquées ou des nombres de 0 à n−1.", "Créer des tenseurs remplis de uns ou de zéros."],
+  "api": [
+    "Réordonner les axes tout en conservant l’identité des éléments.",
+    "Permuter deux axes ; les axes négatifs se comptent depuis la fin.",
+    "Regrouper la séquence logique ; un seul -1 peut déduire une dimension.",
+    "Insérer ou retirer un axe de taille 1.",
+    "Réduire un axe ; keepdim=True conserve sa position pour la diffusion.",
+    "Calcul élément par élément avec diffusion, ou multiplication matricielle avec @.",
+    "Créer un tenseur à partir de listes imbriquées ou des nombres de 0 à n−1.",
+    "Créer des tenseurs remplis de uns ou de zéros.",
+    "Fusionner une plage contiguë d’axes, en conservant les axes extérieurs.",
+    "Normaliser les exponentielles sur un axe explicite ; chaque groupe somme à un."
+  ],
   "independent": "Projet pédagogique indépendant inspiré de Learn Git Branching, sans affiliation avec PyTorch.",
   "ui": {
-    "lesson": "Leçon", "sandbox": "Exploration libre", "progress": "Terminées", "mission": "Votre objectif", "editor": "Expérience PyTorch", "run": "Exécuter", "reset": "Réinitialiser", "hint": "Afficher un indice", "export": "Exporter en Python", "share": "Partager", "expand": "Agrandir le laboratoire", "close": "Quitter la vue agrandie", "input": "Entrée", "result": "Votre résultat", "target": "Cible", "trace": "Suivre la transformation", "step": "Étape", "slice": "Tranche", "previous": "Tranche précédente", "nextSlice": "Tranche suivante", "cell": "Sélectionnez une case pour inspecter ses coordonnées et son décalage en mémoire.", "index": "Coordonnées", "value": "Valeur", "offset": "Décalage en mémoire", "mismatch": "Les valeurs entourées diffèrent de la cible.", "truncated": "Au plus 8 lignes et 8 colonnes sont affichées par tranche.", "elements": "Éléments", "strides": "Pas", "layout": "Disposition", "contiguous": "Contiguë", "noncontiguous": "Non contiguë", "storage": "Stockage", "shared": "Partagé avec l’entrée", "newStorage": "Nouvelle allocation", "concept": "Une idée à retenir", "complete": "Leçon terminée", "transfer": "Essayez dans un notebook", "next": "Leçon suivante", "ready": "Exécutez le code initial. Que remarquez-vous ?", "changed": "Le code a changé. Exécutez-le pour actualiser la vue.", "success": "Les formes et valeurs correspondent pour cet exemple et trois nouvelles entrées.", "executed": "Exécution terminée. Sélectionnez une étape pour inspecter les valeurs.", "empty": "Ajoutez une expression ou une affectation de tenseur avant l’exécution.", "missing": "Affectez votre réponse à y.", "shapeError": "La forme de sortie diffère de la cible. Suivez les axes étiquetés.", "valueError": "La forme correspond, mais les valeurs diffèrent. Comparez votre résultat à la cible.", "freshError": "La solution échoue sur de nouvelles entrées. Utilisez les tenseurs fournis plutôt qu’une réponse fixe.", "exported": "Fichier Python exporté. Exécutez-le avec PyTorch installé.", "copied": "Lien copié. Il contient votre code, pas votre progression.", "copyLink": "Copiez ce lien vers l’expérience :", "invalidLink": "Ce lien partagé est invalide. La leçon initiale est prête.", "shortcut": "Ctrl / ⌘ + Entrée pour exécuter", "docs": "Documentation PyTorch", "initialNote": "Exécutez le code, puis sélectionnez une étape pour voir les changements.", "targetNote": "Voici la disposition cible. Votre solution doit aussi fonctionner sur de nouvelles entrées.", "storageUnavailable": "Le stockage du navigateur est indisponible ; la progression ne dure que cette session.", "disabledScript": "Activez JavaScript pour utiliser le laboratoire. Les explications restent accessibles ci-dessous."
+    "lesson": "Leçon",
+    "sandbox": "Exploration libre",
+    "progress": "Terminées",
+    "mission": "Votre objectif",
+    "editor": "Expérience PyTorch",
+    "run": "Exécuter",
+    "reset": "Réinitialiser",
+    "hint": "Afficher un indice",
+    "export": "Exporter en Python",
+    "share": "Partager",
+    "expand": "Agrandir le laboratoire",
+    "close": "Quitter la vue agrandie",
+    "input": "Entrée",
+    "result": "Votre résultat",
+    "target": "Cible",
+    "trace": "Suivre la transformation",
+    "step": "Étape",
+    "slice": "Tranche",
+    "previous": "Tranche précédente",
+    "nextSlice": "Tranche suivante",
+    "cell": "Sélectionnez une case pour inspecter ses coordonnées et son décalage en mémoire.",
+    "index": "Coordonnées",
+    "value": "Valeur",
+    "offset": "Décalage en mémoire",
+    "mismatch": "Les valeurs entourées diffèrent de la cible.",
+    "truncated": "Au plus 8 lignes et 8 colonnes sont affichées par tranche.",
+    "elements": "Éléments",
+    "strides": "Pas",
+    "layout": "Disposition",
+    "contiguous": "Contiguë",
+    "noncontiguous": "Non contiguë",
+    "storage": "Stockage",
+    "shared": "Partagé avec l’entrée",
+    "newStorage": "Nouvelle allocation",
+    "concept": "Une idée à retenir",
+    "complete": "Leçon terminée",
+    "transfer": "Essayez dans un notebook",
+    "next": "Leçon suivante",
+    "ready": "Exécutez le code initial. Que remarquez-vous ?",
+    "changed": "Le code a changé. Exécutez-le pour actualiser la vue.",
+    "success": "Les formes et valeurs correspondent pour cet exemple et trois nouvelles entrées.",
+    "executed": "Exécution terminée. Sélectionnez une étape pour inspecter les valeurs.",
+    "empty": "Ajoutez une expression ou une affectation de tenseur avant l’exécution.",
+    "missing": "Affectez votre réponse à y.",
+    "shapeError": "La forme de sortie diffère de la cible. Suivez les axes étiquetés.",
+    "valueError": "La forme correspond, mais les valeurs diffèrent. Comparez votre résultat à la cible.",
+    "freshError": "La solution échoue sur de nouvelles entrées. Utilisez les tenseurs fournis plutôt qu’une réponse fixe.",
+    "exported": "Fichier Python exporté. Exécutez-le avec PyTorch installé.",
+    "copied": "Lien copié. Il contient votre code, pas votre progression.",
+    "copyLink": "Copiez ce lien vers l’expérience :",
+    "invalidLink": "Ce lien partagé est invalide. La leçon initiale est prête.",
+    "shortcut": "Ctrl / ⌘ + Entrée pour exécuter",
+    "docs": "Documentation PyTorch",
+    "initialNote": "Exécutez le code, puis sélectionnez une étape pour voir les changements.",
+    "targetNote": "Voici la disposition cible. Votre solution doit aussi fonctionner sur de nouvelles entrées.",
+    "storageUnavailable": "Le stockage du navigateur est indisponible ; la progression ne dure que cette session.",
+    "disabledScript": "Activez JavaScript pour utiliser le laboratoire. Les explications restent accessibles ci-dessous."
   },
-  "axes": {"axis": "axe", "height": "hauteur", "width": "largeur", "channel": "canal", "row": "ligne", "feature": "caractéristique", "batch": "lot", "query": "requête", "key": "clé", "column": "colonne", "singleton": "axe singleton", "scalar": "scalaire"},
-  "notes": {"permute": "Les axes changent d’ordre sans changer l’identité des éléments. Le stockage sous-jacent est partagé, pas réorganisé.", "reshape": "La séquence logique est regroupée. Les entrées contiguës partagent le stockage ; le simulateur copie les entrées non contiguës.", "singleton": "Des axes de taille 1 ont été ajoutés ou retirés. Le stockage est partagé.", "reduction": "Les valeurs sont réduites selon l’axe choisi. keepdim=True conserve un axe de taille 1 pour la diffusion.", "matmul": "Les axes matriciels internes sont contractés. Chaque valeur de sortie est un produit scalaire ; les axes de lots se diffusent.", "arithmetic": "Les axes s’alignent depuis la droite. Les axes de taille 1 réutilisent les valeurs ; la sortie possède un nouveau stockage.", "new": "Un nouveau tenseur avec son propre stockage."},
-  "errors": {"broadcast": "Ces formes ne peuvent pas être diffusées. Alignez les axes depuis la droite : les tailles doivent être identiques ou l’une doit valoir 1. Essayez keepdim=True ou unsqueeze().", "matmul": "La multiplication matricielle exige des dimensions internes identiques et des rangs de 2 à 4. Essayez transpose(-2, -1) sur le second tenseur.", "reshape": "reshape doit conserver le nombre d’éléments. Utilisez des dimensions entières positives et au plus un -1.", "axis": "Axes invalides. Utilisez un entier dans les limites ; permute doit inclure chaque axe exactement une fois.", "limit": "Limitez le code à 6000 caractères et 100 opérations, et les tenseurs au rang 4 et à 4096 éléments.", "finite": "Les valeurs doivent être des nombres finis et les lignes imbriquées de même longueur. Vérifiez les divisions par zéro.", "syntax": "Expression non prise en charge ou incomplète. Vérifiez le guide, les variables, les parenthèses et les arguments. Utilisez une affectation par ligne."},
+  "axes": {
+    "axis": "axe",
+    "height": "hauteur",
+    "width": "largeur",
+    "channel": "canal",
+    "row": "ligne",
+    "feature": "caractéristique",
+    "batch": "lot",
+    "query": "requête",
+    "key": "clé",
+    "column": "colonne",
+    "singleton": "axe singleton",
+    "scalar": "scalaire",
+    "time": "temps",
+    "output": "sortie"
+  },
+  "notes": {
+    "permute": "Les axes changent d’ordre sans changer l’identité des éléments. Le stockage sous-jacent est partagé, pas réorganisé.",
+    "reshape": "La séquence logique est regroupée. Les entrées contiguës partagent le stockage ; le simulateur copie les entrées non contiguës.",
+    "singleton": "Des axes de taille 1 ont été ajoutés ou retirés. Le stockage est partagé.",
+    "reduction": "Les valeurs sont réduites selon l’axe choisi. keepdim=True conserve un axe de taille 1 pour la diffusion.",
+    "matmul": "Les axes matriciels internes sont contractés. Chaque valeur de sortie est un produit scalaire ; les axes de lots se diffusent.",
+    "arithmetic": "Les axes s’alignent depuis la droite. Les axes de taille 1 réutilisent les valeurs ; la sortie possède un nouveau stockage.",
+    "new": "Un nouveau tenseur avec son propre stockage.",
+    "flatten": "L’aplatissement fusionne les axes choisis dans l’ordre logique et conserve les autres. Une entrée non contiguë peut nécessiter une copie.",
+    "softmax": "Softmax normalise selon l’axe choisi. Chaque groupe somme à un ; soustraire son maximum stabilise les exponentielles."
+  },
+  "errors": {
+    "broadcast": "Ces formes ne peuvent pas être diffusées. Alignez les axes depuis la droite : les tailles doivent être identiques ou l’une doit valoir 1. Essayez keepdim=True ou unsqueeze().",
+    "matmul": "La multiplication matricielle exige des dimensions internes identiques et des rangs de 2 à 4. Essayez transpose(-2, -1) sur le second tenseur.",
+    "reshape": "reshape doit conserver le nombre d’éléments. Utilisez des dimensions entières positives et au plus un -1.",
+    "axis": "Axes invalides. Utilisez un entier dans les limites ; permute doit inclure chaque axe exactement une fois.",
+    "limit": "Limitez le code à 6000 caractères et 100 opérations, et les tenseurs au rang 4 et à 4096 éléments.",
+    "finite": "Les valeurs doivent être des nombres finis et les lignes imbriquées de même longueur. Vérifiez les divisions par zéro.",
+    "syntax": "Expression non prise en charge ou incomplète. Vérifiez le guide, les variables, les parenthèses et les arguments. Utilisez une affectation par ligne."
+  },
   "lessons": [
-    {"title": "Changer de perspective", "short": "Réordonner les axes", "intro": "Une image est plus qu’une liste de nombres. Déplacez ses axes sans perdre la relation entre pixels et canaux.", "goal": "Transformez x [hauteur, largeur, canal] en y [canal, hauteur, largeur], en gardant chaque pixel à la bonne place.", "concept": "reshape modifie le regroupement d’une séquence. permute change l’ordre des axes. Des formes identiques ne garantissent pas des valeurs identiques.", "starter": "# x: [hauteur, largeur, canal] = [2, 3, 2]\n# Placer les canaux sur le premier axe.\ny = x.reshape(2, 2, 3)", "hints": ["Les axes initiaux sont 0 = hauteur, 1 = largeur, 2 = canal.", "Le nouvel ordre correspond aux anciens axes 2, 0, puis 1.", "Essayez y = x.permute(2, 0, 1). Inspectez les valeurs, pas seulement la forme."], "takeaway": "Chaque valeur reste associée au bon pixel. permute réordonne les axes et partage le stockage ; reshape seul ne réalise pas cet échange.", "transfer": "Convertissez [lot, hauteur, largeur, canal] en [lot, canal, hauteur, largeur]. Quel axe reste en place ?"},
-    {"title": "Une moyenne pour chaque ligne", "short": "Comprendre la diffusion", "intro": "Soustrayez la moyenne de chaque ligne. La forme du tenseur des moyennes détermine où ses valeurs sont réutilisées.", "goal": "Créez y en soustrayant à chaque ligne de x sa propre moyenne. Chaque ligne de sortie doit avoir une moyenne nulle.", "concept": "La diffusion aligne les axes depuis la droite. Les tailles doivent être identiques ou l’une doit valoir 1. keepdim=True conserve l’axe réduit avec une taille de 1.", "starter": "# x a la forme [3, 3]\n# Ce code centre-t-il vraiment chaque ligne ?\nmeans = x.mean(dim=1)\ny = x - means", "hints": ["Sur une entrée carrée, [3] s’aligne avec les colonnes. Le code peut fonctionner tout en soustrayant les mauvaises valeurs.", "Il faut une moyenne par ligne, avec la forme [3, 1]. Conservez l’axe 1 lors de la réduction.", "Utilisez means = x.mean(dim=1, keepdim=True), puis y = x - means."], "takeaway": "Chaque ligne réutilise sa propre moyenne. Cette solution fonctionne aussi sur des entrées rectangulaires, où le code initial échoue.", "transfer": "Pour x [lot, temps, caractéristiques], soustrayez la moyenne temporelle pour chaque lot et caractéristique. Quel dim faut-il réduire ?"},
-    {"title": "Préserver les lots", "short": "Multiplier par lots", "intro": "Comparez chaque requête à chaque clé, indépendamment dans chaque lot. Chaque lot a sa propre multiplication matricielle.", "goal": "Produisez y [lot, requête, clé]. Chaque score doit être le produit scalaire d’une requête et d’une clé du même lot.", "concept": "Avec @, les deux derniers axes sont matriciels et les précédents représentent les lots. Échangez les axes clé et caractéristique de k pour contracter les caractéristiques.", "starter": "# q: [lot, requête, caractéristique] = [2, 2, 3]\n# k: [lot, clé, caractéristique] = [2, 4, 3]\ny = q @ k", "hints": ["Les deux axes de caractéristiques ont la taille 3. Ils doivent être le dernier axe de q et l’avant-dernier de k.", "Passez k de [2, 4, 3] à [2, 3, 4] sans déplacer l’axe des lots.", "Essayez y = q @ k.transpose(-2, -1)."], "takeaway": "Chaque lot contient une matrice de scores requête-clé. Les caractéristiques sont contractées tandis que les lots restent indépendants : c’est le schéma des scores d’attention.", "transfer": "Pour q [B, H, Q, D] et k [B, H, K, D], prédisez la forme de q @ k.transpose(-2, -1)."}
+    {
+      "title": "Changer de perspective",
+      "short": "Réordonner les axes",
+      "intro": "Une image est plus qu’une liste de nombres. Déplacez ses axes sans perdre la relation entre pixels et canaux.",
+      "goal": "Transformez x [hauteur, largeur, canal] en y [canal, hauteur, largeur], en gardant chaque pixel à la bonne place.",
+      "concept": "reshape modifie le regroupement d’une séquence. permute change l’ordre des axes. Des formes identiques ne garantissent pas des valeurs identiques.",
+      "starter": "# x: [hauteur, largeur, canal] = [2, 3, 2]\n# Placer les canaux sur le premier axe.\ny = x.reshape(2, 2, 3)",
+      "hints": [
+        "Les axes initiaux sont 0 = hauteur, 1 = largeur, 2 = canal.",
+        "Le nouvel ordre correspond aux anciens axes 2, 0, puis 1.",
+        "Essayez y = x.permute(2, 0, 1). Inspectez les valeurs, pas seulement la forme."
+      ],
+      "takeaway": "Chaque valeur reste associée au bon pixel. permute réordonne les axes et partage le stockage ; reshape seul ne réalise pas cet échange.",
+      "transfer": "Convertissez [lot, hauteur, largeur, canal] en [lot, canal, hauteur, largeur]. Quel axe reste en place ?"
+    },
+    {
+      "title": "Une moyenne pour chaque ligne",
+      "short": "Comprendre la diffusion",
+      "intro": "Soustrayez la moyenne de chaque ligne. La forme du tenseur des moyennes détermine où ses valeurs sont réutilisées.",
+      "goal": "Créez y en soustrayant à chaque ligne de x sa propre moyenne. Chaque ligne de sortie doit avoir une moyenne nulle.",
+      "concept": "La diffusion aligne les axes depuis la droite. Les tailles doivent être identiques ou l’une doit valoir 1. keepdim=True conserve l’axe réduit avec une taille de 1.",
+      "starter": "# x a la forme [3, 3]\n# Ce code centre-t-il vraiment chaque ligne ?\nmeans = x.mean(dim=1)\ny = x - means",
+      "hints": [
+        "Sur une entrée carrée, [3] s’aligne avec les colonnes. Le code peut fonctionner tout en soustrayant les mauvaises valeurs.",
+        "Il faut une moyenne par ligne, avec la forme [3, 1]. Conservez l’axe 1 lors de la réduction.",
+        "Utilisez means = x.mean(dim=1, keepdim=True), puis y = x - means."
+      ],
+      "takeaway": "Chaque ligne réutilise sa propre moyenne. Cette solution fonctionne aussi sur des entrées rectangulaires, où le code initial échoue.",
+      "transfer": "Pour x [lot, temps, caractéristiques], soustrayez la moyenne temporelle pour chaque lot et caractéristique. Quel dim faut-il réduire ?"
+    },
+    {
+      "title": "Préserver les lots",
+      "short": "Multiplier par lots",
+      "intro": "Comparez chaque requête à chaque clé, indépendamment dans chaque lot. Chaque lot a sa propre multiplication matricielle.",
+      "goal": "Produisez y [lot, requête, clé]. Chaque score doit être le produit scalaire d’une requête et d’une clé du même lot.",
+      "concept": "Avec @, les deux derniers axes sont matriciels et les précédents représentent les lots. Échangez les axes clé et caractéristique de k pour contracter les caractéristiques.",
+      "starter": "# q: [lot, requête, caractéristique] = [2, 2, 3]\n# k: [lot, clé, caractéristique] = [2, 4, 3]\ny = q @ k",
+      "hints": [
+        "Les deux axes de caractéristiques ont la taille 3. Ils doivent être le dernier axe de q et l’avant-dernier de k.",
+        "Passez k de [2, 4, 3] à [2, 3, 4] sans déplacer l’axe des lots.",
+        "Essayez y = q @ k.transpose(-2, -1)."
+      ],
+      "takeaway": "Chaque lot contient une matrice de scores requête-clé. Les caractéristiques sont contractées tandis que les lots restent indépendants : c’est le schéma des scores d’attention.",
+      "transfer": "Pour q [B, H, Q, D] et k [B, H, K, D], prédisez la forme de q @ k.transpose(-2, -1)."
+    },
+    {
+      "title": "Une ligne par exemple",
+      "short": "Aplatir sans mélanger les lots",
+      "intro": "Un modèle attend souvent un vecteur de caractéristiques par exemple. Fusionnez les axes de l’image en gardant les exemples séparés.",
+      "goal": "Transformez x [lot, hauteur, largeur] en y [lot, hauteur × largeur], en conservant l’ordre des valeurs de chaque exemple.",
+      "concept": "flatten(start_dim=1) fusionne les axes après celui du lot. Aplatir tous les axes efface aussi la séparation entre exemples.",
+      "starter": "# x : [lot, hauteur, largeur] = [2, 2, 3]\ny = x.flatten()",
+      "hints": [
+        "Quel axe identifie les exemples indépendants ? Il doit rester.",
+        "Les axes à fusionner commencent à 1 et vont jusqu’au dernier axe.",
+        "Essayez y = x.flatten(start_dim=1). Cela fonctionne aussi si la taille du lot change."
+      ],
+      "takeaway": "Chaque ligne contient maintenant un exemple complet. Une frontière définie par le rôle des axes résiste mieux aux changements qu’une taille fixe.",
+      "transfer": "Pour x [B, C, H, W], prédisez x.flatten(1).shape. Comment fusionner uniquement H et W ?"
+    },
+    {
+      "title": "Un exemple reste un lot",
+      "short": "Retirer un seul axe unitaire",
+      "intro": "Un lot contenant un seul exemple reste un lot. Retirez l’axe final inutile sans supprimer celui des exemples.",
+      "goal": "Transformez x [lot, caractéristique, 1] en y [lot, caractéristique]. Conservez l’axe 0 même si sa taille vaut 1.",
+      "concept": "squeeze() retire tous les axes de taille 1. squeeze(-1) désigne l’axe final et préserve les autres axes unitaires.",
+      "starter": "# x : [lot, caractéristique, unitaire] = [1, 3, 1]\ny = x.squeeze()",
+      "hints": [
+        "Le lot visible contient un seul exemple. Quels sont les deux axes de taille 1 ?",
+        "Retirer tous les axes unitaires transforme [1, 3, 1] en [3] et supprime l’axe du lot.",
+        "Essayez y = x.squeeze(-1). Seul l’axe final doit disparaître."
+      ],
+      "takeaway": "La sortie conserve son axe de lot pour un ou plusieurs exemples. Nommer l’axe évite une erreur de forme dépendant de la taille du lot.",
+      "transfer": "Pourquoi un modèle utilisant squeeze() sans dim pourrait-il fonctionner pendant l’entraînement, puis échouer sur le dernier lot ?"
+    },
+    {
+      "title": "Un biais pour chaque canal",
+      "short": "Diffuser un biais par canal",
+      "intro": "Le biais d’un canal s’applique à chacun de ses pixels. Un vecteur s’aligne sur le dernier axe, sauf si vous l’entourez d’axes unitaires.",
+      "goal": "Ajoutez bias [canal] à x [lot, canal, hauteur, largeur], en réutilisant chaque biais sur tous les pixels de son canal et tous les exemples.",
+      "concept": "La diffusion aligne les dimensions depuis la droite, sans lire leurs noms. Donnez au biais la forme [1, canal, 1, 1]. Ici, largeur et nombre de canaux sont égaux par hasard.",
+      "starter": "# x : [lot, canal, hauteur, largeur] = [2, 3, 2, 3]\n# bias : [canal] = [3]\ny = x + bias",
+      "hints": [
+        "Le programme initial fonctionne parce que largeur et nombre de canaux sont égaux. Quelles valeurs modifie-t-il réellement ?",
+        "Le biais doit avoir quatre axes, avec les canaux en position 1 et des axes de taille 1 ailleurs.",
+        "Essayez y = x + bias.reshape(1, -1, 1, 1). La taille déduite accepte aussi un autre nombre de canaux."
+      ],
+      "takeaway": "Le biais suit maintenant le canal plutôt que la colonne. Les nouvelles entrées changent volontairement le nombre de canaux et les dimensions spatiales.",
+      "transfer": "Avec x [B, H, W, C], serait-il correct d’ajouter directement un biais [C] ? Expliquez l’alignement."
+    },
+    {
+      "title": "Résumer l’image, conserver ses canaux",
+      "short": "Réduire les axes spatiaux",
+      "intro": "Résumez chaque carte de caractéristiques par sa moyenne. Chaque exemple et chaque canal doivent garder leur propre résultat.",
+      "goal": "Moyennez x [lot, canal, hauteur, largeur] sur hauteur et largeur pour obtenir y [lot, canal].",
+      "concept": "Une réduction supprime un axe sauf si keepdim=True. Après réduction du dernier axe, l’ancien avant-dernier devient le dernier.",
+      "starter": "# x : [lot, canal, hauteur, largeur] = [2, 3, 2, 2]\ny = x.mean(dim=1)",
+      "hints": [
+        "Quels axes décrivent des positions dans l’image, plutôt que les exemples ou les canaux ?",
+        "Moyennez d’abord la largeur. La hauteur devient alors le dernier axe.",
+        "Essayez y = x.mean(dim=-1).mean(dim=-1). Inspectez les deux étapes."
+      ],
+      "takeaway": "Chaque canal possède maintenant une moyenne spatiale par exemple. C’est le calcul d’un pooling moyen global.",
+      "transfer": "Comment conserver une sortie [B, C, 1, 1] pour la diffuser ensuite sur l’image d’origine ?"
+    },
+    {
+      "title": "Une couche linéaire avec des tenseurs",
+      "short": "Construire une couche linéaire",
+      "intro": "Appliquez la même projection à chaque pas de temps. La matrice stockée place les caractéristiques de sortie avant celles d’entrée.",
+      "goal": "Calculez y [lot, temps, sortie] à partir de x, weight [sortie, entrée] et bias [sortie], avec la même projection à chaque pas de temps.",
+      "concept": "Une couche linéaire PyTorch calcule x @ weight.T + bias sur le dernier axe. Les axes précédents sont conservés et le biais s’y diffuse.",
+      "starter": "# x : [lot, temps, entrée] = [2, 3, 3]\n# weight : [sortie, entrée] = [4, 3] ; bias : [sortie] = [4]\ny = x @ weight + bias",
+      "hints": [
+        "Quelles dimensions doivent se rencontrer dans le produit matriciel ? Toutes deux doivent représenter les caractéristiques d’entrée.",
+        "Transposez weight en [entrée, sortie]. Le biais s’aligne déjà sur le dernier axe de la sortie.",
+        "Essayez y = x @ weight.transpose(-2, -1) + bias."
+      ],
+      "takeaway": "La même matrice et le même biais sont réutilisés sur les lots et les pas de temps. Vous avez reconstruit le calcul direct d’une couche linéaire.",
+      "transfer": "Pour x [B, H, T, D] et weight [O, D], quelle est la forme de sortie ? Quels axes partagent les paramètres ?"
+    },
+    {
+      "title": "Choisir les scores qui se partagent la probabilité",
+      "short": "Normaliser les scores d’attention",
+      "intro": "Pour chaque requête, transformez les scores des clés en une distribution. Un mauvais dim peut donner des valeurs plausibles mais un sens incorrect.",
+      "goal": "Produisez y de même forme que scores [lot, requête, clé], avec softmax sur les clés, indépendamment pour chaque requête.",
+      "concept": "softmax(dim) exponentie et normalise selon cet axe. Chaque groupe somme à un. Soustraire son maximum évite le débordement pour de grands scores finis.",
+      "starter": "# scores : [lot, requête, clé] = [2, 3, 3]\n# Pour chaque requête, les probabilités des clés doivent sommer à un.\ny = scores.softmax(dim=1)",
+      "hints": [
+        "Pour une requête, quelles options se partagent la probabilité : les autres requêtes ou ses clés ?",
+        "Les clés occupent le dernier axe. Normaliser l’axe 1 des requêtes résout un autre problème.",
+        "Essayez y = scores.softmax(dim=-1). Dans le bac à sable, sommez le dernier axe pour vérifier."
+      ],
+      "takeaway": "Chaque requête répartit maintenant sa probabilité entre les clés. Le même code traite aussi de grands scores positifs ou négatifs dans les nouvelles entrées.",
+      "transfer": "Ajouter une constante à tous les scores d’une requête doit-il changer ses probabilités ? Essayez scores + 1000 dans le bac à sable."
+    }
   ],
-  "sandbox": {"title": "Suivez votre curiosité", "intro": "Créez un tenseur, changez sa forme et suivez chaque opération. Réinitialiser restaure l’expérience initiale.", "goal": "Explorez librement : changez dim, ajoutez keepdim=True, ou transposez avant de remodeler.", "concept": "Sélectionnez une étape pour inspecter les valeurs, les axes et le stockage. Le guide décrit les expressions prises en charge.", "starter": "x = torch.arange(12).reshape(3, 4)\nmeans = x.mean(dim=1, keepdim=True)\ny = x - means", "hints": ["Essayez y = x.transpose(0, 1).", "Essayez y = x.sum(dim=0, keepdim=True).", "Créez une entrée avec torch.tensor([[1, 2], [3, 4]])."]}
+  "sandbox": {
+    "title": "Suivez votre curiosité",
+    "intro": "Créez un tenseur, changez sa forme et suivez chaque opération. Réinitialiser restaure l’expérience initiale.",
+    "goal": "Explorez librement : changez dim, ajoutez keepdim=True, ou transposez avant de remodeler.",
+    "concept": "Sélectionnez une étape pour inspecter les valeurs, les axes et le stockage. Le guide décrit les expressions prises en charge.",
+    "starter": "x = torch.arange(12).reshape(3, 4)\nmeans = x.mean(dim=1, keepdim=True)\ny = x - means",
+    "hints": [
+      "Essayez y = x.transpose(0, 1).",
+      "Essayez y = x.sum(dim=0, keepdim=True).",
+      "Créez une entrée avec torch.tensor([[1, 2], [3, 4]])."
+    ]
+  }
 }

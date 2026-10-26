@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+const ids = ['axes','broadcast','batch','flatten','squeeze','channel-bias','pool','linear','softmax'];
+const solutions = ['y = x.permute(2, 0, 1)', 'means = x.mean(dim=1, keepdim=True)\ny = x - means', 'y = q @ k.transpose(-2, -1)', 'y = x.flatten(start_dim=1)', 'y = x.squeeze(-1)', 'y = x + bias.reshape(1, -1, 1, 1)', 'y = x.mean(dim=-1).mean(dim=-1)', 'y = x @ weight.transpose(-2, -1) + bias', 'y = scores.softmax(dim=-1)'];
 const live = 'http://127.0.0.1:4523';
 let preview: string;
 test.beforeAll(async ({ request }) => {
@@ -23,9 +25,10 @@ test('tensor lessons, trace, export, progress and keyboard dialog work', async (
   await expect(page.locator('.tl-mismatch').first()).toBeVisible();
   await page.locator('[data-tensor-lab] [data-hint]').click();
   await expect(page.locator('[data-hint-box]')).toBeVisible();
-  const solutions = ['y = x.permute(2, 0, 1)', 'means = x.mean(dim=1, keepdim=True)\ny = x - means', 'y = q @ k.transpose(-2, -1)'];
-  for (let i=0; i<3; i++) {
-    await page.locator(`[data-lesson="${['axes','broadcast','batch'][i]}"]`).click();
+  for (let i=0; i<ids.length; i++) {
+    await page.locator(`[data-lesson="${ids[i]}"]`).click();
+    await page.locator('[data-run]').click();
+    await expect(page.locator('[data-feedback]')).toHaveAttribute('data-kind', 'error');
     await page.locator('[data-editor]').fill(solutions[i]);
     await page.locator('[data-editor]').press('Control+Enter');
     await expect(page.locator('[data-success]')).toBeVisible();
@@ -34,10 +37,12 @@ test('tensor lessons, trace, export, progress and keyboard dialog work', async (
     await page.locator('[data-step="0"]').click();
     await page.locator('[data-address]').first().click();
     await expect(page.locator('[data-cell-info]')).toContainText('→');
+    await page.locator('[data-next]').click();
+    await expect(page.locator(`[data-lesson="${ids[i+1] || 'sandbox'}"]`)).toHaveAttribute('aria-current','step');
   }
-  await expect(page.locator('[data-progress]')).toContainText('3 / 3');
+  await expect(page.locator('[data-progress]')).toContainText('9 / 9');
   await page.reload();
-  await expect(page.locator('[data-progress]')).toContainText('3 / 3');
+  await expect(page.locator('[data-progress]')).toContainText('9 / 9');
   await page.locator('[data-expand]').click();
   await expect(page.locator('[data-tensor-lab]')).toHaveAttribute('aria-modal','true');
   await page.keyboard.press('Escape');
@@ -67,6 +72,13 @@ test('localized mobile pages, search, aliases and authenticated preview', async 
     if(locale !== 'zh-cn') expect(await page.locator('.tensor-learning').innerText()).not.toMatch(/[\u3400-\u9fff]/);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',new RegExp(`/${locale}/learn/learnpytorch/$`));
     await expect(page.locator('a[href="https://beian.miit.gov.cn/"]')).toHaveText('京ICP备2024092234号-1');
+    for (let i=3; i<ids.length; i++) {
+      await page.locator(`[data-lesson="${ids[i]}"]`).click();
+      await page.locator('[data-editor]').fill(solutions[i]);
+      await page.locator('[data-run]').click();
+      await expect(page.locator('[data-success]')).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1)).toBeTruthy();
+    }
     await page.locator('[data-expand]').click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1)).toBeTruthy();
     await page.keyboard.press('Escape');
@@ -101,4 +113,21 @@ test('shared code loads and lessons work when browser storage is disabled', asyn
   await page.locator('[data-run]').click();
   await expect(page.locator('[data-success]')).toBeVisible();
   await expect(page.locator('[data-storage-notice]')).toBeVisible();
+});
+
+
+test('existing three-lesson progress survives expansion and new shared links round trip', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('learnpytorch-progress-v1',JSON.stringify(['axes','broadcast','batch','axes','unknown'])));
+  const code = 'y = scores.softmax(dim=-1)';
+  await page.goto(`${live}/en/learn/learnpytorch/#tensor-softmax?code=${Buffer.from(code).toString('base64url')}`);
+  await expect(page.locator('[data-progress]')).toContainText('3 / 9');
+  await expect(page.locator('[data-editor]')).toHaveValue(code);
+  await page.locator('[data-run]').click();
+  await expect(page.locator('[data-success]')).toBeVisible();
+  await expect(page.locator('[data-progress]')).toContainText('4 / 9');
+  await page.locator('[data-next]').click();
+  await expect(page.locator('[data-lesson="sandbox"]')).toHaveAttribute('aria-current','step');
+  await page.goBack();
+  await expect(page.locator('[data-lesson="softmax"]')).toHaveAttribute('aria-current','step');
+  await expect(page.locator('[data-editor]')).toHaveValue(code);
 });

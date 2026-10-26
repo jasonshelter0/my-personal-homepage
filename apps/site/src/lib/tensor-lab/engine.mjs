@@ -34,6 +34,31 @@ export class Tensor {
     if (this.contiguous) return new Tensor([], shape, { storage: this.storage, offset: this.offset, note: 'Logical element order preserved. This contiguous input can share storage.' });
     return new Tensor(this.values, shape, { note: 'Logical element order preserved. This simulator copies a noncontiguous input when reshaping.' });
   }
+  flatten(start = 0, end = -1) {
+    const rank = Math.max(1, this.shape.length);
+    start = axis(start, rank); end = axis(end, rank);
+    if (start > end) throw Error('Axis start_dim must not follow end_dim.');
+    if (!this.shape.length) return this.reshape(1);
+    if (start === end) return this;
+    const result = this.reshape(...this.shape.slice(0, start), size(this.shape.slice(start, end + 1)), ...this.shape.slice(end + 1));
+    result.axes = [...this.axes.slice(0, start), 'feature', ...this.axes.slice(end + 1)];
+    result.note = 'Flatten merges a range of axes in logical order. Axes outside that range stay in place.';
+    return result;
+  }
+  softmax(dim) {
+    dim = axis(dim, Math.max(1, this.shape.length));
+    if (!this.shape.length) return new Tensor([1], []);
+    const data = Array(size(this.shape));
+    const other = this.shape.filter((_, i) => i !== dim), strides = stridesFor(this.shape);
+    for (let i = 0; i < size(other); i++) {
+      const coords = indices(i, other); coords.splice(dim, 0, 0);
+      const values = Array.from({length: this.shape[dim]}, (_, j) => { coords[dim] = j; return this.at(coords); });
+      const max = Math.max(...values), weights = values.map(v => Math.exp(v - max));
+      const total = weights.reduce((a, b) => a + b, 0);
+      weights.forEach((v, j) => { coords[dim] = j; data[coords.reduce((n, c, k) => n + c * strides[k], 0)] = v / total; });
+    }
+    return new Tensor(data, this.shape, {axes: [...this.axes], note: 'Softmax normalizes along one axis. Each group sums to one; subtracting its maximum keeps exponentials stable.'});
+  }
   unsqueeze(dim) {
     dim = axis(dim, this.shape.length + 1); const shape = [...this.shape], strides = [...this.strides], axes = [...this.axes];
     shape.splice(dim, 0, 1); strides.splice(dim, 0, dim >= this.shape.length ? 1 : this.strides[dim] * this.shape[dim]); axes.splice(dim, 0, 'singleton');
@@ -97,7 +122,7 @@ export function fromNested(value) {
   function visit(v, d) { if (d === shape.length) { if (typeof v !== 'number' || !Number.isFinite(v)) throw Error('Tensor values must be finite numbers.'); flat.push(v); } else { if (!Array.isArray(v) || v.length !== shape[d]) throw Error('Tensor rows must have equal lengths.'); v.forEach(x => visit(x, d + 1)); } }
   visit(value, 0); return new Tensor(flat, shape);
 }
-const methods = new Set(['reshape', 'permute', 'transpose', 'unsqueeze', 'squeeze', 'mean', 'sum']);
+const methods = new Set(['reshape', 'permute', 'transpose', 'unsqueeze', 'squeeze', 'mean', 'sum', 'flatten', 'softmax']);
 export function execute(code, initial) {
   if (code.length > 6000) throw Error('Keep your experiment under 6000 characters.');
   const env = { ...initial }, trace = [];
@@ -115,7 +140,7 @@ export function execute(code, initial) {
         expect('('); const positional = [], named = {};
         while (peek() !== ')') {
           if (t >= tokens.length) throw Error('Missing closing parenthesis.');
-          if (typeof peek() === 'string' && tokens[t + 1] === '=') { const key = take(); take(); if (!['dim', 'keepdim'].includes(key) || key in named) throw Error(`Unsupported or duplicate keyword ${key}.`); named[key] = expr(); }
+          if (typeof peek() === 'string' && tokens[t + 1] === '=') { const key = take(); take(); if (!['dim', 'keepdim', 'start_dim', 'end_dim'].includes(key) || key in named) throw Error(`Unsupported or duplicate keyword ${key}.`); named[key] = expr(); }
           else { if (Object.keys(named).length) throw Error('Positional arguments must precede keyword arguments.'); positional.push(expr()); }
           if (peek() !== ',') break; take();
         }
@@ -142,9 +167,16 @@ export function execute(code, initial) {
           if (!(v instanceof Tensor)) throw Error('Tensor methods need a tensor.');
           const { positional: p, named: kw } = args();
           if (method === 'mean' || method === 'sum') {
+            if (Object.keys(kw).some(k => !['dim', 'keepdim'].includes(k))) throw Error('Unsupported reduction keyword.');
             if (p.length > 2 || (p.length && 'dim' in kw) || (p.length > 1 && 'keepdim' in kw)) throw Error('Use mean(dim, keepdim=False) or sum(dim, keepdim=False).');
             const keep = kw.keepdim ?? p[1] ?? false; if (typeof keep !== 'boolean') throw Error('keepdim must be True or False.');
             v = v.reduce(kw.dim ?? p[0], keep, method === 'mean');
+          } else if (method === 'flatten') {
+            if (p.length > 2 || Object.keys(kw).some(k => !['start_dim', 'end_dim'].includes(k)) || (p.length && 'start_dim' in kw) || (p.length > 1 && 'end_dim' in kw)) throw Error('Use flatten(start_dim=0, end_dim=-1).');
+            v = v.flatten(kw.start_dim ?? p[0] ?? 0, kw.end_dim ?? p[1] ?? -1);
+          } else if (method === 'softmax') {
+            if (p.length > 1 || Object.keys(kw).some(k => k !== 'dim') || (p.length && 'dim' in kw) || (!p.length && !('dim' in kw))) throw Error('Use softmax(dim) with one explicit axis.');
+            v = v.softmax(kw.dim ?? p[0]);
           } else {
             if (Object.keys(kw).length) throw Error(`Use positional arguments for ${method} in this lab.`);
             if ((method === 'transpose' && p.length !== 2) || (method === 'unsqueeze' && p.length !== 1) || (method === 'squeeze' && p.length > 1)) throw Error(`Wrong number of arguments for ${method}.`);

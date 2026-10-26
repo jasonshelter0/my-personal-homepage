@@ -15,6 +15,21 @@ const cases = [
   'y = torch.arange(6).reshape(-1, 2)',
   'y = torch.arange(12).reshape(2, 1, 2, 3).transpose(-2, -1)',
 ];
+for (const expression of [
+  'torch.arange(24).reshape(2, 3, 4).flatten(start_dim=1)',
+  'torch.arange(24).reshape(2, 3, 4).flatten(0, 1)',
+  'torch.arange(24).reshape(2, 3, 4).transpose(1, 2).flatten(1)',
+  'torch.arange(24).reshape(2, 3, 4).transpose(1, 2).flatten(1, 1)',
+  'torch.tensor(5).flatten()',
+  'torch.tensor(5).softmax(dim=-1)',
+  'torch.tensor([1000, 1001, 1002]).softmax(dim=0)',
+  'torch.tensor([-1000, -1001, -1002]).softmax(dim=0)',
+  'torch.tensor([1e300, -1e300]).softmax(dim=0)',
+]) cases.push(`y = ${expression}`);
+for (const dim of [0, 1, 2, -1]) {
+  cases.push(`y = torch.arange(24).reshape(2, 3, 4).softmax(dim=${dim})`);
+  cases.push(`y = torch.arange(24).reshape(2, 3, 4).transpose(0, 2).softmax(dim=${dim})`);
+}
 for (const lesson of lessons) for(let seed=0;seed<4;seed++) {
   const input=lesson.initial(seed);
   cases.push(Object.entries(input).map(([name,t])=>`${name} = torch.tensor([${t.values.join(',')}]).reshape(${t.shape.join(',')})`).join('\n')+'\n'+lesson.solution);

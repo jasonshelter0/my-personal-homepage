@@ -4,6 +4,40 @@ import {Tensor, fromNested, binary, matmul, execute, equal, broadcastShape} from
 import {lessons, validate, sandbox} from '../../apps/site/src/lib/tensor-lab/lessons.mjs';
 import {exportPython} from '../../apps/site/src/lib/tensor-lab/export.mjs';
 const run = code => execute(code, {}).env.y;
+test('flatten preserves batch boundaries, partial ranges and view identity', () => {
+  const x = new Tensor(Array.from({length:24}, (_,i)=>i),[2,3,4]);
+  assert.deepEqual(x.flatten(1).shape,[2,12]);
+  assert.deepEqual(x.flatten(0,1).shape,[6,4]);
+  assert.deepEqual(x.flatten(-2,-1).values,x.values);
+  assert.equal(x.flatten(1).storage,x.storage);
+  assert.equal(x.flatten(1,1),x);
+  assert.deepEqual(fromNested(5).flatten().shape,[1]);
+  const transposed=x.transpose(1,2), flat=transposed.flatten(1);
+  assert.deepEqual(flat.values,transposed.values);
+  assert.notEqual(flat.storage,x.storage);
+  assert.throws(()=>x.flatten(2,1),/Axis/);
+  assert.throws(()=>x.flatten(1.5),/Axis/);
+  assert.throws(()=>x.flatten(-4),/Axis/);
+});
+test('softmax normalizes the chosen axis stably, including noncontiguous input', () => {
+  const x=fromNested([[1000,1001,1002],[-1000,-1001,-1002]]);
+  const y=x.softmax(-1);
+  assert.deepEqual(y.shape,[2,3]);assert.notEqual(y.storage,x.storage);
+  const expected=[0.09003057317038046,0.24472847105479764,0.6652409557748218];
+  expected.forEach((v,i)=>assert.ok(Math.abs(y.values[i]-v)<1e-12));
+  for (const sum of y.reduce(-1,false,false).values) assert.ok(Math.abs(sum-1)<1e-12);
+  assert.ok(equal(y,binary(x,500,'+').softmax(1)));
+  assert.ok(equal(y.transpose(0,1),x.transpose(0,1).softmax(0)));
+  assert.deepEqual(fromNested([1e300,-1e300]).softmax(0).values,[1,0]);
+  assert.deepEqual(fromNested(4).softmax(-1).values,[1]);
+  assert.throws(()=>x.softmax(2),/Axis/);
+});
+test('new method arguments reject unsupported and conflicting keywords', () => {
+  assert.deepEqual(run('y = torch.ones(2,3,4).flatten(start_dim=1, end_dim=2)').shape,[2,12]);
+  assert.deepEqual(run('y = torch.ones(2,3).softmax(dim=-1)').values,Array(6).fill(1/3));
+  for(const expression of ['flatten(dim=1)','flatten(1,start_dim=1)','flatten(0,1,end_dim=1)','flatten(0,1,2)','softmax()','softmax(1,dim=1)','softmax(dim=1,keepdim=True)','softmax(start_dim=1)','mean(start_dim=1)','sum(end_dim=-1)','reshape(start_dim=1)'])
+    assert.throws(()=>run(`y = torch.ones(2,3).${expression}`),undefined,expression);
+});
 test('permute preserves element identity and shares storage', () => {
   const x = new Tensor(Array.from({length:12},(_,i)=>i),[2,3,2]);
   const y=x.permute(2,0,1);
