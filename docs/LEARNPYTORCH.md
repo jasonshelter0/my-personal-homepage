@@ -22,7 +22,7 @@ Progress stays in browser localStorage; storage failure does not prevent learnin
 
 ## Checks
 
-`npm test` includes numerical operations, malformed syntax, allocation limits, generated-input validation, exports and translation schema coverage. The 14 engine tests can also be run directly with `node --test tests/tensor-lab/engine.test.mjs`. `npm run test:e2e -- tests/browser/tensor-learning.spec.ts` exercises lesson completion, trace inspection, exports, persistence, storage denial, translated mobile layouts, search, language switching and authenticated preview. Run the repository typecheck and production build before release.
+`npm test` includes numerical operations, malformed syntax, allocation limits, generated-input validation, exports and translation schema coverage. The 15 engine tests can also be run directly with `node --test tests/tensor-lab/engine.test.mjs`. `npm run test:e2e -- tests/browser/tensor-learning.spec.ts` exercises lesson completion, trace inspection, exports, persistence, storage denial, translated mobile layouts, search, language switching and authenticated preview. Run the repository typecheck and production build before release.
 
 
 ## Expanded curriculum
@@ -39,3 +39,10 @@ Progress stays in browser localStorage; storage failure does not prevent learnin
 `flatten(start_dim=0, end_dim=-1)` and `softmax(dim)` are implemented in the bounded parser, with strict method-specific keyword validation. Softmax subtracts each group's maximum before exponentiation. Flatten preserves logical ordering; its storage-copy behavior follows the existing conservative reshape policy, so some noncontiguous PyTorch views are copied here. Scalar flatten and softmax are supported. Existing three-lesson progress and share URLs remain valid; progress totals and next-lesson navigation derive from the curriculum.
 
 Official references are linked beside each lesson: [flatten](https://docs.pytorch.org/docs/stable/generated/torch.flatten.html), [squeeze](https://docs.pytorch.org/docs/stable/generated/torch.squeeze.html), [Linear](https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html), and [softmax](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html). The optional `python tests/tensor-lab/conformance.py` compares values, shapes and strides with an installed CPU PyTorch and executes every lesson's exported reference program. It is separate from browser execution; no Python runtime is shipped to visitors.
+
+
+## Visual explanations
+
+The lab can replay a recorded execution, pause, and step in either direction. Playback starts only on request and stops when the code, lesson, selected frame or page visibility changes. The difference view displays actual `y - target` values when shapes match. It is disabled for missing or incompatible outputs.
+
+Clicking a matrix-product cell shows its actual multiplicative terms and total, including a broadcast bias when present. Explanations follow recorded operand provenance, so changed user code is explained rather than replaced with the reference solution. Long dot products show their first twelve terms and clearly state the limit. The softmax lesson includes a query selector, raw scores, output bars and row sum, so a wrong normalization axis becomes visible. All views include numerical labels, keyboard controls and localized explanations; animations are not required to learn.

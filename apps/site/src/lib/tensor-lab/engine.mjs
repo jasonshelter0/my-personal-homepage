@@ -12,6 +12,7 @@ export class Tensor {
     this.strides = options.strides || stridesFor(shape);
     this.storage = options.storage || { id: nextStorage++, data: [...data] };
     this.offset = options.offset || 0;
+    this.operation = options.operation || null;
     this.axes = options.axes || shape.map((_, i) => `axis ${i}`);
     this.note = options.note || 'A new tensor with its own storage.';
     if (!options.storage && data.length !== size(shape)) throw Error('Data length does not match the shape.');
@@ -99,7 +100,7 @@ export function binary(a, b, op) {
   if (size(shape) > LIMIT) throw Error('Result exceeds the 4096-element limit.');
   const data = Array.from({ length: size(shape) }, (_, i) => { const c = indices(i, shape), x = a.at(broadcastCoords(c, a.shape)), y = b.at(broadcastCoords(c, b.shape)); return op === '+' ? x + y : op === '-' ? x - y : op === '*' ? x * y : x / y; });
   if (data.some(x => !Number.isFinite(x))) throw Error('This calculation produced a non-finite value. Check division by zero.');
-  return new Tensor(data, shape, { axes: a.shape.length >= b.shape.length ? a.axes : b.axes, note: `${shapeText(a.shape)} ${op} ${shapeText(b.shape)} → ${shapeText(shape)}. Size-one axes reuse input values; the result has new storage.` });
+  return new Tensor(data, shape, { operation: {kind:'binary', operator:op, left:a, right:b}, axes: a.shape.length >= b.shape.length ? a.axes : b.axes, note: `${shapeText(a.shape)} ${op} ${shapeText(b.shape)} → ${shapeText(shape)}. Size-one axes reuse input values; the result has new storage.` });
 }
 export function matmul(a, b) {
   if (!(a instanceof Tensor) || !(b instanceof Tensor) || a.shape.length < 2 || b.shape.length < 2) throw Error('This lab supports @ on matrices and batched matrices (rank 2–4).');
@@ -113,7 +114,7 @@ export function matmul(a, b) {
     return sum;
   });
   const batchAxes = a.shape.length >= b.shape.length ? a.axes.slice(0, -2) : b.axes.slice(0, -2);
-  return new Tensor(data, shape, { axes: [...batchAxes, a.axes.at(-2), b.axes.at(-1)], note: `Inner axes of size ${k} are contracted. Each output cell is a dot product; leading batch axes broadcast.` });
+  return new Tensor(data, shape, { operation: {kind:'matmul', left:a, right:b}, axes: [...batchAxes, a.axes.at(-2), b.axes.at(-1)], note: `Inner axes of size ${k} are contracted. Each output cell is a dot product; leading batch axes broadcast.` });
 }
 export function fromNested(value) {
   const shape = []; let p = value;

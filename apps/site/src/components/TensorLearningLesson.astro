@@ -35,13 +35,15 @@ const api = ['x.permute(2, 0, 1)', 'x.transpose(-2, -1)', 'x.reshape(3, -1)', 'x
         <label class="tl-share" data-share-box hidden>{u.copyLink}<textarea data-share-url readonly></textarea></label>
       </section>
       <section class="tl-visual" aria-label={u.result}>
-        <div class="tl-view"><button type="button" data-result aria-pressed="true">{u.result}</button><button type="button" data-target aria-pressed="false">{u.target}</button></div>
+        <div class="tl-view"><button type="button" data-result aria-pressed="true">{u.result}</button><button type="button" data-target aria-pressed="false">{u.target}</button><button type="button" data-difference aria-pressed="false" disabled>{u.difference}</button></div>
         <div data-canvas class="tl-canvas"></div>
         <p data-cell-info class="tl-cell-info">{u.cell}</p>
+        <div data-calculation class="tl-calculation" aria-live="polite" hidden></div>
+        <div data-distribution class="tl-distribution" hidden></div>
         <dl data-details class="tl-details"></dl>
       </section>
     </div>
-    <div class="tl-trace-wrap"><h3>{u.trace}</h3><div data-trace class="tl-trace"></div><p data-note></p></div>
+    <div class="tl-trace-wrap"><h3>{u.trace}</h3><div class="tl-playback"><button type="button" data-back-step aria-label={u.backStep} disabled>←</button><button type="button" data-play disabled>{u.play}</button><button type="button" data-forward-step aria-label={u.forwardStep} disabled>→</button><span data-frame role="status" aria-live="polite"></span></div><div data-trace class="tl-trace"></div><p data-note></p></div>
     <div class="tl-concept"><strong>{u.concept}</strong><p data-concept>{t.lessons[0].concept}</p></div>
     <section data-success class="tl-success" hidden><h3>{u.complete} ✓</h3><p data-takeaway></p><strong>{u.transfer}</strong><p data-transfer></p><button type="button" data-next>{u.next} →</button></section>
     <p data-storage-notice class="tl-storage-notice" hidden>{u.storageUnavailable}</p>

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {Tensor, fromNested, binary, matmul, execute, equal, broadcastShape} from '../../apps/site/src/lib/tensor-lab/engine.mjs';
 import {lessons, validate, sandbox} from '../../apps/site/src/lib/tensor-lab/lessons.mjs';
 import {exportPython} from '../../apps/site/src/lib/tensor-lab/export.mjs';
+import {cellExplanation} from '../../apps/site/src/lib/tensor-lab/visual.mjs';
 const run = code => execute(code, {}).env.y;
 test('flatten preserves batch boundaries, partial ranges and view identity', () => {
   const x = new Tensor(Array.from({length:24}, (_,i)=>i),[2,3,4]);
@@ -108,4 +109,15 @@ test('all lessons accept references, reject starters and hard-coded answers',()=
   assert.equal(validate(lessons[1],'means = x.mean(dim=1).unsqueeze(1)\ny = x - means').ok,true);
   assert.equal(validate(lessons[0],'y = x.transpose(0, 2).transpose(1, 2)').ok,true);
   assert.ok(execute(sandbox.starter,sandbox.initial()).env.y);
+});
+
+test('cell explanations use executed operands with batch broadcasting and bias',()=>{
+  const a=fromNested([[[1,2],[3,4]],[[5,6],[7,8]]]),b=fromNested([[2,3],[4,5]]);
+  const product=matmul(a,b),output=binary(product,fromNested([10,20]),'+');
+  const calculation=cellExplanation(output,[1,0,1]);
+  assert.deepEqual(calculation,{terms:[{a:5,b:3,value:15},{a:6,b:5,value:30}],count:2,bias:20,total:65});
+  assert.equal(cellExplanation(a,[0,0,0]),null);
+  assert.equal(cellExplanation(binary(product,fromNested(3),'*'),[0,0,0]),null);
+  const extended=binary(matmul(fromNested([[1,2]]),fromNested([[3],[4]])),fromNested([[[10]],[[20]]]),'+');
+  assert.equal(cellExplanation(extended,[1,0,0]).total,31);
 });
