@@ -1,6 +1,7 @@
 import { learningUI, formatLearning } from './learning-ui.js';
+import { initializeTTT } from './ttt-interactions.js';
 
-const lessonIds = ['foundations', 'mamba', 'vmamba', 'tent', 'cotta', 'frontier', 'ttt', 'irstd', 'lab'];
+const lessonIds = ['foundations', 'mamba', 'vmamba', 'tent', 'cotta', 'frontier', 'ttt', 'ttt-vision', 'irstd', 'ttt-plan', 'lab'];
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const entropy = p => p <= 0 || p >= 1 ? 0 : -p * Math.log(p) - (1-p) * Math.log(1-p);
 let widgetSerial = 0;
@@ -84,6 +85,7 @@ export function initializeLearning(root) {
     }
   };
   $$('[data-demo]').forEach(el=>demos[el.dataset.demo]?.(el));
+  initializeTTT(root);
   $$('.hero-art').forEach(el=>{
     if(el.children.length)return;let pixels='';for(let r=0;r<12;r++)for(let c=0;c<24;c++){const target=Math.exp(-((r-5)**2+(c-15)**2)/1.4),haze=(Math.sin(r*.8+c*.38)+Math.cos(c*.4-r*.7)+2)/4;pixels+=`<rect x="${c*25}" y="${r*22}" width="23" height="20" fill="var(--accent)" opacity="${.025+haze*.1+target*.8}"/>`;}
     el.innerHTML=`<svg viewBox="0 0 600 264" role="img" aria-label="${esc(t.heroTitle)}"><title>${esc(t.heroTitle)}</title>${pixels}<path d="M30 45 H560 V90 H45 V135 H560 V180 H45" stroke="var(--accent)" stroke-width="1" fill="none" opacity=".25"/><rect x="347" y="86" width="80" height="78" rx="3" fill="none" stroke="var(--accent)"/><path d="M334 125 H347 M427 125 H440 M387 74 V86 M387 164 V177" stroke="var(--accent)"/><text x="30" y="213" fill="var(--accent)">${esc(t.heroSignal)}</text><text x="30" y="234" fill="var(--muted)">${esc(t.heroProcess)}</text><text x="570" y="234" text-anchor="end" fill="var(--muted)">${esc(t.heroFooter)}</text></svg><span class="art-caption">${esc(t.heroCaption)}</span>`;

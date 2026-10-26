@@ -19,21 +19,21 @@ export const lessonPath = (slug = 'index') =>
 export const learningPaths = zh.map((lesson) => lessonPath(lesson.slug));
 export const learningCopy = {
   'zh-CN': {
-    title: 'Mamba × TTA/TTT：单帧红外小目标检测',
-    summary: '从选择性状态空间、二维扫描到测试时适应，结合 NUAA-SIRST、NUDT-SIRST 与 IRSTD-1k 设计可验证的实验。',
-    detail: '11 个页面 · 9 个学习单元 · 6 个交互演示',
+    title: 'Mamba × TTT：单帧红外小目标检测',
+    summary: '从选择性状态空间到 TTT 内部学习，理解文本到视觉迁移，动手验证内循环并设计 IRSTD 复现实验。TTA 单列为概念对照。',
+    detail: '13 个页面 · 11 个学习单元 · 8 个交互演示',
     read: '进入课程',
   },
   en: {
-    title: 'Mamba × TTA/TTT for single-frame infrared small-target detection',
-    summary: 'Explore selective state spaces, 2D scanning and test-time adaptation, then design testable experiments on NUAA-SIRST, NUDT-SIRST and IRSTD-1k.',
-    detail: '11 pages · 9 learning units · 6 interactive demonstrations',
+    title: 'Mamba × TTT for single-frame infrared small-target detection',
+    summary: 'Explore state spaces and TTT inner learning, move from text to vision, and build an IRSTD replication matrix. TTA remains a separate conceptual comparison.',
+    detail: '13 pages · 11 learning units · 8 interactive demonstrations',
     read: 'Start learning',
   },
   fr: {
-    title: 'Mamba × TTA/TTT pour la détection de petites cibles infrarouges sur une image',
-    summary: 'Des espaces d’état sélectifs au balayage 2D et à l’adaptation au test : concevez des expériences vérifiables sur NUAA-SIRST, NUDT-SIRST et IRSTD-1k.',
-    detail: '11 pages · 9 unités · 6 démonstrations interactives',
+    title: 'Mamba × TTT pour la détection de petites cibles infrarouges sur une image',
+    summary: 'Des espaces d’état à l’apprentissage interne TTT : passez du texte à la vision et préparez une réplication en IRSTD. La TTA reste une comparaison conceptuelle distincte.',
+    detail: '13 pages · 11 unités · 8 démonstrations interactives',
     read: 'Commencer le cours',
   },
 };

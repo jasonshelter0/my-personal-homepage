@@ -161,6 +161,12 @@ test(
       assert.equal((await request(`/${locale}/learn/mamba-tta-irstd/lab/`)).status, 200);
     }
     assert.equal((await request('/learn/mamba-tta-irstd/')).status, 200);
+    for (const chapter of ['ttt-vision', 'ttt-plan']) {
+      assert.equal((await request(`/learn/mamba-tta-irstd/${chapter}/`)).status, 200);
+      for (const locale of ['zh-cn', 'en', 'fr']) {
+        assert.equal((await request(`/${locale}/learn/mamba-tta-irstd/${chapter}/`)).status, 200);
+      }
+    }
     assert.equal((await request('/en/learn/mamba-tta-irstd/not-a-chapter/')).status, 404);
     const sitemap = await (await request('/sitemap.xml')).text();
     assert.match(sitemap, /\/fr\/learn\/mamba-tta-irstd\/tent\//);

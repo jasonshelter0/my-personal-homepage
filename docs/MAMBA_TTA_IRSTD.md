@@ -1,4 +1,4 @@
-# Mamba × TTA/TTT 单帧 IRSTD 学习手册
+# Mamba × TTT 单帧 IRSTD 学习手册
 
 主题路径：`mamba-tta-irstd`。源材料来自 `/home/jasonshelter/Projects/paper-20261024/irstd-learning`，本项目将其完整接入共享 Astro Layout，不嵌入另一个站点框架。
 
@@ -6,18 +6,22 @@
 
 - 默认语言入口：`/learn/mamba-tta-irstd/`。
 - 完整语言入口：`/zh-cn/learn/mamba-tta-irstd/`、`/en/learn/mamba-tta-irstd/`、`/fr/learn/mamba-tta-irstd/`。
-- 章节后缀：`foundations/`、`mamba/`、`vmamba/`、`tent/`、`cotta/`、`frontier/`、`ttt/`、`irstd/`、`lab/`、`references/`。
-- 共 11 页 × 3 语言，9 学习单元与 6 交互实验。各章节均有默认语言别名。
+- 章节后缀：`foundations/`、`mamba/`、`vmamba/`、`tent/`、`cotta/`、`frontier/`、`ttt/`、`ttt-vision/`、`irstd/`、`ttt-plan/`、`lab/`、`references/`。
+- 共 13 页 × 3 语言，11 学习单元与 8 种交互实验。各章节均有默认语言别名。
 
 正文位于 `apps/site/src/content/learn/mamba-tta-irstd/{zh-CN,en,fr}.json`。`lib/learning.ts` 校验可用内部章节链接、消毒 HTML，并用调用方的 `href()` 保留预览前缀。标题、canonical、语言 alternates、搜索、备案和光晕统一复用 Layout。
 
-`LearningLesson.astro`、`learning.css`、`learning-interactions.js`、`learning-ui.js` 提供限定于 `.learning-course` 的深色移动布局和三语言交互。新增内容为已审核源码，不依赖 CMS 草稿或新数据库字段。以后从后台发布内容时仍会随 Astro 构建生成。
+`LearningLesson.astro`、`learning.css`、`learning-interactions.js`、`learning-ui.js` 及三个 `ttt-*` 模块 提供限定于 `.learning-course` 的深色移动布局和三语言交互。新增内容为已审核源码，不依赖 CMS 草稿或新数据库字段。以后从后台发布内容时仍会随 Astro 构建生成。
 
 ## 教学与数据边界
 
-以 VMamba、Tent、CoTTA 为主线，补充 Mamba、Mamba-2、SAR、RoTTA、DeYO、TTT layers、MiM-ISTD、IRMamba，保留原文链接。新增文献集中 2023–2025，原始 TTT 2020 仅作前史。
+当前主线为 Mamba 表征背景 → TTT 内外循环 → 文本到视觉 → 单帧 IRSTD 复现。补充 ViT³ / ViTTT（arXiv2025、CVPR2026）与 Vision-TTT（固定2026 v1原文），明确二者是不同论文及候选模型，组内 baseline 身份仍未确认。Tent、CoTTA、SAR 及原有协议演示保留为 TTA 概念对照，不再默认加入当前实验矩阵。原 URL `mamba-tta-irstd` 保持稳定。
 
-演示只计算教学公式，不运行神经网络、不虚构实验指标。IRSTD 方案为待验证假设。实验协议区分每图重置/持续更新与输出时序，默认先适应再预测；每图重置且先预测的退化情形有明确提示。
+新增 `ttt-learning.js`、`ttt-learning-ui.js`、`ttt-interactions.js`：
+
+- `ttt-inner` 计算标量 L=½(wk−v)²，展示状态/损失轨迹、单步/重置、负值与零步、稳定边界；不是检测网络训练。默认一步 w=.2、读出=.6。
+- `ttt-plan` 选择 S0/B0/B1/B2/H0/H1，导出复现草案。B2只改变内循环步数；研究级IR改动另记R1。各配置缺少实测速率时不估时；切换B组分辨率会清空失效测速，固定分辨率S0/H0/H1不变。
+- GPU-hours表示总工作量，墙钟估计是受最长单次运行约束的理想下界，不承诺训练时间。40–48GB与24–48GPU-hours为起步预算，不是已测最低需求。网站不运行GPU任务。
 
 进度在浏览器中按课程保存，语言切换共享完成状态；笔记按课程、章节和语言保存。拒绝 localStorage 时提示手动保存，不上传任何笔记。JSON 导出仅为协议草案。
 

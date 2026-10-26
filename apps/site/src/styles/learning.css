@@ -153,3 +153,22 @@
   .learning-course :is(.learning-chapters,.mark-complete,.quiz-check,.export-protocol) {display:none}
   .learning-course :is(.demo,.card,.quiz,.callout) {break-inside:avoid}
 }
+
+/* TTT inner learning and replication planning: browser-local teaching tools. */
+.learning-course .ttt-plots {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0}
+.learning-course .ttt-plots>div {min-width:0}
+.learning-course .ttt-plots h4 {font-size:12px;margin:10px 0}
+.learning-course .ttt-number {display:block;width:100%;min-width:0;min-height:44px;padding:9px;border:1px solid var(--line);border-radius:7px;background:var(--background);color:var(--strong);font-size:12px}
+.learning-course .ttt-experiments {padding:15px;border:1px solid var(--line);border-radius:10px;min-width:0;margin:20px 0}
+.learning-course .ttt-experiments legend {padding:0 8px;font-size:13px;color:var(--strong)}
+.learning-course .ttt-experiment {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:15px;padding:15px 0;border-bottom:1px solid var(--line);align-items:center}
+.learning-course .ttt-experiment:last-child {border-bottom:0}
+.learning-course .ttt-choice {display:flex;gap:12px;align-items:flex-start;cursor:pointer;min-height:44px;font-size:12px}
+.learning-course .ttt-choice input {width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);margin:3px 0}
+.learning-course .ttt-choice small {display:block;color:var(--muted);font-size:11px}
+.learning-course [data-ttt-export-status] {font-size:12px;margin:12px 0;color:var(--muted)}
+.learning-course [data-ttt-action]:disabled {cursor:not-allowed;opacity:.5}
+@media (max-width:700px) {
+  .learning-course .ttt-plots,.learning-course .ttt-experiment {grid-template-columns:minmax(0,1fr)}
+  .learning-course .ttt-experiments {padding:10px}
+}

@@ -4,8 +4,8 @@ import { lessonsByLocale, learningPaths, lessonPath, renderLessonBody } from '..
 
 test('all three languages retain the complete course and educational interactions', () => {
   const zh = lessonsByLocale['zh-CN'];
-  assert.equal(zh.length, 11);
-  assert.equal(new Set(learningPaths).size, 11);
+  assert.equal(zh.length, 13);
+  assert.equal(new Set(learningPaths).size, 13);
   for (const [locale, lessons] of Object.entries(lessonsByLocale)) {
     assert.deepEqual(lessons.map((x) => x.slug), zh.map((x) => x.slug));
     for (let i = 0; i < lessons.length; i++) {
