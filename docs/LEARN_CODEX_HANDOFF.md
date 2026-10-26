@@ -1,5 +1,7 @@
 # 学习页面开发交接
 
+2026-10-26 最新：Git图形重叠修复已发布（源码 `4ab5aa9`，内容 `mvosdb1f-854d3a4e`），保留LearnPyTorch和全部1.3.1功能；当前部署/备份/回滚以RELEASE_HANDOFF顶部为准。
+
 2026-10-26 最新：LearnPyTorch 张量实验室已发布，入口 `/learn/learnpytorch/`，含中英法三语、三项挑战与自由实验。源码 `11731b7`，内容 `mvorvfm7-2c2fcfb4`。实现及限制见 `LEARNPYTORCH.md`；当前镜像、备份和回滚以 `RELEASE_HANDOFF.md` 顶部 LearnPyTorch 章节为准。后续部署必须保留此课程。
 
 2026-10-25 最新：Git 模拟器已与主站深蓝/青绿主题统一并完成线上验收，源码 `0855e4f`、内容 `mvnz3t4d-fb9699f6`。当前部署/备份/回滚以 RELEASE_HANDOFF.md 顶部主题章节为准。

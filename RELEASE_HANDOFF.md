@@ -1,6 +1,38 @@
 # Folio Studio 生产发布交接
 
-## LearnPyTorch tensor lab (2026-10-26, current deployment)
+## Git 图形重叠修复（2026-10-26，当前部署）
+
+真实 HTTPS 验收完成于 `2026-10-26T05:00:39.938Z`。本节为当前状态，下方部署记录均为历史。
+
+- 入口：<https://www.jasonshelter.com/learn/git-branching/>。节点、分支栈、HEAD、标签和文件标记按真实尺寸留空；工作区面板独立占列，本地与远程图形分区显示，保持直线历史对齐。新增三语缩放/拖动/双指缩放/全图恢复；点击分支仍可checkout，手机页面及目标窗口不会被撑宽。
+- 运行源码 `4ab5aa9c1d5f56f68e27f968d2d09a36fb43e689`；移动fork `d703704`；应用保持1.3.1，保留LearnPyTorch、Mamba、主站分区/头像/翻译/图标等最新功能。
+- 镜像 `sha256:5d58647671c35b0314dd5cc6a0791251afc46359272ff4402b0fd5640c22da75`；runtime/current → `/www/dk_project/folio-studio/releases/git-overlap-20261026-4ab5aa9`。
+- 当前内容 `mvosdb1f-854d3a4e`，只从现场已发布 `mvorvfm7-2c2fcfb4` 重建，鉴权预览通过后发布。持久目录 `/www/dk_project/folio-studio/shared/data` 沿用，草稿revision19及SHA-256不变，无迁移、种子初始化或草稿发布。
+- 旧镜像 `sha256:01bcdb835e376dce4b19e0a998cbae66ea3bad2c79d982311f7d239bb36e1919`、runtime `/www/dk_project/folio-studio/releases/learnpytorch-20261026-11731b7` 和上一内容保留。
+- 一致性备份 `/www/backup/site/folio-studio/20261026T045652Z-git-overlap/data.tar.gz`；SHA-256 `f2b843ce7ea6d7a08d708869765990320aba67fa1bc3892317a6863db99675a3`。停止应用时备份，排除可再生build-cache；目录0700/归档0600，已校验可读取，未执行恢复演练。
+- 本地运行包 `.folio/deployments/git-overlap-20261026-4ab5aa9/runtime.tar.gz`，119785360字节，SHA-256 `0f2ae493a550682c0ca59b0aaaded523e39dfea89745d170ac51c2c1c16be7ec`，远程上传校验一致。
+- 模拟器SHA-256 `146c6af1b959149c89320fa9790186900b0da66dbdb95056aef17b7d1b19907f`，私有预览与公网均和本地逐字节一致。
+- 验证：419上游/布局测试、70网站测试、类型检查/正式构建；28项网站浏览器回归通过，最终裁掉画布空白后的9项Git流程复测通过；全部36关320px初始/目标图节点与标签交叉检测通过。离线命令/IME/rebase/通关/进度、三语缩放拖动/旋转重开/标签点击、双指缩放通过。
+- 真实HTTPS中英法鉴权预览后发布，再匿名验证主题、无重叠、缩放/拖动/全图、320px/844px/重开/目标说明/搜索。首页、学习入口、Mamba、三语LearnPyTorch、admin/health200；匿名草稿/预览401、DB/快照404；浏览器/资源错误0，草稿不变，会话已撤销。容器healthy，重启0，无OOM。
+- 与主站/LearnPyTorch会话协调后持有现有flock。BuildKit使用已验证的本地Node24.21.0基础镜像、--pull=false，核验最终基础层；Compose固定实际镜像ID，继续UID10001/只读根目录/127.0.0.1:18080。
+- 未修改Nginx、DNS、证书、WordPress、RDS/MySQL、端口或其他服务，未删除镜像/版本/备份。源码重建见 `docs/GIT_BRANCHING.md`。
+
+### 本次回滚
+
+协调唯一写入者并持有 `config/deployment.lock`。先恢复内容，再恢复上一应用；不覆盖数据或草稿，保留1.3.1兼容性：
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvorvfm7-2c2fcfb4')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T045652Z-git-overlap/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+备份恢复是独立操作，不得在线解压覆盖生产数据。新分区字段写入后仍不得直接降级1.2.x。
+
+## LearnPyTorch tensor lab (2026-10-26, historical deployment)
 
 Published and verified through real HTTPS at `2026-10-26T04:45:39.986Z`. This section supersedes the deployment states below; older records remain historical.
 
