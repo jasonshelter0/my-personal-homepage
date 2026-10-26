@@ -1,5 +1,13 @@
 # 学习页面开发交接
 
+## Immersive reading and browser fullscreen
+
+All learning routes (hub and course pages) share `LearningReader.astro`, `learning-reader.ts`, and `learning-reader.css` through Layout. “Immersive reading” hides the personal profile and expands the main column to a readable maximum width. A sticky toolbar retains the learning hub, language links, search, exit, and optional native browser fullscreen. It follows the published theme and preview base path. Non-learning pages retain their regular layout.
+
+The layout preference is stored locally under `folio:learning:immersive`; no server data is changed. It survives chapter/language changes without automatically requesting browser fullscreen. Exit fullscreen returns to immersive reading; the exit button restores the profile. Escape exits reading mode when focus is outside editors, dialogs and expanded labs. Native fullscreen requires a user gesture and degrades gracefully when unavailable or denied. Storage denial does not prevent reading or exiting. Mobile controls wrap without horizontal overflow; print hides the toolbar.
+
+`tests/browser/learning-reader.spec.ts` covers large-monitor width/sidebar behavior, actual browser fullscreen, all three courses/languages, navigation/search/persistence, mobile denied APIs, and authenticated previews.
+
 2026-10-26 最新：LearnPyTorch 已扩展为九项三语课程，新增回放、差值热图、矩阵数值分解与 softmax 分布图。源码 `aae0c0a`，内容 `mvoxi6oo-974b9251`。保留 Git 最新图形修复及所有用户草稿。实现见 `LEARNPYTORCH.md`，部署与回滚见 `RELEASE_HANDOFF.md` 顶部。
 
 2026-10-26 最新：Git图形重叠修复已发布（源码 `4ab5aa9`，内容 `mvosdb1f-854d3a4e`），保留LearnPyTorch和全部1.3.1功能；当前部署/备份/回滚以RELEASE_HANDOFF顶部为准。

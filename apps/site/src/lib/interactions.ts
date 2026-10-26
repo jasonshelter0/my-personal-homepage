@@ -31,9 +31,8 @@ for (const label of document.querySelectorAll<HTMLElement>('[data-search-shortcu
   label.textContent = searchShortcut;
 for (const label of document.querySelectorAll<HTMLElement>('[data-search-shortcut-template]'))
   label.textContent = label.dataset.searchShortcutTemplate!.replace('{shortcut}', searchShortcut);
-document
-  .querySelector('[data-open-search]')
-  ?.setAttribute('aria-keyshortcuts', appleKeyboard ? 'Meta+k' : 'Control+k');
+for (const trigger of document.querySelectorAll('[data-open-search], [data-reader-search]'))
+  trigger.setAttribute('aria-keyshortcuts', appleKeyboard ? 'Meta+k' : 'Control+k');
 let previousFocus: HTMLElement | null = null;
 function openDialog(dialog: HTMLDialogElement) {
   previousFocus = document.activeElement as HTMLElement;
@@ -58,7 +57,7 @@ for (const dialog of [search, imageDialog]) {
     previousFocus?.focus();
   });
 }
-document.querySelector('[data-open-search]')?.addEventListener('click', () => {
+for (const trigger of document.querySelectorAll('[data-open-search], [data-reader-search]')) trigger.addEventListener('click', () => {
   openDialog(search);
   input.focus();
 });

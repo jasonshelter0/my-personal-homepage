@@ -17,6 +17,7 @@ import {
 } from '../lib/data';
 import Icon from '../components/Icon.astro';
 import ComplianceFooter from '../components/ComplianceFooter.astro';
+import LearningReader from '../components/LearningReader.astro';
 import { CURSOR_GLOW_RADIUS } from '../../../../shared/types';
 interface Props {
   locale: Locale;
@@ -54,11 +55,13 @@ const glowRadius =
     : CURSOR_GLOW_RADIUS.default;
 const avatar = media(settings.avatarId);
 const ProfileHeading = home ? 'h1' : 'span';
+const learningPage = path === 'learn' || path.startsWith('learn/');
 ---
 
 <!doctype html>
 <html
   lang={locale}
+  data-reader-page={learningPage ? '' : undefined}
   style={`--accent:${accent};--background:${background};--glow-rgb:${glowRGB};--glow-radius:${glowRadius}px`}
 >
   <head>
@@ -66,6 +69,11 @@ const ProfileHeading = home ? 'h1' : 'span';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content={background} />
+    {learningPage && <script is:inline>
+      try {
+        document.documentElement.dataset.readerMode = localStorage.getItem('folio:learning:immersive') === '1' ? 'immersive' : 'normal';
+      } catch { /* Keep the regular layout when storage is unavailable. */ }
+    </script>}
     <title>{pageTitle}</title>
     <meta name="description" content={description || profile.seoDescription} />
     {siteUrl && (
@@ -102,6 +110,7 @@ const ProfileHeading = home ? 'h1' : 'span';
     <div class="cursor-glow" aria-hidden="true"></div>
     <div class="site-shell">
       <header
+        id="site-profile"
         class:list={[
           'profile-panel',
           {
@@ -222,6 +231,7 @@ const ProfileHeading = home ? 'h1' : 'span';
         data-pagefind-body
         data-pagefind-filter={`type:${category}`}
       >
+        {learningPage && <LearningReader locale={locale} path={path} />}
         <slot />
       </main>
       <footer class="site-footer" data-pagefind-ignore>
