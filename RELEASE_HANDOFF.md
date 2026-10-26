@@ -1,5 +1,33 @@
 # Folio Studio 生产发布交接
 
+## Immersive learning reader and fullscreen (2026-10-26, current deployment)
+
+Published and verified through real HTTPS at `2026-10-26T08:11:18.982Z`. Older deployment records below are historical.
+
+- All learning hubs and courses now provide **Immersive reading** (hide the profile, expand the lesson) and optional native **Fullscreen**. A sticky toolbar preserves hub/language/search/exit controls. The local preference survives chapter/language navigation; fullscreen is only entered on request. Escape respects dialogs and expanded labs, and non-learning pages keep the normal profile. Three complete locales, compact mobile controls, blocked-storage and denied-fullscreen fallback included.
+- Runtime source `3d96bd849b55272ad3c09a110fabb5a41b761228` pushed to main; image `sha256:4fcdf992eb2a62943a7fb4d79a34bf2ebc377a47edef6f456fd62e7c6da9b4c8`; runtime/current → `/www/dk_project/folio-studio/releases/reader-20261026-3d96bd8`; package1.3.1. No dependencies or database migrations. Existing nine-lesson LearnPyTorch, Git graph fixes, Mamba content, user profile and uploads retained.
+- Current content `mvoz72uh-576522b0`, rebuilt only from verified published `mvoxi6oo-974b9251` via `scripts/rebuild-published.ts --expected-current mvoxi6oo-974b9251`. Authenticated HTTPS preview inspected before normal publication. Saved draft revision19 and SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged.
+- Same `/www/dk_project/folio-studio/shared/data`, Compose folio-studio/studio, loopback18080, UID10001 and read-only root. Consistent stopped-app backup `/www/backup/site/folio-studio/20261026T080845Z-reader/data.tar.gz`, SHA-256 `243a0ba3448c1fcd5ddc780a995b611ed68972597f1d67eb56c4b9efd3368e97`; directory0700/archive0600, full archive readability checked, no restore drill. Build-cache excluded; backups remain only on the server.
+- Runtime archive `.folio/deployments/reader-20261026-3d96bd8/runtime.tar.gz`:119789879 bytes,SHA-256 `6ec942edbfe2b62767c7ead81f60d0f42d3d41feb934386216fb74417da80069`; uploaded checksum matched. Built offline from verified official Node24.21.0 local image `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397` using the documented legacy builder fallback.
+- Local typecheck/build,70 unit/API tests and33 Chromium browser scenarios passed. Focused tests cover2560px native fullscreen,sidebar removal,mode persistence,3 courses/3 locales,preview navigation/search,and320px with blocked storage/fullscreen. Final French320px toolbar110px high with no horizontal overflow; desktop text remains readable while visualizations use the wider column.
+- Actual HTTPS private preview then anonymous public checks:12 localized hub/course routes plus Mamba chapter,language transitions,reload,search,fullscreen enter/exit,2560/320px layout,home independence,SEO/sitemap/assets/glow/ICP. Browser/resource errors0. Real HTTPS admin login/session/logout passed with secure cookie;health/admin200,anonymous draft/preview401,database/snapshot404. Temporary review session revoked.
+- Main website session confirmed availability; active LearnPyTorch session was notified of the deployment window. Exclusive `config/deployment.lock` held during production writes. No Nginx,DNS,certificate,WordPress,MySQL/RDS,ports or unrelated services changed; no cleanup. New and previous images/content/backups retained.
+
+### Rollback this reader update
+
+Coordinate a sole writer and hold the deployment lock. Previous application `sha256:e2e7c88c045b98eb26d87e8ec241e10a2f87c9fa246ed14706ab3c52946d3cf3`, runtime `/www/dk_project/folio-studio/releases/tensor-lessons-20261026-aae0c0a`, and content `mvoxi6oo-974b9251` remain available. Restore content separately from the running application; do not overwrite persistent data or newer drafts:
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvoxi6oo-974b9251')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T080845Z-reader/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+The script restores saved image.env and the runtime link, then recreates the Compose container with the precise old image. It does not restore the database. Verify real HTTPS after rollback.
+
 ## LearnPyTorch: nine lessons and visual explanations (2026-10-26, current deployment)
 
 Published and verified through real HTTPS at `2026-10-26T07:27:13.679Z`. Older deployment sections below are historical.
