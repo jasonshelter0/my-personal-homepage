@@ -82,7 +82,8 @@
     "completeTrace": "Finish the backward trace before checking.",
     "playTraining": "Play training",
     "trainPrompt": "Run the training loop to inspect its behavior.",
-    "traceTraining": "Step through the model fit and loss, then check your loop."
+    "traceTraining": "Step through the model fit and loss, then check your loop.",
+    "nextMission": "Next mission"
   },
   "missions": [
     {

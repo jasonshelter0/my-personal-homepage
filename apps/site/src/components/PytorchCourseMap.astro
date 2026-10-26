@@ -1,0 +1,72 @@
+---
+import { href, type Locale } from '../lib/data';
+import { courseCopy, courseChapters } from '../lib/pytorch-course';
+import '../styles/pytorch-course.css';
+const { locale, hero = false } = Astro.props as { locale: Locale; hero?: boolean };
+const t = courseCopy[locale],
+  chapters = courseChapters(locale);
+---
+
+<section class="pt-course" data-pt-course data-pagefind-ignore>
+  {hero && (
+    <>
+      <p class="eyebrow">LearnPyTorch · {t.new}</p>
+      <h2>{t.title}</h2>
+      <p>{t.intro}</p>
+      <div class="pt-paths">
+        <a class="pt-start" href={href(locale, 'learn/learnpytorch') + '#tensor-axes'}>
+          {t.start} →
+        </a>
+        <a href={href(locale, 'learn/learnpytorch/attention') + '#attention-causal'}>{t.wow} ↗</a>
+      </div>
+    </>
+  )}
+  <div class="pt-progress">
+    <span data-pt-progress data-label={t.progress}>
+      {t.progress} 0 / 19
+    </span>
+    <a
+      data-pt-resume
+      data-complete={t.complete}
+      href={href(locale, 'learn/learnpytorch') + '#tensor-axes'}
+    >
+      {t.resume} →
+    </a>
+  </div>
+  <details class="pt-map">
+    <summary>
+      {t.map} · {t.more}
+    </summary>
+    <div class="pt-chapters">
+      {chapters.map((chapter) => (
+        <section>
+          <h3>
+            <a href={href(locale, chapter.path)}>{chapter.title}</a>
+          </h3>
+          <p>{chapter.note}</p>
+          <ol>
+            {chapter.lessons.map((lesson) => (
+              <li>
+                <a
+                  data-pt-link
+                  data-chapter={chapter.id}
+                  data-lesson-id={lesson.id}
+                  href={href(locale, chapter.path) + lesson.hash}
+                >
+                  <span data-pt-mark aria-hidden="true">
+                    ○
+                  </span>{' '}
+                  {lesson.label}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
+    </div>
+    <p class="pt-local">{t.local}</p>
+  </details>
+</section>
+<script>
+  import '../lib/pytorch-progress.js';
+</script>

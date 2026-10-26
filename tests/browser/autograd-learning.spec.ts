@@ -77,7 +77,7 @@ test('three localized mobile pages, hub, alias, search and authenticated preview
  await page.locator('[data-ag-training-controls]').screenshot({path:'test-results/autograd-mobile.png'});
  await page.goto(`${live}/learn/learnpytorch/autograd/`);await expect(page).toHaveURL(/\/(zh-cn|en|fr)\/learn\/learnpytorch\/autograd\/$/);
  await page.locator('.languages a[lang="en"]').click();await expect(page.locator('[data-ag-node="0"]')).toBeVisible();await page.locator('[data-open-search]').click();await page.locator('#search-input').fill('Autograd');await expect(page.locator('#search-results a[href*="/learnpytorch/autograd/"]').first()).toBeVisible();await page.keyboard.press('Escape');
- await page.goto(live+'/en/learn/');await expect(page.locator('a[href="/en/learn/learnpytorch/autograd/"]').first()).toBeVisible();
+ await page.goto(live+'/en/learn/');await expect(page.locator('a[href="/en/learn/learnpytorch/autograd/"]:visible').first()).toBeVisible();
  await page.request.post('/api/login',{data:{password:'local-demo-password'}});const url=new URL(preview,'http://127.0.0.1:4521');await page.goto(url.href);await page.goto(`${url.origin}${url.pathname}en/learn/learnpytorch/autograd/`);
  await expect(page.locator('[data-ag-node="0"]')).toBeVisible();await expect(page.locator('.languages a[lang="fr"]')).toHaveAttribute('href',`${url.pathname}fr/learn/learnpytorch/autograd/`);
  await page.locator('[data-ag-prediction]').fill('-16');await page.locator('[data-ag-backward]').click();await page.locator('[data-ag-all]').click();await expect(page.locator('[data-ag-buffer-w]')).toHaveText('-16');expect(errors).toEqual([]);

@@ -1,0 +1,225 @@
+---
+import { href, type Locale } from '../lib/data';
+import { attentionCopy } from '../lib/attention-learning';
+import { missionIds } from '../lib/attention-lab/engine.mjs';
+import PytorchCourseMap from './PytorchCourseMap.astro';
+import '../styles/attention-lab.css';
+const { locale } = Astro.props as { locale: Locale };
+const t = attentionCopy[locale],
+  u = t.ui;
+---
+
+<article class="attention-learning">
+  <a class="back-link" href={href(locale, 'learn')}>
+    {u.back} ↗
+  </a>
+  <p class="eyebrow">{t.eyebrow}</p>
+  <h1 data-pagefind-meta="title">{t.title}</h1>
+  <p class="detail-summary">{t.summary}</p>
+  <p>{t.intro}</p>
+  <PytorchCourseMap locale={locale} />
+  <div
+    class="at-lab"
+    data-attention-lab
+    data-pagefind-ignore
+    data-share-base={href(locale, 'learn/learnpytorch/attention')}
+  >
+    <script
+      type="application/json"
+      data-at-copy
+      set:html={JSON.stringify(t).replace(/</g, '\\u003c')}
+    />
+    <div class="at-toolbar">
+      <span data-at-progress>{u.progress} 0 / 6</span>
+      <button type="button" data-at-reset>
+        {u.reset}
+      </button>
+    </div>
+    <nav class="at-missions" aria-label={u.challenge}>
+      {t.missions.map((m, i) => (
+        <button type="button" data-at-mission={missionIds[i]}>
+          {i + 1}. {m.title}
+        </button>
+      ))}
+    </nav>
+    <h2 data-at-title>{t.missions[0].title}</h2>
+    <p data-at-hook>{t.missions[0].hook}</p>
+    <p class="at-goal" data-at-goal>
+      {t.missions[0].goal}
+    </p>
+    <div class="at-controls">
+      <label>
+        {u.example}
+        <select data-at-example>
+          {[0, 1, 2].map((n) => (
+            <option value={n}>{n + 1}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        {u.orientation}
+        <select data-at-setting="orientation">
+          <option value="qk">Q @ Kᵀ</option>
+          <option value="kq">K @ Qᵀ</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" data-at-setting="scale" />
+        {u.scale}
+      </label>
+      <label>
+        {u.axis}
+        <select data-at-setting="axis">
+          <option value="-1">{u.rows}</option>
+          <option value="0">{u.columns}</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" data-at-setting="causal" />
+        {u.causal}
+      </label>
+      <label>
+        {u.values}
+        <select data-at-setting="values">
+          <option value="v">V</option>
+          <option value="k">K</option>
+        </select>
+      </label>
+    </div>
+    <div class="at-actions">
+      <button type="button" data-at-check class="at-primary">
+        {u.check} →
+      </button>
+      <button type="button" data-at-hint>
+        {u.hint}
+      </button>
+    </div>
+    <p data-at-feedback class="at-feedback" role="status">
+      {u.ready}
+    </p>
+    <p data-at-hint-text hidden></p>
+    <section class="at-success" data-at-success hidden>
+      <h3>{u.complete} ✓</h3>
+      <p data-at-takeaway></p>
+      <strong>{u.transfer}</strong>
+      <p data-at-transfer></p>
+      <button type="button" data-at-next>
+        {u.next} →
+      </button>
+    </section>
+    <h3>{u.pipeline}</h3>
+    <div class="at-pipeline">
+      {['raw', 'logits', 'weights', 'output'].map((step, i) => (
+        <button type="button" data-at-stage={step}>
+          {i + 1}. {u[step]}
+        </button>
+      ))}
+    </div>
+    <div class="at-views">
+      <button type="button" data-at-result aria-pressed="true">
+        {u.result}
+      </button>
+      <button type="button" data-at-target aria-pressed="false">
+        {u.target}
+      </button>
+    </div>
+    <p data-at-view-note>{u.inspect}</p>
+    <div class="at-workspace">
+      <section>
+        <h3 data-at-matrix-title>{u.raw}</h3>
+        <div data-at-matrix class="at-matrix"></div>
+        <p data-at-row-sum></p>
+      </section>
+      <section>
+        <h3>{u.map}</h3>
+        <div data-at-flow class="at-flow"></div>
+        <p>{u.notSemantic}</p>
+      </section>
+    </div>
+    <section data-at-inspector class="at-inspector" aria-live="polite">
+      <p>{u.cell}</p>
+    </section>
+    <section class="at-probe">
+      <h3>{u.future}</h3>
+      <p>{u.probeNote}</p>
+      <button type="button" data-at-probe>
+        {u.probe}
+      </button>
+      <p data-at-probe-result role="status"></p>
+    </section>
+    <label class="at-temperature">
+      {u.temperature}
+      <input data-at-temperature type="range" min="0.25" max="2" step="0.25" value="1" />
+      <output data-at-temperature-value>1</output>
+    </label>
+    <p>{u.temperatureNote}</p>
+    <div class="at-actions">
+      <button type="button" data-at-share>
+        {u.share}
+      </button>
+      <button type="button" data-at-card>
+        {u.download} ↓
+      </button>
+      <button type="button" data-at-export>
+        {u.export} ↓
+      </button>
+    </div>
+    <p data-at-share-feedback role="status"></p>
+    <label data-at-share-box hidden>
+      {u.copyFallback}
+      <textarea data-at-share-url readonly></textarea>
+    </label>
+    <details>
+      <summary>{u.code}</summary>
+      <pre><code data-at-code></code></pre>
+    </details>
+    <details>
+      <summary>{u.inputs}</summary>
+      <div data-at-inputs></div>
+    </details>
+    <p data-at-storage hidden>
+      {u.storage}
+    </p>
+  </div>
+  <section class="at-outline">
+    <h2>{t.outline}</h2>
+    {t.missions.map((m, i) => (
+      <section>
+        <h3>
+          <a href={'#attention-' + missionIds[i]}>{m.title} ↗</a>
+        </h3>
+        <p>{m.goal}</p>
+        <p>{m.takeaway}</p>
+        <p>{m.transfer}</p>
+      </section>
+    ))}
+  </section>
+  <section class="at-outline">
+    <h2>{u.scopeTitle}</h2>
+    <p>{t.scope}</p>
+    <p>{t.privacy}</p>
+    <a
+      class="text-link"
+      href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {t.docs} ↗
+    </a>
+    <p>
+      <a
+        href="https://poloclub.github.io/transformer-explainer/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t.inspiration} ↗
+      </a>
+    </p>
+    <a class="text-link" href={href(locale, 'learn/learnpytorch/autograd')}>
+      {u.related} →
+    </a>
+  </section>
+</article>
+<script>
+  import '../lib/attention-lab/app.js';
+</script>

@@ -1,3 +1,4 @@
+import {courseActivity} from '../pytorch-progress.js';
 import { examples, graph, expectedGradient, dataset, stages, brokenStages, train, trainingPass, exportGraph, exportTraining } from './engine.mjs';
 
 const NS='http://www.w3.org/2000/svg';
@@ -16,7 +17,7 @@ for(const root of document.querySelectorAll('[data-autograd-lab]')) {
   const trainingOptions=()=>({order,rate:Number(q('rate').value)});
   const code=()=>mission==='training'?exportTraining(trainingOptions()):exportGraph(examples[exampleIndex],mission==='detach'&&q('detach').checked,mission==='accumulation'?Math.max(2,passes):1,mission!=='accumulation'||q('clear').checked);
   function updateCode(){q('code').textContent=code();}
-  function progress(){q('progress').textContent=`${u.progress} ${completed.size} / 4`;for(const button of root.querySelectorAll('[data-ag-mission]')){button.classList.toggle('is-complete',completed.has(button.dataset.agMission));button.setAttribute('aria-current',button.dataset.agMission===mission?'step':'false');}}
+  function progress(){courseActivity('autograd',mission,[...completed]);q('progress').textContent=`${u.progress} ${completed.size} / 4`;for(const button of root.querySelectorAll('[data-ag-mission]')){button.classList.toggle('is-complete',completed.has(button.dataset.agMission));button.setAttribute('aria-current',button.dataset.agMission===mission?'step':'false');}}
   function feedback(text,kind='info'){q('feedback').textContent=text;q('feedback').dataset.kind=kind;show('success',false);}
   function stop(){if(timer)clearInterval(timer);timer=null;q('play').textContent=mission==='training'?u.playTraining:u.play;}
   const maxFrame=()=>mission==='training'?(training?.history.length||1)-1:trace?.events.length||0;
@@ -106,7 +107,9 @@ for(const root of document.querySelectorAll('[data-autograd-lab]')) {
     }
     completed.add(mission);try{localStorage.setItem('learnpytorch-autograd-v1',JSON.stringify([...completed]));}catch{show('storage',true);}progress();feedback(mission==='training'?u.trainPass:mission==='detach'?u.fixed:u.success,'success');show('success',true);
   }
-  root.querySelectorAll('[data-ag-mission]').forEach(b=>b.addEventListener('click',()=>selectMission(b.dataset.agMission)));
+  function navigate(id){history.pushState(null,'',`#autograd-${id}`);selectMission(id);}
+  root.querySelectorAll('[data-ag-mission]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.agMission)));
+  q('next-mission').addEventListener('click',()=>navigate(ids[(ids.indexOf(mission)+1)%ids.length]));
   q('reset').addEventListener('click',()=>{if(mission==='training'){order=[...brokenStages];q('rate').value='0.1';renderOrder();}resetExperiment();});
   q('example').addEventListener('change',()=>{exampleIndex=Number(q('example').value);resetExperiment();});
   for(const name of ['detach','clear'])q(name).addEventListener('change',resetExperiment);
@@ -119,5 +122,6 @@ for(const root of document.querySelectorAll('[data-autograd-lab]')) {
   q('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([code()],{type:'text/x-python;charset=utf-8'}));const a=el('a',undefined,{href:url,download:`learnpytorch-${mission}.py`});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});window.addEventListener('pagehide',stop);
   const observer=new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(Math.abs(width-lastWidth)>1){lastWidth=width;renderGraph();}});observer.observe(q('graph'));
-  selectMission('chain');
+  function loadHash(){const id=location.hash.replace(/^#autograd-/,'');selectMission(ids.includes(id)?id:'chain');}
+  window.addEventListener('hashchange',loadHash);loadHash();
 }

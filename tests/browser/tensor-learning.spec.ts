@@ -92,7 +92,7 @@ test('localized mobile pages, search, aliases and authenticated preview', async 
   await expect(page.locator('#search-results a[href*="/learn/learnpytorch/"]').first()).toBeVisible();
   await page.keyboard.press('Escape');
   await page.goto(`${live}/en/learn/`);
-  await expect(page.locator('a[href="/en/learn/learnpytorch/"]').first()).toBeVisible();
+  await expect(page.locator('a[href="/en/learn/learnpytorch/"]:visible').first()).toBeVisible();
   await page.request.post('/api/login',{data:{password:'local-demo-password'}});
   const previewURL = new URL(preview, 'http://127.0.0.1:4521');
   await page.goto(previewURL.href);

@@ -82,7 +82,8 @@
     "completeTrace": "Terminez le parcours arrière avant de vérifier.",
     "playTraining": "Lire l’entraînement",
     "trainPrompt": "Exécutez la boucle pour observer son comportement.",
-    "traceTraining": "Parcourez l’ajustement et la perte, puis vérifiez la boucle."
+    "traceTraining": "Parcourez l’ajustement et la perte, puis vérifiez la boucle.",
+    "nextMission": "Mission suivante"
   },
   "missions": [
     {

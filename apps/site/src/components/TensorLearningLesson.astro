@@ -2,6 +2,8 @@
 import { href, type Locale } from '../lib/data';
 import { tensorLearningCopy } from '../lib/tensor-learning';
 import { autogradCopy, autogradPath } from '../lib/autograd-learning';
+import PytorchCourseMap from './PytorchCourseMap.astro';
+import {courseCopy} from '../lib/pytorch-course';
 import Icon from './Icon.astro';
 import { lessons } from '../lib/tensor-lab/lessons.mjs';
 import '../styles/tensor-lab.css';
@@ -15,6 +17,7 @@ const api = ['x.permute(2, 0, 1)', 'x.transpose(-2, -1)', 'x.reshape(3, -1)', 'x
   <h1 data-pagefind-meta="title">{t.title}</h1>
   <p class="detail-summary">{t.summary}</p>
   <p>{t.intro}</p>
+  <PytorchCourseMap locale={locale} hero={true}/>
   <a class="text-link" href={href(locale,autogradPath)}>{autogradCopy[locale].read} →</a>
   <p class="tensor-workflow">{t.workflow}</p>
   <div class="tensor-lab" data-tensor-lab data-locale={locale} data-pagefind-ignore>
@@ -47,7 +50,7 @@ const api = ['x.permute(2, 0, 1)', 'x.transpose(-2, -1)', 'x.reshape(3, -1)', 'x
     </div>
     <div class="tl-trace-wrap"><h3>{u.trace}</h3><div class="tl-playback"><button type="button" data-back-step aria-label={u.backStep} disabled>←</button><button type="button" data-play disabled>{u.play}</button><button type="button" data-forward-step aria-label={u.forwardStep} disabled>→</button><span data-frame role="status" aria-live="polite"></span></div><div data-trace class="tl-trace"></div><p data-note></p></div>
     <div class="tl-concept"><strong>{u.concept}</strong><p data-concept>{t.lessons[0].concept}</p></div>
-    <section data-success class="tl-success" hidden><h3>{u.complete} ✓</h3><p data-takeaway></p><strong>{u.transfer}</strong><p data-transfer></p><button type="button" data-next>{u.next} →</button></section>
+    <section data-success class="tl-success" hidden><h3>{u.complete} ✓</h3><p data-takeaway></p><strong>{u.transfer}</strong><p data-transfer></p><button type="button" data-next>{u.next} →</button><br/><a class="pt-next-chapter" href={href(locale,autogradPath)}>{courseCopy[locale].nextChapter}: {autogradCopy[locale].title} →</a></section>
     <p data-storage-notice class="tl-storage-notice" hidden>{u.storageUnavailable}</p>
     <noscript><p>{u.disabledScript}</p></noscript>
   </div>

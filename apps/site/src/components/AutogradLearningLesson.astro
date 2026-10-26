@@ -1,4 +1,7 @@
 ---
+import PytorchCourseMap from './PytorchCourseMap.astro';
+import {attentionCopy,attentionPath} from '../lib/attention-learning';
+import {courseCopy} from '../lib/pytorch-course';
 import { href, type Locale } from '../lib/data';
 import { autogradCopy } from '../lib/autograd-learning';
 import '../styles/autograd-lab.css';
@@ -11,6 +14,7 @@ const ids=['chain','detach','accumulation','training'];
   <p class="eyebrow">{t.eyebrow}</p><h1 data-pagefind-meta="title">{t.title}</h1>
   <p class="detail-summary">{t.summary}</p><p>{t.intro}</p>
   <a class="text-link" href={href(locale,'learn/learnpytorch')}>{u.tensorLink} →</a>
+  <PytorchCourseMap locale={locale}/>
   <div data-autograd-lab class="ag-lab" data-pagefind-ignore>
     <script type="application/json" data-ag-copy set:html={JSON.stringify(t).replace(/</g,'\\u003c')}/>
     <div class="ag-toolbar"><span data-ag-progress>{u.progress} 0 / 4</span><button type="button" data-ag-reset>{u.reset}</button></div>
@@ -43,7 +47,7 @@ const ids=['chain','detach','accumulation','training'];
     <p class="ag-event" data-ag-event aria-live="polite"></p>
     <div class="ag-actions"><button type="button" data-ag-check>{u.check}</button><button type="button" data-ag-hint>{u.hint}</button><button type="button" data-ag-export>{u.export} ↓</button></div>
     <p data-ag-feedback class="ag-feedback" role="status" aria-live="polite">{u.empty}</p>
-    <p data-ag-hint-text hidden></p><section data-ag-success class="ag-success" hidden><h3>{u.success} ✓</h3><p data-ag-transfer></p></section>
+    <p data-ag-hint-text hidden></p><section data-ag-success class="ag-success" hidden><h3>{u.success} ✓</h3><p data-ag-transfer></p><button type="button" data-ag-next-mission>{u.nextMission} →</button><br/><a class="pt-next-chapter" href={href(locale,attentionPath)}>{courseCopy[locale].nextChapter}: {attentionCopy[locale].title} →</a></section>
     <p data-ag-storage hidden>{u.storage}</p>
     <details class="ag-code"><summary>{u.code}</summary><pre><code data-ag-code></code></pre></details>
     <noscript><p>{t.scope}</p></noscript>

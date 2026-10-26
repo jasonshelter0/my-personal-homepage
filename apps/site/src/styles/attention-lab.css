@@ -1,0 +1,330 @@
+.attention-learning {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.attention-learning h1 {
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  line-height: 1.25;
+}
+.attention-learning p {
+  line-height: 1.8;
+}
+.attention-learning > p {
+  max-width: 80ch;
+}
+.at-lab {
+  --at-panel: color-mix(in srgb, var(--background) 94%, white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 2rem 0;
+  min-width: 0;
+  background: var(--background);
+}
+.at-lab [hidden] {
+  display: none !important;
+}
+.at-lab button,
+.at-lab select,
+.at-lab textarea {
+  font: inherit;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  background: var(--at-panel);
+  color: var(--strong);
+  max-width: 100%;
+}
+.at-lab button {
+  cursor: pointer;
+  color: var(--accent);
+}
+.at-lab button:hover {
+  border-color: var(--accent);
+}
+.at-lab :is(button, input, select, summary, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.at-lab button[aria-pressed='true'],
+.at-lab button[aria-current='step'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--background));
+}
+.at-lab h2 {
+  font-size: 1.25rem;
+  color: var(--strong);
+}
+.at-lab h3 {
+  font-size: 0.95rem;
+  color: var(--strong);
+  margin-top: 1.3rem;
+}
+.at-lab h4 {
+  font-size: 0.8rem;
+  color: var(--strong);
+}
+.at-lab p,
+.at-lab label {
+  font-size: 0.8rem;
+}
+.at-toolbar,
+.at-actions,
+.at-pipeline,
+.at-views {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+}
+.at-toolbar {
+  justify-content: space-between;
+}
+.at-missions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.at-missions button {
+  text-align: left;
+  font-size: 0.72rem;
+}
+.at-missions .is-complete:after {
+  content: ' ✓';
+}
+.at-goal {
+  border-left: 2px solid var(--accent);
+  padding: 0.8rem;
+  background: var(--at-panel);
+}
+.at-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+.at-controls label {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.at-controls select {
+  width: 100%;
+  font-size: 0.75rem;
+}
+.at-controls input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+.at-lab .at-primary {
+  background: var(--accent);
+  color: var(--background);
+}
+.at-feedback,
+.at-success {
+  border: 1px solid var(--line);
+  padding: 0.8rem;
+  border-radius: 6px;
+  background: var(--at-panel);
+}
+.at-feedback[data-kind='error'] {
+  color: #ffc6b7;
+  border-color: #f3977c80;
+}
+.at-feedback[data-kind='success'],
+.at-success {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.at-success strong {
+  font-size: 0.8rem;
+}
+.at-pipeline button {
+  flex: 1 1 40%;
+  font-size: 0.7rem;
+}
+.at-views {
+  margin: 1rem 0;
+}
+.at-workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.at-workspace > section {
+  min-width: 0;
+}
+.at-matrix {
+  display: grid;
+  grid-template-columns: 28px repeat(var(--at-cols), minmax(0, 1fr));
+  gap: 5px;
+}
+.at-lab .at-matrix button {
+  padding: 2px;
+  min-width: 0;
+  height: 48px;
+  font:
+    11px ui-monospace,
+    monospace;
+  background: color-mix(in srgb, var(--accent) var(--at-strength), var(--background));
+  color: var(--strong);
+}
+.at-lab .at-matrix .at-negative {
+  background: color-mix(in srgb, #f3977c var(--at-strength), var(--background));
+}
+.at-lab .at-matrix .at-blocked {
+  border-style: dashed;
+  background: var(--background);
+  color: var(--text);
+}
+.at-flow button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px minmax(20px, 1fr) 56px;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0;
+  font-size: 0.7rem;
+  min-width: 0;
+}
+.at-track {
+  display: block;
+  height: 12px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.at-track > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.at-flow code {
+  font-size: 0.65rem;
+}
+.at-inspector,
+.at-probe {
+  border: 1px solid var(--line);
+  padding: 0.9rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+.at-inspector p {
+  font:
+    12px/1.8 ui-monospace,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.at-probe button {
+  font-size: 0.75rem;
+}
+.at-temperature {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+.at-temperature input {
+  flex: 1;
+  min-width: 100px;
+  accent-color: var(--accent);
+}
+.at-lab details {
+  margin-top: 1rem;
+}
+.at-lab summary {
+  font-size: 0.8rem;
+  color: var(--accent);
+  cursor: pointer;
+  min-height: 40px;
+}
+.at-lab pre {
+  max-height: 400px;
+  overflow: auto;
+  background: var(--at-panel);
+  padding: 1rem;
+  font-size: 11px;
+  line-height: 1.9;
+}
+.at-input-table {
+  overflow: auto;
+}
+.at-input-table th,
+.at-input-table td {
+  font:
+    12px ui-monospace,
+    monospace;
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+.at-lab textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  font-size: 0.7rem;
+}
+.at-outline {
+  margin-top: 2.5rem;
+}
+.at-outline h2 {
+  font-size: 1.2rem;
+}
+.at-outline h3 {
+  font-size: 1rem;
+  color: var(--strong);
+}
+.at-outline p {
+  font-size: 0.85rem;
+}
+.at-outline > section {
+  margin: 1.5rem 0;
+}
+@media (max-width: 650px) {
+  .at-lab {
+    padding: 0.75rem;
+    margin-inline: -6px;
+  }
+  .at-workspace {
+    grid-template-columns: 1fr;
+  }
+  .at-controls {
+    grid-template-columns: 1fr;
+  }
+  .at-missions button {
+    font-size: 0.68rem;
+  }
+  .at-flow button {
+    grid-template-columns: 50px minmax(20px, 1fr) 70px;
+  }
+  .at-lab .at-matrix button {
+    font-size: 12px;
+  }
+  .at-pipeline button {
+    flex-basis: 42%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .at-lab * {
+    transition: none !important;
+  }
+}
+
+.at-axis-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font:
+    10px ui-monospace,
+    monospace;
+  min-height: 24px;
+}
+.at-lab .at-matrix button {
+  overflow: hidden;
+}

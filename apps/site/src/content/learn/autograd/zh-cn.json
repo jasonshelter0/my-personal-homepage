@@ -82,7 +82,8 @@
     "completeTrace": "完成反向追踪后再检查任务。",
     "playTraining": "播放训练过程",
     "trainPrompt": "运行训练循环，观察它的行为。",
-    "traceTraining": "逐步查看模型拟合与损失，然后检查循环。"
+    "traceTraining": "逐步查看模型拟合与损失，然后检查循环。",
+    "nextMission": "下一个任务"
   },
   "missions": [
     {

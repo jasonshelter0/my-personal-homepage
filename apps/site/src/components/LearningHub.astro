@@ -1,5 +1,6 @@
 ---
 import { copy, href, type Locale } from '../lib/data';
+import PytorchCourseMap from './PytorchCourseMap.astro';
 import Icon from './Icon.astro';
 import { learningCourses } from '../lib/learning-catalog';
 const { locale } = Astro.props as { locale: Locale };
@@ -14,6 +15,7 @@ const t = copy[locale];
   <p class="eyebrow">{t.learnEyebrow}</p>
   <h1 data-pagefind-meta="title">{t.learn}</h1>
   <p class="detail-summary">{t.learnIntro}</p>
+  <PytorchCourseMap locale={locale} hero={true}/>
   {learningCourses.map((item, index) => {
     const course = item.copy[locale];
     return <section class="learn-placeholder" aria-labelledby={`learn-course-${index}`}>

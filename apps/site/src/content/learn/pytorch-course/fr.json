@@ -1,0 +1,26 @@
+{
+  "title": "LearnPyTorch : rendez l’invisible visible",
+  "intro": "19 petits défis. Cassez un tenseur, suivez un gradient, trouvez une erreur d’attention. Sans installation ni compte.",
+  "start": "Commencer par les tenseurs",
+  "wow": "Essayer un défi d’attention en 3 minutes",
+  "resume": "Reprendre l’apprentissage",
+  "map": "Votre parcours",
+  "progress": "Terminés",
+  "local": "La progression reste dans ce navigateur. Toutes les leçons sont ouvertes : choisissez votre parcours.",
+  "new": "Nouveau : Détective de l’attention",
+  "next": "La suite du parcours",
+  "chapters": [
+    "Tenseurs : comprendre les formes",
+    "Autograd : suivre les gradients",
+    "Attention : débusquer les erreurs"
+  ],
+  "notes": [
+    "9 défis · bases de Python utiles",
+    "4 défis · dérivées et entraînement",
+    "6 défis · tokens, masques et valeurs"
+  ],
+  "practice": "Recommencer",
+  "more": "Voir les 19 défis",
+  "complete": "Les 19 défis sont terminés. Changez les exemples ou exportez vos expériences.",
+  "nextChapter": "Passer au chapitre suivant"
+}

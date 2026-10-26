@@ -1,0 +1,26 @@
+{
+  "title": "LearnPyTorch: make the invisible visible",
+  "intro": "19 small challenges. Break a tensor, follow a gradient, catch an attention bug. No installation or account.",
+  "start": "Start with tensors",
+  "wow": "Try a 3-minute attention challenge",
+  "resume": "Continue learning",
+  "map": "Your learning map",
+  "progress": "Completed",
+  "local": "Progress stays in this browser. All lessons are open; choose your own route.",
+  "new": "New: Attention Detective",
+  "next": "Where to go next",
+  "chapters": [
+    "Tensors: get the shapes right",
+    "Autograd: follow the gradients",
+    "Attention: catch the hidden bugs"
+  ],
+  "notes": [
+    "9 challenges · Python basics helpful",
+    "4 challenges · derivatives and training",
+    "6 challenges · tokens, masks and values"
+  ],
+  "practice": "Practice again",
+  "more": "See all 19 challenges",
+  "complete": "All 19 complete. Try new examples or export your experiments.",
+  "nextChapter": "Continue to the next chapter"
+}

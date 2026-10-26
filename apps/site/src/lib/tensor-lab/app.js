@@ -1,3 +1,4 @@
+import { courseActivity } from '../pytorch-progress.js';
 import { Tensor, execute, size, binary } from './engine.mjs';
 import { lessons, sandbox, validate } from './lessons.mjs';
 import { exportPython } from './export.mjs';
@@ -20,6 +21,7 @@ function init(root) {
   try { const value=JSON.parse(localStorage.getItem('learnpytorch-progress-v1') || '[]'); if(Array.isArray(value)) progress=[...new Set(value.filter(id=>courses.some(l=>l.id===id)))]; } catch { $('storage-notice').hidden=false; }
   function message(text,kind='info') { $('feedback').textContent=text; $('feedback').dataset.kind=kind; }
   function updateProgress() {
+    courseActivity('tensor',current.id,progress);
     $('progress').textContent=`${u.progress} ${progress.length} / ${courses.length}`;
     root.querySelectorAll('[data-lesson]').forEach(b=>{ b.setAttribute('aria-current', b.dataset.lesson===current.id?'step':'false'); b.classList.toggle('is-complete',progress.includes(b.dataset.lesson)); });
   }

@@ -1,0 +1,97 @@
+.pt-course {
+  margin: 1.5rem 0 2rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+  background: color-mix(in srgb, var(--accent) 3%, var(--background));
+}
+.pt-course h2 {
+  font-size: 1.35rem;
+  color: var(--strong);
+  line-height: 1.4;
+}
+.pt-course p {
+  font-size: 0.8rem;
+  line-height: 1.8;
+}
+.pt-paths,
+.pt-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.pt-paths a {
+  display: inline-block;
+  border: 1px solid var(--line);
+  padding: 0.7rem;
+  border-radius: 6px;
+  color: var(--accent);
+}
+.pt-paths .pt-start {
+  background: var(--accent);
+  color: var(--background);
+}
+.pt-progress {
+  justify-content: space-between;
+  margin: 0.8rem 0;
+}
+.pt-progress a {
+  color: var(--accent);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+.pt-map summary {
+  font-size: 0.8rem;
+  color: var(--strong);
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+.pt-chapters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.pt-chapters h3 {
+  font-size: 0.9rem;
+  color: var(--accent);
+  margin: 0.4rem 0;
+}
+.pt-chapters ol {
+  padding: 0;
+  list-style: none;
+}
+.pt-chapters li {
+  margin: 0.2rem 0;
+}
+.pt-chapters li a {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  padding: 0.55rem 0.2rem;
+  min-height: 40px;
+}
+.pt-chapters li a:hover {
+  color: var(--accent);
+}
+.pt-done {
+  color: var(--accent);
+}
+.pt-local {
+  opacity: 0.8;
+}
+.pt-course a:focus-visible,
+.pt-map summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.pt-next-chapter {
+  display: inline-block;
+  margin: 1rem 0;
+  color: var(--accent);
+  font-size: 0.85rem;
+}
