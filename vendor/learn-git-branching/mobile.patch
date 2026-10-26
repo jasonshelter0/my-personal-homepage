@@ -24,10 +24,10 @@ index 0000000..f3be53b
 +}
 diff --git a/README.mobile.md b/README.mobile.md
 new file mode 100644
-index 0000000..50b553a
+index 0000000..b994fbf
 --- /dev/null
 +++ b/README.mobile.md
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,60 @@
 +# Git 掌上练习室
 +
 +基于 [pcottle/learnGitBranching](https://github.com/pcottle/learnGitBranching) 的手机适配版，保留原 Git 模拟引擎、36 个内置关卡、28 种语言及动画。默认简体中文。本项目是浏览器中的教学模拟器，不操作手机上的真实 Git 仓库。
@@ -39,6 +39,7 @@ index 0000000..50b553a
 +- Android 修复版：`dist/git-pocket-android-v2.html`。本地文件的存储访问可能被 Android 浏览器拒绝；现在自动进入临时模式，可以继续练习，关闭前请手动导出学习进度。
 +- 手机用支持执行本地 HTML 的浏览器打开离线文件。iOS「文件」快速预览不一定执行 JavaScript；可改用在线网址，或者用支持 HTML 的本地浏览器。没有承诺所有手机文件管理器都能运行网页。
 +- 进入「全部关卡」开始学习；「自由练习」回到沙盒；速查可以把命令填入输入框；点「运行」执行。
++- 图形按节点、分支和标签的实际尺寸排布，复杂图不会挤在一起；点击图下方 `+` / `−` 缩放，拖动或双指缩放查看，点「全图」恢复。目标图和自由练习都支持，网页本身不会被撑宽。
 +- `git rebase -i` 弹窗可用 ↑ / ↓ 排序，无需拖拽。
 +- 学习进度存储在当前浏览器。「使用说明」中可导出/导入 JSON。导入会替换当前进度；浏览器存储被清理时进度会丢失。
 +- 外部 GitHub 链接和从 Gist 导入自定义关卡仍需联网。
@@ -58,6 +59,8 @@ index 0000000..50b553a
 +```
 +
 +`yarn build` 运行全部 Jasmine 测试、Vite 构建、静态资源处理和单文件打包。浏览器验收脚本为 `scripts/test-mobile.cjs`；可通过 `PLAYWRIGHT_MODULE` 指定已安装的 Playwright 模块位置。
++
++布局回归：`PLAYWRIGHT_MODULE=/path/to/playwright node scripts/test-graph-layout.cjs`，在 320px 下检查全部 36 关的初始/目标图，验证节点与标签没有相交。
 +
 +## 源码学习笔记
 +
@@ -151,6 +154,56 @@ index 68c9e84..3de4f66 100644
      });
    });
  
+diff --git a/__tests__/graphLayout.spec.js b/__tests__/graphLayout.spec.js
+new file mode 100644
+index 0000000..914b227
+--- /dev/null
++++ b/__tests__/graphLayout.spec.js
+@@ -0,0 +1,44 @@
++const { layoutRows } = require('../src/js/visuals/graphLayout');
++function bounds(cell, position) {
++  return { left: position.x - cell.left, right: position.x + cell.right,
++    top: position.y - cell.top, bottom: position.y + cell.bottom };
++}
++function verify(cells) {
++  const layout = layoutRows(cells);
++  const boxes = cells.map(cell => bounds(cell, layout.positions[cell.id]));
++  boxes.forEach((box, i) => {
++    expect(box.left).toBeGreaterThanOrEqual(0);
++    expect(box.top).toBeGreaterThanOrEqual(0);
++    expect(box.right).toBeLessThanOrEqual(layout.width);
++    expect(box.bottom).toBeLessThanOrEqual(layout.height);
++    boxes.slice(i + 1).forEach(other => {
++      expect(box.right <= other.left || other.right <= box.left || box.bottom <= other.top || other.bottom <= box.top).toBe(true);
++    });
++  });
++  return layout;
++}
++describe('commit cells with branch/tag/file label footprints', () => {
++  it('separates a wide fan-out without compressing nodes or labels', () => {
++    const cells = Array.from({ length: 8 }, (_, i) => ({ id: 'C' + i, depth: 1, order: i / 8, left: 20, right: 140, top: 20, bottom: 20 }));
++    const layout = verify(cells);
++    expect(layout.width).toBeGreaterThan(1000);
++  });
++  it('reserves space between deep rows with tall reference stacks', () => {
++    const cells = Array.from({ length: 12 }, (_, i) => ({ id: 'C' + i, depth: i, order: .5, left: 20, right: 120, top: i === 4 ? 90 : 20, bottom: i === 4 ? 90 : 20 }));
++    const layout = verify(cells);
++    expect(layout.positions.C5.y - layout.positions.C4.y).toBeGreaterThan(110);
++    expect(layout.positions.C0.x).toBe(layout.positions.C11.x);
++  });
++  it('trims empty margins equally for local and origin coordinate ranges', () => {
++    const cells = [0, 1].map(i => ({ id: 'C' + i, depth: i, order: .25, left: 20, right: 80, top: 20, bottom: 20 }));
++    expect(layoutRows(cells)).toEqual(layoutRows(cells.map(c => ({ ...c, order: .75 }))));
++  });
++  it('keeps files and long ref labels within the camera world, deterministically', () => {
++    const cells = [{ id: 'C0', depth: 0, order: .5, left: 20, right: 20, top: 20, bottom: 20 },
++      { id: 'C1', depth: 1, order: .8, left: 180, right: 420, top: 70, bottom: 70 },
++      { id: 'C2', depth: 1, order: .2, left: 20, right: 100, top: 20, bottom: 20 }];
++    const layout = verify(cells);
++    expect(layout).toEqual(layoutRows([...cells].reverse()));
++    expect(layout.positions.C2.x).toBeLessThan(layout.positions.C1.x);
++  });
++});
 diff --git a/__tests__/storage.spec.js b/__tests__/storage.spec.js
 new file mode 100644
 index 0000000..f2349f8
@@ -686,6 +739,30 @@ index 0000000..2c03fda
 +  console.log('PASS startup error produces readable diagnostics');
 +  await browser.close();
 +})().catch(e=>{console.error(e);process.exit(1)});
+diff --git a/scripts/test-graph-layout.cjs b/scripts/test-graph-layout.cjs
+new file mode 100644
+index 0000000..e2e0c70
+--- /dev/null
++++ b/scripts/test-graph-layout.cjs
+@@ -0,0 +1,18 @@
++const assert=require('node:assert/strict');const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
++const path=require('node:path');const {pathToFileURL}=require('node:url');
++const file=pathToFileURL(path.resolve(__dirname,'../dist/git-pocket-offline.html')).href;
++const levels=Object.entries({intro:4,rampup:4,move:4,mixed:5,advanced:3,remote:8,remoteAdvanced:8}).flatMap(([s,n])=>Array.from({length:n},(_,i)=>s+(i+1)));
++async function inspect(p,selector){return p.locator(selector).evaluateAll(svgs=>{
++ const nodes=[],refs=[],labels=[]; const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,id:e.dataset.graphNode||e.dataset.graphRef||e.dataset.graphLabel}};
++ for(const svg of svgs) {if(getComputedStyle(svg).opacity<.01)continue; for(const [sel,out] of [['[data-graph-node]',nodes],['[data-graph-ref]',refs],['[data-graph-label]',labels]])for(const e of svg.querySelectorAll(sel)){if(+(e.getAttribute('opacity')??1)>.05)out.push(box(e))}}
++ const intersects=(a,b)=>a.x+.7<b.x+b.w&&b.x+.7<a.x+a.w&&a.y+.7<b.y+b.h&&b.y+.7<a.y+a.h;
++ const clashes=[];for(let i=0;i<nodes.length;i++){for(const ref of refs)if(intersects(nodes[i],ref))clashes.push(['node-ref',nodes[i].id,ref.id]);for(let j=i+1;j<nodes.length;j++)if(intersects(nodes[i],nodes[j]))clashes.push(['nodes',nodes[i].id,nodes[j].id])}
++ for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++)if(intersects(labels[i],labels[j]))clashes.push(['labels',labels[i].id,labels[j].id]);
++ for(let i=0;i<refs.length;i++)for(let j=i+1;j<refs.length;j++)if(intersects(refs[i],refs[j]))clashes.push(['refs',refs[i].id,refs[j].id]);
++ return {nodes:nodes.length,refs:refs.length,clashes};
++});}
++(async()=>{const browser=await chromium.launch();let errors=[];try{await Promise.all([0,1,2].map(async slot=>{const p=await browser.newPage({viewport:{width:320,height:700},isMobile:true,hasTouch:true});p.on('pageerror',e=>errors.push(e.message));for(const level of levels.filter((_,i)=>i%3===slot)){
++ await p.goto(file+'?locale=en_US&NODEMO&command='+encodeURIComponent('level '+level+' --noIntroDialog --noStartCommand;show goal'));await p.locator('.canvasTerminalHolder svg.pocket-graph-canvas').first().waitFor();await p.waitForTimeout(3000);
++ for(const selector of ['#canvasHolder > svg','.canvasTerminalHolder svg']){const result=await inspect(p,selector);assert(result.nodes>0,level+' no nodes '+selector);assert.deepEqual(result.clashes,[],level+' '+selector+JSON.stringify(result));}
++ console.log('PASS',level,'320px initial and goal, no node/label overlaps');
++ }await p.close()}));assert.deepEqual(errors,[])}finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});
 diff --git a/scripts/test-mobile.cjs b/scripts/test-mobile.cjs
 new file mode 100644
 index 0000000..79abe3a
@@ -1559,8 +1636,175 @@ index b1246d5..c835139 100644
      this.makeButtons();
    }
  
+diff --git a/src/js/visuals/graphCamera.js b/src/js/visuals/graphCamera.js
+new file mode 100644
+index 0000000..625feb0
+--- /dev/null
++++ b/src/js/visuals/graphCamera.js
+@@ -0,0 +1,116 @@
++// Both local and origin papers share one camera, so repositories cannot overlap.
++class GraphCamera {
++  constructor(owner) {
++    this.owner = owner;
++    this.zoom = 1;
++    this.pan = { x: 0, y: 0 };
++    this.bindings = new Map();
++    const lang = document.documentElement.lang;
++    const copy = lang.startsWith('zh') ? ['缩小图形', '放大图形', '全图', '拖动查看'] :
++      lang.startsWith('fr') ? ['Réduire', 'Agrandir', 'Tout', 'Glisser pour déplacer'] :
++      ['Zoom out', 'Zoom in', 'Fit', 'Drag to pan'];
++    this.tools = document.createElement('div');
++    this.tools.className = 'pocket-graph-tools';
++    this.tools.setAttribute('role', 'group');
++    this.tools.setAttribute('aria-label', copy[3]);
++    [[ '−', copy[0], () => this.changeZoom(1 / 1.4) ],
++      [ '+', copy[1], () => this.changeZoom(1.4) ],
++      [ copy[2], copy[2], () => { this.zoom = 1; this.pan = { x: 0, y: 0 }; this.update(); } ]
++    ].forEach(([text, label, action]) => {
++      const button = document.createElement('button');
++      button.type = 'button'; button.textContent = text; button.setAttribute('aria-label', label);
++      button.addEventListener('click', action); this.tools.appendChild(button);
++    });
++    const hint = document.createElement('span'); hint.textContent = copy[3]; this.tools.appendChild(hint);
++    this.floating = owner.el.id === 'mainVisSpace';
++    if (this.floating) { this.tools.classList.add('pocket-graph-tools-floating'); this.tools.dataset.graphMain = ''; }
++    (this.floating ? document.body : owner.el).appendChild(this.tools);
++  }
++
++  changeZoom(factor) {
++    this.zoom = Math.max(1, Math.min(12, this.zoom * factor));
++    if (this.zoom === 1) this.pan = { x: 0, y: 0 };
++    this.update();
++  }
++
++  bind(vis) {
++    const svg = vis.paper.canvas;
++    if (this.bindings.has(svg)) return;
++    svg.classList.add('pocket-graph-canvas');
++    const points = this.points || (this.points = new Map());
++    const center = () => {
++      const p = [...points.values()];
++      return { x: p.reduce((s, v) => s + v.x, 0) / p.length, y: p.reduce((s, v) => s + v.y, 0) / p.length,
++        distance: p.length > 1 ? Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) : 0 };
++    };
++    const down = e => {
++      if ((!this.owner.shown && !this.owner.originVis?.shown) || e.button !== 0 || e.target.closest('.pocket-graph-tools')) return;
++      e.stopPropagation();
++      points.set(e.pointerId, { x: e.clientX, y: e.clientY });
++      this.lastPointer = center(); this.dragging = false; this.suppressClick = false;
++    };
++    const move = e => {
++      if (!points.has(e.pointerId)) return;
++      points.set(e.pointerId, { x: e.clientX, y: e.clientY });
++      const next = center(), dx = next.x - this.lastPointer.x, dy = next.y - this.lastPointer.y;
++      if (!this.dragging && points.size === 1 && Math.hypot(dx, dy) < 5) return;
++      this.dragging = true; this.suppressClick = true;
++      svg.setPointerCapture(e.pointerId);
++      e.stopPropagation();
++      if (next.distance && this.lastPointer.distance) this.zoom = Math.max(1, Math.min(12, this.zoom * next.distance / this.lastPointer.distance));
++      this.pan.x -= dx / this.scale; this.pan.y -= dy / this.scale;
++      this.lastPointer = next; this.update(); e.preventDefault();
++    };
++    const up = e => { points.delete(e.pointerId); if (points.size) this.lastPointer = center(); };
++    const click = e => { if (this.suppressClick) { e.preventDefault(); e.stopImmediatePropagation(); this.suppressClick = false; } };
++    [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', up], ['click', click]].forEach(([name, fn]) => svg.addEventListener(name, fn, name === 'click'));
++    const background = vis === this.owner ? vis.el : null;
++    if (background) [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', up]].forEach(([name, fn]) => background.addEventListener(name, fn));
++    this.bindings.set(svg, () => {
++      if (background) [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', up]].forEach(([name, fn]) => background.removeEventListener(name, fn));
++      [['pointerdown', down], ['pointermove', move], ['pointerup', up], ['pointercancel', up], ['click', click]].forEach(([name, fn]) => svg.removeEventListener(name, fn, name === 'click'));
++    });
++  }
++
++  update() {
++    const owner = this.owner, local = owner.gitVisuals?.readableLayout;
++    if (!local || !owner.paper) return;
++    const origin = owner.originVis, remote = origin?.gitVisuals?.readableLayout;
++    const width = local.width + (remote ? remote.width + 40 : 0);
++    const height = Math.max(local.height, remote ? remote.height : 0);
++    const w = owner.paper.width, h = owner.paper.height;
++    if (!w || !h) return;
++    if (this.floating) {
++      const rect = owner.el.getBoundingClientRect();
++      Object.assign(this.tools.style, { left: (rect.left + 6) + 'px', top: (rect.bottom - 48) + 'px', width: Math.max(0, rect.width - 12) + 'px' });
++    }
++    const top = owner.el.id === 'mainVisSpace' ? 36 : 8, bottom = 48;
++    const scale = Math.max(.01, Math.min(w / width, Math.max(40, h - top - bottom) / height));
++    this.scale = scale * this.zoom;
++    const vw = w / this.scale, vh = h / this.scale;
++    // Keep the content reachable even after dragging or rotating the phone.
++    this.pan.x = Math.max(-width / 2, Math.min(width / 2, this.pan.x));
++    this.pan.y = Math.max(-height / 2, Math.min(height / 2, this.pan.y));
++    const x = width / 2 + this.pan.x - vw / 2;
++    const y = height / 2 + this.pan.y - vh / 2 + (bottom - top) / (2 * this.scale);
++    [[owner, 0], ...(remote ? [[origin, local.width + 40]] : [])].forEach(([vis, offset]) => {
++      this.bind(vis);
++      vis.paper.setViewBox(x - offset, y, vw, vh, false);
++      vis.paper.canvas.dataset.graphWidth = String(vis.gitVisuals.readableLayout.width);
++      vis.paper.canvas.dataset.graphHeight = String(vis.gitVisuals.readableLayout.height);
++    });
++    this.tools.hidden = !owner.shown && !origin?.shown;
++    if (this.tools.hidden) this.points?.clear();
++    this.tools.dataset.zoom = String(this.zoom);
++    this.tools.children[0].disabled = this.zoom === 1;
++    this.tools.children[1].disabled = this.zoom === 12;
++    // Remove listeners belonging to a remote tree that was reset or deleted.
++    for (const [svg, unbind] of this.bindings) if (!svg.isConnected) { unbind(); this.bindings.delete(svg); }
++  }
++
++  remove() {
++    for (const unbind of this.bindings.values()) unbind();
++    this.bindings.clear(); this.points?.clear(); this.tools.remove();
++  }
++}
++exports.GraphCamera = GraphCamera;
+diff --git a/src/js/visuals/graphLayout.js b/src/js/visuals/graphLayout.js
+new file mode 100644
+index 0000000..1f4075f
+--- /dev/null
++++ b/src/js/visuals/graphLayout.js
+@@ -0,0 +1,39 @@
++// Lay out complete commit cells (node + references), never just their circles.
++// Coordinates are independent of the phone viewport; the camera fits/zooms them.
++function layoutRows(cells, gap = 28) {
++  const rows = new Map();
++  cells.forEach(cell => {
++    if (!rows.has(cell.depth)) rows.set(cell.depth, []);
++    rows.get(cell.depth).push(cell);
++  });
++  const ordered = [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([, row]) => {
++    row.sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
++    // A degenerate/custom tree can assign equal columns; separate ties locally.
++    if (row.some((c, i) => i && c.order <= row[i - 1].order)) {
++      row = row.map((c, i) => ({ ...c, order: (i + 1) / (row.length + 1) }));
++    }
++    return { cells: row, top: Math.max(...row.map(c => c.top)), bottom: Math.max(...row.map(c => c.bottom)) };
++  });
++  // Preserve the tree's column alignment, expanding only as much as the labels
++  // require. In particular, a linear history remains a straight vertical line.
++  let span = 80;
++  ordered.forEach(row => row.cells.forEach((cell, i) => {
++    if (!i) return;
++    const previous = row.cells[i - 1];
++    span = Math.max(span, (previous.right + cell.left + gap) / (cell.order - previous.order));
++  }));
++  const all = ordered.flatMap(row => row.cells);
++  const left = all.length ? Math.min(...all.map(c => c.order * span - c.left)) : 0;
++  const right = all.length ? Math.max(...all.map(c => c.order * span + c.right)) : 0;
++  const width = Math.max(260, right - left + 32);
++  const offset = (width - (right - left)) / 2 - left;
++  let y = 48;
++  const positions = {};
++  ordered.forEach(row => {
++    y += row.top;
++    row.cells.forEach(cell => { positions[cell.id] = { x: offset + cell.order * span, y }; });
++    y += row.bottom + 44;
++  });
++  return { positions, width, height: Math.max(160, y - 44 + 24) };
++}
++exports.layoutRows = layoutRows;
 diff --git a/src/js/visuals/index.js b/src/js/visuals/index.js
-index 05bcbe8..df05dfd 100644
+index 05bcbe8..169bd90 100644
 --- a/src/js/visuals/index.js
 +++ b/src/js/visuals/index.js
 @@ -139,7 +139,7 @@ GitVisuals.prototype.getScreenPadding = function() {
@@ -1572,7 +1816,86 @@ index 05bcbe8..df05dfd 100644
      // we pad the bottom a lot more so the branches won't go off screen
      bottomHeightPadding: GRAPHICS.nodeRadius * 5
    };
-@@ -852,7 +852,13 @@ GitVisuals.prototype.animateEdges = function(speed) {
+@@ -499,6 +499,7 @@ GitVisuals.prototype.revealChangedFiles = function(speed) {
+ GitVisuals.prototype.fullCalc = function() {
+   this.calcTreeCoords();
+   this.calcGraphicsCoords();
++  this.calcReadableLayout();
+ };
+ 
+ GitVisuals.prototype.calcTreeCoords = function() {
+@@ -524,6 +525,70 @@ GitVisuals.prototype.calcGraphicsCoords = function() {
+   });
+ };
+ 
++// Measure labels in SVG coordinates: screen bounds change when zooming.
++GitVisuals.prototype.calcReadableLayout = function() {
++  const cells = [];
++  const refs = [];
++  const nodes = Object.values(this.visNodeMap);
++  nodes.forEach(node => {
++    const id = node.getID();
++    const branches = this.visBranchCollection.toArray().filter(ref => ref.getCommitID() === id && !ref.get('isHead'));
++    branches.sort((a, b) => a.getBranchStackIndex() - b.getBranchStackIndex());
++    const head = this.visBranchCollection.toArray().find(ref => ref.get('isHead') && this.gitEngine.getDetachedHead() && ref.getCommitID() === id);
++    const tags = this.visTagCollection.toArray().filter(ref => ref.getCommitID() === id).sort((a, b) => a.getTagStackIndex() - b.getTagStackIndex());
++    const branchHeight = branches.length ? branches[0].getRectSize().h : 0;
++    const tagHeight = tags.length ? tags[0].getRectSize().h : 0;
++    const rightHeight = branchHeight + tagHeight + (branchHeight && tagHeight ? 12 : 0);
++    const branchWidth = branches.length ? branches[0].getRectSize().w : 0;
++    const tagWidth = tags.length ? tags[0].getRectSize().w : 0;
++    const headSize = head ? head.getRectSize() : { w: 0, h: 0 };
++    const height = rightHeight + (head ? headSize.h + (rightHeight ? 12 : 0) : 0);
++    const chips = node.get('fileChips') || [];
++    const chipWidth = chips.length ? 150 : 0;
++    cells.push({id, depth: node.get('depth'), order: node.get('pos').x,
++      left: Math.max(20, chipWidth ? 28 + chipWidth : 0),
++      right: Math.max(20, height ? 36 + Math.max(branchWidth, tagWidth, headSize.w) : 0),
++      top: Math.max(20, height / 2, headSize.h / 2, chips.length * 11),
++      bottom: Math.max(20, height / 2, headSize.h / 2, chips.length * 11)});
++    refs.push({id, branches, tags, head, branchWidth, branchHeight, height, headSize, rightHeight});
++  });
++  this.readableLayout = require('./graphLayout').layoutRows(cells);
++  // Reserve a separate column for the working-directory/staging panel.
++  const staging = require('./visStagingArea');
++  const model = this.visStagingArea.getModel();
++  if (model.engaged) {
++    const panelHeight = staging.getPanelLayout(model, 200, 400).panel.height;
++    this.readableLayout.width += 200;
++    this.readableLayout.height = Math.max(this.readableLayout.height, panelHeight + 48);
++    Object.values(this.readableLayout.positions).forEach(pos => { pos.x += 200; });
++  }
++  if (GlobalStateStore.getFlipTreeY()) Object.values(this.readableLayout.positions).forEach(pos => { pos.y = this.readableLayout.height - pos.y; });
++  this.visBranchCollection.each(ref => ref.set('layoutPosition', null));
++  this.visTagCollection.each(ref => ref.set('layoutPosition', null));
++  nodes.forEach(node => {
++    node.set('layoutPosition', this.readableLayout.positions[node.getID()]);
++    if (node.get('circle')) node.get('circle').node.dataset.graphNode = node.getID();
++  });
++  [...this.visBranchCollection.toArray(), ...this.visTagCollection.toArray()].forEach(ref => {
++    if (ref.get('rect')) ref.get('rect').node.dataset.graphRef = ref.getID();
++    if (ref.get('text')) ref.get('text').node.dataset.graphLabel = ref.getID();
++  });
++  refs.forEach(group => {
++    const pos = this.readableLayout.positions[group.id];
++    const top = pos.y - group.height / 2;
++    group.branches.forEach((ref, i) => ref.set('layoutPosition', {
++      x: pos.x + 36 + group.branchWidth / 2,
++      y: top + ref.get('vPad') + ref.getTextSize().h / 2 + i * ref.getLineHeight()
++    }));
++    group.tags.forEach((ref, i) => ref.set('layoutPosition', {
++      x: pos.x + 36 + ref.get('hPad'),
++      y: top + (group.branchHeight ? group.branchHeight + 12 : 0) + ref.get('vPad') + ref.getTextSize().h / 2 + i * ref.getLineHeight()
++    }));
++    if (group.head) group.head.set('layoutPosition', { x: pos.x + 36 + group.headSize.w / 2, y: top + group.rightHeight + (group.rightHeight ? 12 : 0) + group.headSize.h / 2 });
++  });
++  if (this.visualization.updateCamera) this.visualization.updateCamera();
++};
++
+ GitVisuals.prototype.calcUpstreamSets = function() {
+   this.upstreamBranchSet = this.gitEngine.getUpstreamBranchSet();
+   this.upstreamHeadSet = this.gitEngine.getUpstreamHeadSet();
+@@ -852,7 +917,13 @@ GitVisuals.prototype.animateEdges = function(speed) {
  };
  
  GitVisuals.prototype.getMinLayers = function() {
@@ -1587,8 +1910,17 @@ index 05bcbe8..df05dfd 100644
  };
  
  GitVisuals.prototype.getDepthIncrement = function(maxDepth) {
+@@ -1014,7 +1085,7 @@ GitVisuals.prototype.drawTreeFirstTime = function() {
+ 
+   this.visStagingArea.genGraphics(this.paper);
+ 
+-  this.zIndexReflow();
++  this.refreshTreeHarsh();
+ };
+ 
+ 
 diff --git a/src/js/visuals/visBranch.js b/src/js/visuals/visBranch.js
-index 05e961f..6d2b2d8 100644
+index 05e961f..5856386 100644
 --- a/src/js/visuals/visBranch.js
 +++ b/src/js/visuals/visBranch.js
 @@ -3,48 +3,15 @@ var GRAPHICS = require('../util/constants').GRAPHICS;
@@ -1646,6 +1978,236 @@ index 05e961f..6d2b2d8 100644
  };
  
  // Used to assign colors to branches not in the map
+@@ -215,6 +182,7 @@ class VisBranch extends VisBase {
+   }
+ 
+   getArrowTransform() {
++    if (this.get('layoutPosition')) return '';
+     if (this.get('flip') === 1) {
+       return 't-2,-20R-35';
+     } else {
+@@ -276,6 +244,7 @@ class VisBranch extends VisBase {
+   }
+ 
+   getTextPosition() {
++    if (this.get('layoutPosition')) return this.get('layoutPosition');
+     var pos = this.getCommitPosition();
+ 
+     // then order yourself accordingly. we use alphabetical sorting
+@@ -300,6 +269,17 @@ class VisBranch extends VisBase {
+   }
+ 
+   getArrowPath() {
++    if (this.get('layoutPosition')) {
++      const node = this.getCommitPosition(), rect = this.getRectPosition(), size = this.getRectSize();
++      const direction = this.get('layoutPosition').x < node.x ? -1 : 1;
++      const x = node.x + direction * (GRAPHICS.nodeRadius + 3);
++      const end = direction === 1 ? rect.x : rect.x + size.w;
++      const y = rect.y + size.h / 2;
++      return 'M' + x + ',' + node.y + 'L' + (x + direction * 7) + ',' + (node.y - 4) +
++        'L' + (x + direction * 7) + ',' + (node.y - 1) + 'L' + end + ',' + (y - 1) +
++        'L' + end + ',' + (y + 1) + 'L' + (x + direction * 7) + ',' + (node.y + 1) +
++        'L' + (x + direction * 7) + ',' + (node.y + 4) + 'Z';
++    }
+     // should make these util functions...
+     var offset2d = function(pos, x, y) {
+       return {
+@@ -352,7 +332,7 @@ class VisBranch extends VisBase {
+   getTextSize() {
+     var getTextWidth = function(visBranch) {
+       var textNode = (visBranch.get('text')) ? visBranch.get('text').node : null;
+-      return (textNode === null) ? 0 : textNode.getBoundingClientRect().width;
++      return (textNode === null) ? 0 : textNode.getBBox().width;
+     };
+ 
+     var firefoxFix = function(obj) {
+@@ -364,7 +344,7 @@ class VisBranch extends VisBase {
+     var textNode = this.get('text').node;
+     if (this.get('isHead')) {
+       // HEAD is a special case
+-      var size = textNode.getBoundingClientRect();
++      var size = textNode.getBBox();
+       return firefoxFix({
+         w: size.width,
+         h: size.height
+@@ -380,7 +360,7 @@ class VisBranch extends VisBase {
+ 
+     return firefoxFix({
+       w: maxWidth,
+-      h: textNode.getBoundingClientRect().height,
++      h: textNode.getBBox().height,
+     });
+   }
+ 
+@@ -394,6 +374,8 @@ class VisBranch extends VisBase {
+     };
+   }
+ 
++  getLineHeight() { return Math.max(20, this.getTextSize().h + 4); }
++
+   getRectSize() {
+     var textSize = this.getTextSize();
+     // enforce padding
+@@ -404,7 +386,7 @@ class VisBranch extends VisBase {
+     var totalNum = this.getBranchStackLength();
+     return {
+       w: textSize.w + vPad * 2,
+-      h: textSize.h * totalNum * 1.1 + hPad * 2
++      h: textSize.h + Math.max(0, totalNum - 1) * this.getLineHeight() + vPad * 2
+     };
+   }
+ 
+diff --git a/src/js/visuals/visNode.js b/src/js/visuals/visNode.js
+index 01a4b88..980230d 100644
+--- a/src/js/visuals/visNode.js
++++ b/src/js/visuals/visNode.js
+@@ -225,6 +225,7 @@ class VisNode extends VisBase {
+   }
+ 
+   getScreenCoords() {
++    if (this.get('layoutPosition')) return this.get('layoutPosition');
+     var pos = this.get('pos');
+     return this.gitVisuals.toScreenCoords(pos);
+   }
+diff --git a/src/js/visuals/visStagingArea.js b/src/js/visuals/visStagingArea.js
+index adaeb7a..b5779ba 100644
+--- a/src/js/visuals/visStagingArea.js
++++ b/src/js/visuals/visStagingArea.js
+@@ -200,8 +200,8 @@ class VisStagingArea extends VisBase {
+   getLayout() {
+     return getPanelLayout(
+       this.getModel(),
+-      this.paper.width,
+-      this.paper.height
++      this.gitVisuals.readableLayout?.width || this.paper.width,
++      this.gitVisuals.readableLayout?.height || this.paper.height
+     );
+   }
+ 
+diff --git a/src/js/visuals/visTag.js b/src/js/visuals/visTag.js
+index 6958e44..c79d24d 100644
+--- a/src/js/visuals/visTag.js
++++ b/src/js/visuals/visTag.js
+@@ -139,6 +139,7 @@ class VisTag extends VisBase {
+   }
+ 
+   getTextPosition() {
++    if (this.get('layoutPosition')) return this.get('layoutPosition');
+     var pos = this.getCommitPosition();
+ 
+     // then order yourself accordingly. we use alphabetical sorting
+@@ -165,7 +166,7 @@ class VisTag extends VisBase {
+   getTextSize() {
+     var getTextWidth = function(visTag) {
+       var textNode = (visTag.get('text')) ? visTag.get('text').node : null;
+-      return (textNode === null) ? 0 : textNode.getBoundingClientRect().width;
++      return (textNode === null) ? 0 : textNode.getBBox().width;
+     };
+ 
+     var firefoxFix = function(obj) {
+@@ -185,7 +186,7 @@ class VisTag extends VisBase {
+ 
+     return firefoxFix({
+       w: maxWidth,
+-      h: textNode.getBoundingClientRect().height,
++      h: textNode.getBBox().height,
+     });
+   }
+ 
+@@ -199,6 +200,8 @@ class VisTag extends VisBase {
+     };
+   }
+ 
++  getLineHeight() { return Math.max(20, this.getTextSize().h + 4); }
++
+   getRectSize() {
+     var textSize = this.getTextSize();
+     // enforce padding
+@@ -209,7 +212,7 @@ class VisTag extends VisBase {
+     var totalNum = this.getTagStackLength();
+     return {
+       w: textSize.w + vPad * 2,
+-      h: textSize.h * totalNum + hPad * 2
++      h: textSize.h + Math.max(0, totalNum - 1) * this.getLineHeight() + vPad * 2
+     };
+   }
+ 
+diff --git a/src/js/visuals/visualization.js b/src/js/visuals/visualization.js
+index 5e94a96..77247d4 100644
+--- a/src/js/visuals/visualization.js
++++ b/src/js/visuals/visualization.js
+@@ -118,7 +118,8 @@ class Visualization {
+ 
+     this.myResize();
+ 
+-    $(window).on('resize', () => this.myResize());
++    this.resizeHandler = () => this.myResize();
++    $(window).on('resize', this.resizeHandler);
+ 
+     // If the visualization is within a draggable container, we need to update the
+     // position whenever the container is moved.
+@@ -162,6 +163,7 @@ class Visualization {
+       this.options,
+       {
+         // never accept keyboard input or clicks
++        cameraOwner: this,
+         noKeyboardInput: true,
+         noClick: true,
+         treeString: options.treeString
+@@ -206,6 +208,7 @@ class Visualization {
+     }
+ 
+     $(this.paper.canvas).css('opacity', level);
++    this.updateCamera();
+     this.originToo('setTreeOpacity', arguments);
+   }
+ 
+@@ -217,12 +220,14 @@ class Visualization {
+       return;
+     }
+     $(this.paper.canvas).animate({opacity: 1}, this.getAnimationTime());
++    this.updateCamera();
+ 
+     this.originToo('fadeTreeIn', arguments);
+   }
+ 
+   fadeTreeOut() {
+     this.shown = false;
++    this.updateCamera();
+     if (this.paper && this.paper.canvas) {
+       $(this.paper.canvas).animate({opacity: 0}, this.getAnimationTime());
+     }
+@@ -301,6 +306,8 @@ class Visualization {
+   tearDown(options) {
+     options = options || {};
+ 
++    if (this.camera) { this.camera.remove(); this.camera = null; }
++    $(window).off('resize', this.resizeHandler);
+     this.gitEngine.tearDown();
+     this.gitVisuals.tearDown();
+     delete this.paper;
+@@ -317,6 +324,13 @@ class Visualization {
+     this.originToo('die', arguments);
+   }
+ 
++  updateCamera() {
++    const owner = this.options.cameraOwner || this;
++    if (!owner.gitVisuals?.readableLayout) return;
++    if (!owner.camera) owner.camera = new (require('./graphCamera').GraphCamera)(owner);
++    owner.camera.update();
++  }
++
+   myResize() {
+     if (!this.paper) { return; }
+ 
+@@ -346,6 +360,7 @@ class Visualization {
+ 
+     this.paper.setSize(width, height);
+     this.gitVisuals.canvasResize(width, height);
++    this.updateCamera();
+     this.originToo('myResize', arguments);
+   }
+ }
 diff --git a/src/style/font-awesome.css b/src/style/font-awesome.css
 index 7dea744..d3f28cf 100644
 --- a/src/style/font-awesome.css
@@ -1675,10 +2237,10 @@ index 50f8dc5..d05d7c5 100644
 +@import './mobile.css';
 diff --git a/src/style/mobile.css b/src/style/mobile.css
 new file mode 100644
-index 0000000..953f0b9
+index 0000000..d66ebb8
 --- /dev/null
 +++ b/src/style/mobile.css
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,119 @@
 +:root{--pocket-height:100dvh;--pocket-top:0px;--pocket-header:112px;--paper:#0f172a;--ink:#e2e8f0;--text:#cbd5e1;--muted:#94a3b8;--accent:#5eead4;--on-accent:#0f172a;--surface:#152035;--raised:#1b2940;--line:rgba(148,163,184,.18);--accent-soft:rgba(94,234,212,.1);--danger:#fda4af;--warning:#fde68a;--warning-soft:#302b23}
 +html,body{width:100%;height:100%;background:var(--paper);color:var(--text);color-scheme:dark;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 +*{box-sizing:border-box}button,a,input,textarea{-webkit-tap-highlight-color:transparent}button{touch-action:manipulation}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -1784,6 +2346,20 @@ index 0000000..953f0b9
 +.modalView .levelIcon div.index,.modalView .levelIcon div.indexNum{-webkit-text-stroke:0}
 +.modalView div.gitDemonstrationView>div.visHolder{background:var(--paper);border:1px solid var(--line);box-shadow:none}
 +div.canvasTerminalHolder .terminal-text p.helperText{font-size:11px;line-height:1.5;color:var(--muted);margin:0}
++
++/* Graphs have their own camera; the page and goal panel stay phone-sized. */
++#mainVisSpace,.canvasTerminalHolder .inside,.visHolderInside{position:relative}
++.pocket-graph-tools{position:absolute;bottom:4px;right:6px;left:6px;z-index:20;display:flex;justify-content:center;align-items:center;gap:4px;pointer-events:none}
++.pocket-graph-tools[hidden]{display:none}
++.pocket-graph-tools button{pointer-events:auto;min-width:44px;min-height:44px;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--raised);color:var(--accent);font-family:inherit;font-size:13px;line-height:1.2;box-shadow:none;text-shadow:none}
++.pocket-graph-tools button:disabled{opacity:.45;cursor:default}
++.pocket-graph-tools span{font-size:10px;color:var(--muted);background:var(--paper);padding:4px;border-radius:4px}
++#canvasHolder svg.pocket-graph-canvas,svg.pocket-graph-canvas{touch-action:none;pointer-events:none;cursor:grab}
++svg.pocket-graph-canvas:active{cursor:grabbing}
++
++#mainVisSpace,.canvasTerminalHolder .inside,.visHolderInside{touch-action:none}
++
++.pocket-graph-tools-floating{position:fixed;right:auto;bottom:auto;z-index:7}
 diff --git a/vite.config.mjs b/vite.config.mjs
 index 2fc1c96..889307f 100644
 --- a/vite.config.mjs

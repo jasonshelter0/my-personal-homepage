@@ -114,3 +114,29 @@ The imported file is 4,024,614 bytes, SHA-256
 Manual browser checks cover default/custom/invalid theme parameters and settled
 mobile help, levels and goal panels. The 320px/landscape/reopen goal regression
 remains in the regular suite. Deployment evidence is in RELEASE_HANDOFF.md.
+
+### Collision-free graph layout (2026-10-26)
+
+Commit cells now reserve the actual SVG dimensions of branch stacks, detached
+HEAD, tags and changed-file chips. Rows expand to keep their cells separate while
+preserving tree-column alignment. Working-directory/staging panels have their own
+column. Local and origin repositories share one viewport with separate regions.
+Text is measured in SVG coordinates so zooming cannot feed scaled measurements
+back into the layout. The SVG and page remain bounded by the phone viewport.
+
+The practice and goal graphs offer localized zoom-out/zoom-in/Fit buttons,
+dragging and touch pinch zoom. Fit restores the complete graph; simple taps on
+branches retain checkout behavior. Camera controls hide with their graph and
+listeners are removed on teardown. The existing objective width fix is retained.
+
+Mobile fork commit `d703704`; the full reproducible delta is in
+`vendor/learn-git-branching/mobile.patch`. Simulator: 4,034,858 bytes, SHA-256
+`146c6af1b959149c89320fa9790186900b0da66dbdb95056aef17b7d1b19907f`.
+Validation: 419 Jasmine specs; all36 initial/goal graphs at320px checked for
+node/node, node/reference, reference/reference and label/label intersections.
+The mobile offline flow covers keyboard/landscape, commands, IME, rebase,
+completion and progress import/export. Three localized graph interaction tests
+cover zoom/pan/Fit, rotation/reopen and ref-click checkout; touch pinch is checked
+separately. Continuous browser regression: `tests/browser/git-graph.spec.ts`;
+all-level scan: mobile fork `scripts/test-graph-layout.cjs` with PLAYWRIGHT_MODULE.
+Actual deployed image/content/backup/rollback records are in RELEASE_HANDOFF.md.
