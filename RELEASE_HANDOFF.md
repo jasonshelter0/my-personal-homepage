@@ -1,5 +1,35 @@
 # Folio Studio 生产发布交接
 
+## LearnPyTorch tensor lab (2026-10-26, current deployment)
+
+Published and verified through real HTTPS at `2026-10-26T04:45:39.986Z`. This section supersedes the deployment states below; older records remain historical.
+
+- Live entry: <https://www.jasonshelter.com/learn/learnpytorch/>; complete Chinese, English and French pages. Three interactive challenges cover axis order, broadcasting and batched matrix multiplication, with visual values/strides, hints, fresh-input validation, playground, local progress, shared code and Python export. Uses the native theme, learning hub, search, navigation and ICP footer.
+- Source: `11731b70473792e6ef3bf827f0ac8112d96c69d7`, pushed to `jasonshelter0/my-personal-homepage` main. Application package version remains 1.3.1. Source guide: `docs/LEARNPYTORCH.md`.
+- Image: `sha256:01bcdb835e376dce4b19e0a998cbae66ea3bad2c79d982311f7d239bb36e1919`; runtime/current → `/www/dk_project/folio-studio/releases/learnpytorch-20261026-11731b7`.
+- Published content: `mvorvfm7-2c2fcfb4`, rebuilt exclusively from verified published release `mvopo11m-99471e50`. The authenticated HTTPS preview was inspected before using the normal publish API. Production draft revision19 and SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` remained unchanged.
+- Persistent data: `/www/dk_project/folio-studio/shared/data`; no migrations, new dependencies, credentials or environment variables. Existing published profile/avatar, Git/Mamba courses and user content retained. Runtime remains Compose project `folio-studio`, service `studio`, loopback127.0.0.1:18080, UID10001, read-only root. Container verified healthy, restart count0, noOOM.
+- Consistent backup: `/www/backup/site/folio-studio/20261026T044400Z-learnpytorch/data.tar.gz`, SHA-256 `1856536c8df308dbfa1e6be3a3566083e771c23c787597e2b27e072ecf52b379`. Application stopped during archive creation; regenerable build-cache excluded. Directory0700/archive0600 and complete archive readability verified; no restore drill.
+- Runtime archive: `/home/jasonshelter/Projects/learnPytorch/site-integration/.folio/deployments/learnpytorch-20261026-11731b7/runtime.tar.gz`, 119257012 bytes, SHA-256 `afc98357d75cc65706908273e472562abbc789cb5e6e6e271ff341580618d159`; server upload matched. Offline BuildKit used the verified Node24.21.0 local image and final base layers were checked against `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`.
+- Validation: typecheck and production build; 70 unit/API tests (including an additional 11 tensor assertions); 25 browser scenarios passed across initial and targeted reruns. The initial admin-glow timing failure passed on rerun; new harness issues and the lesson-switch timing bug were fixed. Final three tensor flows passed with production-style `/preview/` paths. 25 cases matched real PyTorch2.14.1+cpu in values/shapes/strides; five exported Python programs executed successfully.
+- Live verification: 15 localized lesson/hub/home/Git/Mamba pages in private preview, then again publicly; all three challenges in each language, 320px mobile layout, expand/close, language switching, search, aliases, canonical/sitemap, assets, glow and ICP link passed. Admin and health200; anonymous draft/preview401; database and snapshot files404. Browser/resource errors0. Temporary verification session revoked.
+- Deployment coordinated with website and Git-learning sessions and held `config/deployment.lock`. No Nginx, DNS, certificate, WordPress, MySQL/RDS, port or unrelated service changes; no historical images, releases or backups removed.
+
+### Rollback this addition
+
+Coordinate ownership and hold `/www/dk_project/folio-studio/config/deployment.lock`. Content rollback and application rollback are separate; preserve current persistent data and any new drafts. Previous image `sha256:7afe452e769023e22a8873aa2ba438e2f413a08210628234edec3cc5185f75f1`, runtime `/www/dk_project/folio-studio/releases/credit-20261026-e563926` and content `mvopo11m-99471e50` remain available.
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvopo11m-99471e50')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T044400Z-learnpytorch/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+The application script restores the saved image.env, previous runtime symlink and performs Compose `up -d --no-build --pull never`; it does not restore or overwrite the database.
+
 ## 设计致谢与文章配图指南 1.3.1（2026-10-26，当前部署）
 
 已于 `2026-10-26T03:43:42.047Z` 通过真实 HTTPS 私有预览、发布和公网验收。以下是当前状态，后面记录保留为历史。
