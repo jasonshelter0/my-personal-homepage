@@ -1,5 +1,7 @@
 # 学习页面开发交接
 
+2026-10-26 最新：已发布三语可视化 autograd 章节 `/learn/learnpytorch/autograd/`，四项任务覆盖梯度预测、detach、梯度累积与训练顺序。保留九项张量课程、沉浸阅读/全屏及 Git/Mamba。源码 `e6eea98`，内容 `mvp00zl6-041d931d`；真实 HTTPS 预览及公开验收通过，草稿不变。源代码说明见 `LEARNPYTORCH.md`，部署/回滚见 `RELEASE_HANDOFF.md` 顶部。
+
 ## Immersive reading and browser fullscreen
 
 All learning routes (hub and course pages) share `LearningReader.astro`, `learning-reader.ts`, and `learning-reader.css` through Layout. “Immersive reading” hides the personal profile and expands the main column to a readable maximum width. A sticky toolbar retains the learning hub, language links, search, exit, and optional native browser fullscreen. It follows the published theme and preview base path. Non-learning pages retain their regular layout.

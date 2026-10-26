@@ -1,6 +1,35 @@
 # Folio Studio 生产发布交接
 
-## Immersive learning reader and fullscreen (2026-10-26, current deployment)
+## Visual autograd and training-loop chapter (2026-10-26, current deployment)
+
+Published and verified through real HTTPS at `2026-10-26T08:37:37.961Z`. Earlier deployment records below are historical.
+
+- Entry: <https://www.jasonshelter.com/learn/learnpytorch/autograd/>. Four complete Chinese, English and French missions: predict gradients, repair detach, control accumulation, repair a training loop. Keyboard-selectable computation graphs show actual local derivatives and contributions; replay separates per-pass adjoints from leaf gradient buffers. Training visualizes the fitted line and loss with exact tables. Each experiment exports runnable float64 PyTorch. This is bounded scalar autodiff in JavaScript, not the full PyTorch runtime; no GPU or account needed.
+- Source `e6eea987f9c52e487bf6355c2f513265a5c79914` pushed to GitHub main; package1.3.1. Image `sha256:3025de3a7bfbdc4f8004a3c4818ebb617f14741df5e8eea606a40931866abe60`; runtime/current → `/www/dk_project/folio-studio/releases/autograd-20261026-e6eea98`. Includes reader/fullscreen source3d96bd8, nine tensor lessons, Git graph fixes, Mamba course and existing user content. No new dependencies, database migrations or environment variables.
+- Published content `mvp00zl6-041d931d`, rebuilt only from verified published `mvoz72uh-576522b0` using `scripts/rebuild-published.ts --expected-current mvoz72uh-576522b0`. Actual authenticated HTTPS preview passed before normal publish API. Draft revision19 and SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged.
+- Persistent data remains `/www/dk_project/folio-studio/shared/data`; Compose folio-studio/studio, UID10001, read-only root, loopback18080. Healthy/restart0/noOOM verified after publication.
+- Consistent stopped-app backup `/www/backup/site/folio-studio/20261026T083135Z-autograd/data.tar.gz`, SHA-256 `47f696acc556bd429d4ca0b25b215728c9498a6ac59640e1665b5abe996e0f77`; directory0700/archive0600. Full archive readability checked; no restore drill. Regenerable build-cache excluded; backups remained on the server. Prior images/runtimes/content retained.
+- Runtime archive `/home/jasonshelter/Projects/learnPytorch/site-integration/.folio/deployments/autograd-20261026-e6eea98/runtime.tar.gz`, 119294869 bytes, SHA-256 `7754678072e9d96ec457da656477206fdd63ab8d468e6bfe2396f0139dfcdd59`. Upload checksum matched. Offline documented legacy builder used verified official Node24.21.0 base image `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`; final base layers verified.
+- Local validation: typecheck/build and72 unit/API tests, with10 additional nested autograd numerical tests and15 nested tensor tests. Real PyTorch2.14.1+cpu comparison:32 graph/backward passes,30 training configurations (all24 operation permutations),19 runnable exports. Full38-case browser regression passed; final six autograd tests passed again with production-style preview prefixes, including the added fullscreen test (39 distinct browser scenarios covered).
+- Actual HTTPS private preview and public verification passed all four new missions plus all nine tensor challenges in all three languages; desktop/320px,2560px fullscreen, reader state, language switching, search, hub, aliases, canonical/sitemap, assets, glow, ICP and admin passed. Browser/resource errors0. Health/admin200, anonymous drafts/private preview401, database/snapshot404. Temporary verification session revoked. Git simulator SHA256 remained `146c6af1b959149c89320fa9790186900b0da66dbdb95056aef17b7d1b19907f`.
+- Used the exclusive deployment.lock after the reader owner released the window. Outbound coordination connector was unavailable; incoming completion notice and file records were received, baseline rechecked under flock. No Nginx/DNS/certificate/WordPress/MySQL/RDS/port changes or cleanup.
+
+### Rollback the autograd chapter
+
+Coordinate a sole writer and hold `config/deployment.lock`. Previous image `sha256:4fcdf992eb2a62943a7fb4d79a34bf2ebc377a47edef6f456fd62e7c6da9b4c8`, runtime `/www/dk_project/folio-studio/releases/reader-20261026-3d96bd8`, and content `mvoz72uh-576522b0` remain available. Restore content separately from the application without overwriting persistent data or drafts:
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvoz72uh-576522b0')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T083135Z-autograd/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+The application rollback script restores image.env and runtime link, then recreates the running container through Compose. It does not restore the database. Verify actual HTTPS afterward.
+
+## Immersive learning reader and fullscreen (2026-10-26, historical deployment)
 
 Published and verified through real HTTPS at `2026-10-26T08:11:18.982Z`. Older deployment records below are historical.
 
@@ -28,7 +57,7 @@ ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --sile
 
 The script restores saved image.env and the runtime link, then recreates the Compose container with the precise old image. It does not restore the database. Verify real HTTPS after rollback.
 
-## LearnPyTorch: nine lessons and visual explanations (2026-10-26, current deployment)
+## LearnPyTorch: nine lessons and visual explanations (2026-10-26, historical deployment)
 
 Published and verified through real HTTPS at `2026-10-26T07:27:13.679Z`. Older deployment sections below are historical.
 
