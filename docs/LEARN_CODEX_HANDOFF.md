@@ -1,5 +1,7 @@
 # 学习页面开发交接
 
+2026-10-27 最新：已发布三语 Attention Detective（`/learn/learnpytorch/attention/`），六项注意力挑战，LearnPyTorch 共19项挑战。新增学习地图、继续学习、实验链接/PNG分享与社交预览图；保留最新 TTT、Git 与所有旧课程。源码 `757ccf3`，内容 `mvpfsfeh-bff9adee`，真实HTTPS预览/公开验证通过且草稿不变。实现见 `LEARNPYTORCH.md`，发布素材与验证计划见 `LEARNPYTORCH_GROWTH.md`，部署回滚见 `RELEASE_HANDOFF.md` 顶部。
+
 2026-10-26 最新：Mamba × TTT 单帧 IRSTD 课程已扩展至 13 页 × 3 语言、11 学习单元、8 类交互；新增视觉 TTT 与本周复现矩阵，扩展内循环计算器。主线是 TTT layers，Tent/SAR 等保留为 TTA 概念对照；旧 URL 保持稳定。源码 `20f9419`，已发布内容 `mvpbw31u-d49d7fc9`，真实 HTTPS 预览/公开、手机/全屏验收通过，草稿未变。详见 `MAMBA_TTA_IRSTD.md` 与 `RELEASE_HANDOFF.md` 顶部。
 
 2026-10-26 最新：已发布三语可视化 autograd 章节 `/learn/learnpytorch/autograd/`，四项任务覆盖梯度预测、detach、梯度累积与训练顺序。保留九项张量课程、沉浸阅读/全屏及 Git/Mamba。源码 `e6eea98`，内容 `mvp00zl6-041d931d`；真实 HTTPS 预览及公开验收通过，草稿不变。源代码说明见 `LEARNPYTORCH.md`，部署/回滚见 `RELEASE_HANDOFF.md` 顶部。

@@ -1,6 +1,35 @@
 # Folio Studio 生产发布交接
 
-## Visual TTT and IRSTD replication course (2026-10-26, current deployment)
+## Attention Detective and the 19-challenge course (2026-10-27, current deployment)
+
+Published and verified through real HTTPS at `2026-10-26T16:12:24.057Z`. Earlier deployment records below are historical.
+
+- New entry: <https://www.jasonshelter.com/learn/learnpytorch/attention/>. Six complete Chinese/English/French attention challenges cover Q/K orientation, feature scaling, softmax axis, causal masking, value mixing and a combined repair. The matrix, token bars, arithmetic inspector and future-token probe follow current settings. Three fixtures check each repair. This is bounded single-head toy attention, not a trained language model.
+- The course now joins19 challenges with a visible learning map, combined local progress, resume links, direct autograd mission links and follow-on chapter links. Attention experiment URLs reproduce bounded controls, example and selection; PNG cards and Python exports reproduce actual settings. Three localized Open Graph images support previews. Existing tensor progress/share links retained. Growth hypotheses, launch copy and a demo/user-testing plan are in `docs/LEARNPYTORCH_GROWTH.md`; no traffic/retention gain is claimed and no analytics collector or outbound promotion was added.
+- Source `757ccf3bcb0269b482a8fd3794672faed3d346f3` pushed to GitHub main; package1.3.1. Image `sha256:c0280b4e2aed1443b8b261dc9dfd60f58659f8f727471b222063a7c1df7f2069`; runtime/current → `/www/dk_project/folio-studio/releases/attention-20261026-757ccf3`. Preserves TTT source20f9419/docsd57177a, all previous courses, reader/fullscreen, Git graph fixes and user content. No dependencies, migrations or environment changes.
+- Content `mvpfsfeh-bff9adee`, rebuilt exclusively from verified published `mvpbw31u-d49d7fc9` using `scripts/rebuild-published.ts --expected-current mvpbw31u-d49d7fc9`. Actual authenticated HTTPS preview passed before normal publish API. Draft revision19 and SHA256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged.
+- Data `/www/dk_project/folio-studio/shared/data`; same folio-studio/studio, UID10001, read-only root, loopback18080. Healthy/restarts0/noOOM verified. Consistent stopped-app backup `/www/backup/site/folio-studio/20261026T154438Z-attention/data.tar.gz`, SHA256 `484889552e744f398b4aa92efc1943fa86e1db01711ac32d857d91fb3184fd16`; directory0700/archive0600, full archive readability verified, no restore drill. Build-cache excluded; backups remain on server.
+- Package `/home/jasonshelter/Projects/learnPytorch/site-integration/.folio/deployments/attention-20261026-757ccf3/runtime.tar.gz`:119494427 bytes,SHA256 `d4d5a8c3735909d6967f7bbd33ad77ca7ecb52ae2f042849f26cdb09f1e98a0f`; upload checksum matched. Offline documented legacy builder used verified official Node24.21.0 base `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`; final base-layer prefix verified.
+- Validation:typecheck/build,80 unit/API tests with10 nested attention,10 autograd and15 tensor checks;288 real CPU PyTorch attention configurations and exported programs,18 functional SDPA comparisons. All47 browser scenarios passed on isolated4621–4623 ports after preserving the concurrent TTT changes. Final5 attention flows passed again with production-style preview prefixes. Coverage includes incorrect starters, fresh-input checks, shared-state bounds/round-trip, image/Python downloads, progress/resume, storage/clipboard denial,3 locales,320px and fullscreen.
+- Actual HTTPS preview and public verification passed all19 PyTorch challenges across3 locales, course navigation/progress, attention share links and PNG downloads, preview images, mobile/fullscreen, aliases,language/search,canonical/sitemap,glow,ICP/admin/assets. New TTT pages retained. Browser/resource errors0;health/admin200,anonymous draft/preview401,DB/snapshot404;temporary session revoked. Git asset SHA256 remains `146c6af1b959149c89320fa9790186900b0da66dbdb95056aef17b7d1b19907f`.
+- Acquired exclusive deployment.lock after inspecting the completed TTT deployment and rebasing its committed source/docs. Outbound coordination connector unavailable; shared records and live baseline rechecked under lock. No Nginx/DNS/certificate/WordPress/MySQL/RDS/port changes or cleanup. Previous images/content/backups retained.
+
+### Rollback this attention release
+
+Coordinate a sole writer and hold `config/deployment.lock`. Previous image `sha256:39fa3998d262a61a6df37b9a17c739a36b275898228830929d3f302506ce49f7`, runtime `/www/dk_project/folio-studio/releases/ttt-20261026-20f9419`, and content `mvpbw31u-d49d7fc9` remain available. Content and application rollback are separate; do not overwrite persistent data or drafts.
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvpbw31u-d49d7fc9')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T154438Z-attention/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+The application script restores image.env and runtime link, then recreates the actual Compose container. It does not restore the database. Verify actual HTTPS afterward.
+
+## Visual TTT and IRSTD replication course (2026-10-26, historical deployment)
 
 Published and verified through real HTTPS at `2026-10-26T14:10:34.257Z`. Earlier deployment records below are historical.
 
