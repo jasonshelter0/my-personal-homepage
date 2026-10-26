@@ -1,5 +1,7 @@
 # 学习页面开发交接
 
+2026-10-26 最新：LearnPyTorch 已扩展为九项三语课程，新增回放、差值热图、矩阵数值分解与 softmax 分布图。源码 `aae0c0a`，内容 `mvoxi6oo-974b9251`。保留 Git 最新图形修复及所有用户草稿。实现见 `LEARNPYTORCH.md`，部署与回滚见 `RELEASE_HANDOFF.md` 顶部。
+
 2026-10-26 最新：Git图形重叠修复已发布（源码 `4ab5aa9`，内容 `mvosdb1f-854d3a4e`），保留LearnPyTorch和全部1.3.1功能；当前部署/备份/回滚以RELEASE_HANDOFF顶部为准。
 
 2026-10-26 最新：LearnPyTorch 张量实验室已发布，入口 `/learn/learnpytorch/`，含中英法三语、三项挑战与自由实验。源码 `11731b7`，内容 `mvorvfm7-2c2fcfb4`。实现及限制见 `LEARNPYTORCH.md`；当前镜像、备份和回滚以 `RELEASE_HANDOFF.md` 顶部 LearnPyTorch 章节为准。后续部署必须保留此课程。

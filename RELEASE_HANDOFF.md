@@ -1,6 +1,36 @@
 # Folio Studio 生产发布交接
 
-## Git 图形重叠修复（2026-10-26，当前部署）
+## LearnPyTorch: nine lessons and visual explanations (2026-10-26, current deployment)
+
+Published and verified through real HTTPS at `2026-10-26T07:27:13.679Z`. Older deployment sections below are historical.
+
+- Entry: <https://www.jasonshelter.com/learn/learnpytorch/>. Adds six lessons: batch-preserving flatten, targeted squeeze, channel bias, spatial average pooling, linear layers, and softmax. Nine complete lessons in Chinese, English and French. Existing progress/share links preserved; lesson counts/navigation now derive from the curriculum.
+- Visual features: replay/pause/manual stepping through execution, result-minus-target heatmaps, actual matrix-cell factor/product/bias explanations, and selectable softmax query distributions with raw scores and row sums. Explanations use executed operand provenance, not reference solutions. Controls and explanations are localized and keyboard-accessible. Source guide: `docs/LEARNPYTORCH.md`.
+- Runtime source `aae0c0aabb65baa37a9d9526711acbfc9c035310` (includes lesson commit52b2d17), pushed to GitHub main; package remains1.3.1. Image `sha256:e2e7c88c045b98eb26d87e8ec241e10a2f87c9fa246ed14706ab3c52946d3cf3`; runtime/current → `/www/dk_project/folio-studio/releases/tensor-lessons-20261026-aae0c0a`. Existing Git graph fixes, Mamba course, user content and avatar retained.
+- Published content `mvoxi6oo-974b9251`, rebuilt only from verified published `mvosdb1f-854d3a4e` using `scripts/rebuild-published.ts --expected-current mvosdb1f-854d3a4e`. Authenticated HTTPS preview passed before normal publish API. Draft revision19 and SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged.
+- Same persistent `/www/dk_project/folio-studio/shared/data`, Compose folio-studio/studio,127.0.0.1:18080,UID10001,read-only root. No dependencies, migrations or new environment variables. Healthy/restart0/noOOM verified after release.
+- Backup `/www/backup/site/folio-studio/20261026T072131Z-tensor-lessons/data.tar.gz`, SHA-256 `0db00717ea2959f6c94bb4ce9bad1ab7a94878d97ed31b4b94f189f53e6f1d55`. Stopped-application consistent archive excludes regenerable build-cache; directory0700/archive0600; full archive readability checked; no restore drill. Old application/content and backups retained.
+- Runtime archive `/home/jasonshelter/Projects/learnPytorch/site-integration/.folio/deployments/tensor-lessons-20261026-aae0c0a/runtime.tar.gz`, 119271886 bytes, SHA-256 `49900a4cfbc6d18d53725c566af20cf4f526c1ebda9057bbad45b26df3104b6c`; uploaded checksum matched. Offline BuildKit checked official Node24.21.0 local base image and final base layers against `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`.
+- Local validation: typecheck/build,70 unit/API tests including15 tensor/visual tests;66 comparisons with real PyTorch2.14.1+cpu and11 exported programs. Thirty browser scenarios covered across runs:25 original/new flows passed with production preview prefixes;four existing editor cases required their normal separate-port harness and passed on the six-case rerun; all five tensor flows passed again after visualization changes. These configuration-specific failures did not require unrelated application edits.
+- Actual HTTPS:15 localized course/hub/home/Git/Mamba pages inspected in private preview then public; all nine challenges in each locale, difference maps, matrix-cell terms, softmax charts,320px layout,language switching/search,canonical/sitemap/assets/glow/ICP passed. Admin/health200; anonymous draft/preview401; database/snapshot404. Browser/resource errors0; temporary session revoked. Git simulator SHA-256 stayed `146c6af1b959149c89320fa9790186900b0da66dbdb95056aef17b7d1b19907f` in preview and public.
+- Coordinated next window after Git and held `config/deployment.lock`. No Nginx,DNS,certificate,WordPress,MySQL/RDS,ports or unrelated services changed; no cleanup.
+
+### Rollback this expansion
+
+Coordinate the sole deployment writer and hold `config/deployment.lock`. Restore content separately from the application; do not replace persistent data or newer drafts. Previous image `sha256:5d58647671c35b0314dd5cc6a0791251afc46359272ff4402b0fd5640c22da75`, runtime `/www/dk_project/folio-studio/releases/git-overlap-20261026-4ab5aa9`, content `mvosdb1f-854d3a4e` remain available.
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvosdb1f-854d3a4e')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T072131Z-tensor-lessons/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+The application script restores the saved image.env and runtime link, then runs Compose up with the immutable image; it does not restore the database.
+
+## Git 图形重叠修复（2026-10-26，历史部署）
 
 真实 HTTPS 验收完成于 `2026-10-26T05:00:39.938Z`。本节为当前状态，下方部署记录均为历史。
 
