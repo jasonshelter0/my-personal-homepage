@@ -1,6 +1,25 @@
 # Folio Studio 生产发布交接
 
-## 分区、翻译、版本整理与设计致谢 1.3.0（2026-10-26，当前部署）
+## 设计致谢与文章配图指南 1.3.1（2026-10-26，当前部署）
+
+已于 `2026-10-26T03:43:42.047Z` 通过真实 HTTPS 私有预览、发布和公网验收。以下是当前状态，后面记录保留为历史。
+
+- 项目绝对路径：`/home/jasonshelter/Projects/personal-website`；版本1.3.1；运行源码 `e5639268dc37fdd5d7588e0ff5d4f7b0e5e9c81c`。
+- 设计致谢三语文案改为直接使用 Brittany Chiang 全名，不把未在官方个人页公开标注的代词当作作者自述。中、英、法三页均保留原站链接，其他公开页不重复作者姓名。
+- 新增 `docs/PASSAGE_IMAGE_PROMPT.md`：把任意文章主旨转化为与默认配图协调的宽幅抽象编辑插图；固定深海军蓝、薄荷青、灰蓝线条、留白和信息密度，主体、隐喻和构图由文章决定。该文档不进入公开站点或发送外部服务。
+- 当前镜像 `sha256:7afe452e769023e22a8873aa2ba438e2f413a08210628234edec3cc5185f75f1`；runtime/current → `/www/dk_project/folio-studio/releases/credit-20261026-e563926`；公开内容 `mvopo11m-99471e50`。
+- 仅从现场最新已发布 `mvo34ex9-43dd5198` 重建，保留头像、用户内容、分区、Git/Mamba学习页及搜索。草稿revision19和SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` 发布前后不变。
+- 构建：`npm run typecheck`、`npm run build`、`npm run test:e2e -- tests/browser/sections.spec.ts`；本地产物 `apps/admin/dist/`、`apps/site/dist/`。运行仍为Compose项目 `folio-studio`/服务 `studio`，127.0.0.1:18080、UID10001、只读根目录；健康检查 `GET /healthz`。
+- 本地运行包 `.folio/deployments/credit-20261026-e563926/runtime.tar.gz`，119748734字节，SHA-256 `f26151ba22f6ac56755c2726bac8fa2b8f3fd2f0fa4a3ca7b4696d3a606d8860`；上传校验一致。Node24.21.0基础镜像与最终镜像基础层已验证。
+- 数据仍为 `/www/dk_project/folio-studio/shared/data`，无SQL迁移、新依赖或新环境变量。一致性备份 `/www/backup/site/folio-studio/20261026T034225Z-credit/data.tar.gz`，SHA-256 `ecb32b6c4fbf4fb9e0f97b435a71087987f0a81ddfb46b4dfbc3d7b90954588f`，停应用归档、0700/0600、已校验可读，未做恢复演练。
+- 验证：类型检查、正式构建和3项相关浏览器流程通过；15页真实HTTPS鉴权预览后发布，再公开检查15页，浏览器/资源错误0。额外校验三语新文案、Brittany链接仅在致谢页、草稿不变、health200、容器healthy。
+- 旧镜像 `sha256:1c99060e38b1dad6296399ef9e3fbc44af4a30aef482262f4177b6ef6b978033`、旧runtime `/www/dk_project/folio-studio/releases/sections-20261026-28993b2`、之前内容及备份保留。未修改Nginx、DNS、证书、端口、WordPress、RDS或其他服务，未删除历史版本。
+
+### 回滚
+
+协调并持有 `config/deployment.lock` 后，优先恢复上一内容 `mvo34ex9-43dd5198`并保留1.3.1运行时。应用回滚脚本位于 `/www/backup/site/folio-studio/20261026T034225Z-credit/rollback-application.sh`；它恢复1.3.0，与当前草稿schema兼容，但仍应先验证现场状态。不覆盖持久数据。
+
+## 分区、翻译、版本整理与设计致谢 1.3.0（2026-10-26，历史部署）
 
 已于 `2026-10-25T17:12:49.644Z` 通过真实HTTPS私有预览、发布和公网验收。以下是当前状态，后面的部署记录均为历史。
 
