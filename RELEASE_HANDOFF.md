@@ -1,6 +1,34 @@
 # Folio Studio 生产发布交接
 
-## Visual autograd and training-loop chapter (2026-10-26, current deployment)
+## Visual TTT and IRSTD replication course (2026-10-26, current deployment)
+
+Published and verified through real HTTPS at `2026-10-26T14:10:34.257Z`. Earlier deployment records below are historical.
+
+- Entry: <https://www.jasonshelter.com/learn/mamba-tta-irstd/>. Thirteen pages per language, eleven learning units, eight interactive demo types. Expanded `ttt/` explains inner/outer optimization, K/V/Q and state lifetimes; new `ttt-vision/` explains text-to-vision transfer, spatial tokens, classification-to-segmentation and centroid risks; new `ttt-plan/` contains the weekly S0/B0/B1/B2/H0/H1 replication matrix and JSON export. Chinese, English and French complete. Existing URL retained; Tent/CoTTA/SAR are explicitly historical TTA comparisons. Peer baseline identity remains unconfirmed; no ML experiments are claimed.
+- Source `20f9419ff0fa5d518578a69708294cb5afbfae00` pushed to GitHub main; package1.3.1. Image `sha256:39fa3998d262a61a6df37b9a17c739a36b275898228830929d3f302506ce49f7`; runtime/current → `/www/dk_project/folio-studio/releases/ttt-20261026-20f9419`. Reader/fullscreen, autograd, nine tensor lessons, Git and user content retained. No dependency, environment or database migration changes.
+- Content `mvpbw31u-d49d7fc9`, rebuilt exclusively from verified published `mvp00zl6-041d931d` using `scripts/rebuild-published.ts --expected-current mvp00zl6-041d931d`. Actual authenticated HTTPS preview passed before normal publish API. Draft revision19 and SHA256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged.
+- Same persistent `/www/dk_project/folio-studio/shared/data`, Compose folio-studio/studio, loopback18080, UID10001, read-only root; healthy/restarts0/noOOM verified. Consistent stopped-application backup `/www/backup/site/folio-studio/20261026T140412Z-ttt/data.tar.gz`, SHA256 `f2915c596329a8e616119ecea0c5fd444d9bbb42e0f5a8ee9cf9d1fd2dc37470`; directory0700/archive0600, archive readability verified, no restore drill. Build-cache excluded; backups remain only on server.
+- Artifact `.folio/deployments/ttt-20261026-20f9419/runtime.tar.gz`:120094101 bytes, SHA256 `6ec0949987fe5130dc381c0361a1da459590be6b3032707a2a73c34efb643dce`; uploaded checksum matched. Offline documented legacy builder used verified official Node24.21.0 base `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`; final base-layer prefix matched.
+- Local validation: typecheck/build and78 unit/API tests passed. Full browser run passed41 cases with one new preview-test harness failure; corrected entry navigation and reran all5 learning tests with `PREVIEW_BASE_PATH=/preview`, all passed (42 distinct cases covered across runs). Tests cover exact inner updates, zero/negative/divergent values, storage denial, timing invalidation, export, three languages, preview/search/progress/fullscreen.
+- Actual HTTPS private preview and public checks each covered39 localized Mamba/TTT pages,9 existing course pages, default aliases,320px layout,2560px immersive/fullscreen, language/search/hub/canonical/sitemap/assets/glow/ICP. All new interactions checked in three languages. Browser/resource errors0; health/admin200, anonymous drafts/preview401, database/snapshot404. Temporary verification session revoked. Git asset SHA256 unchanged: `146c6af1b959149c89320fa9790186900b0da66dbdb95056aef17b7d1b19907f`.
+- Held exclusive `config/deployment.lock` across production writes, preview and publication; rechecked the live baseline under lock. Outbound coordination connector unavailable. No Nginx/DNS/certificate/WordPress/MySQL/RDS/port changes or cleanup. Previous images/content/backups retained.
+
+### Rollback this TTT expansion
+
+Coordinate a sole writer and hold `config/deployment.lock`. Previous image `sha256:3025de3a7bfbdc4f8004a3c4818ebb617f14741df5e8eea606a40931866abe60`, runtime `/www/dk_project/folio-studio/releases/autograd-20261026-e6eea98`, and content `mvp00zl6-041d931d` remain available. Restore content separately from application; do not overwrite persistent data or drafts.
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvp00zl6-041d931d')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261026T140412Z-ttt/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+The application rollback script restores image.env and runtime link, then recreates the container through Compose. It does not restore the database. Verify actual HTTPS afterward.
+
+## Visual autograd and training-loop chapter (2026-10-26, historical deployment)
 
 Published and verified through real HTTPS at `2026-10-26T08:37:37.961Z`. Earlier deployment records below are historical.
 

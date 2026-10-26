@@ -1,5 +1,7 @@
 # 学习页面开发交接
 
+2026-10-26 最新：Mamba × TTT 单帧 IRSTD 课程已扩展至 13 页 × 3 语言、11 学习单元、8 类交互；新增视觉 TTT 与本周复现矩阵，扩展内循环计算器。主线是 TTT layers，Tent/SAR 等保留为 TTA 概念对照；旧 URL 保持稳定。源码 `20f9419`，已发布内容 `mvpbw31u-d49d7fc9`，真实 HTTPS 预览/公开、手机/全屏验收通过，草稿未变。详见 `MAMBA_TTA_IRSTD.md` 与 `RELEASE_HANDOFF.md` 顶部。
+
 2026-10-26 最新：已发布三语可视化 autograd 章节 `/learn/learnpytorch/autograd/`，四项任务覆盖梯度预测、detach、梯度累积与训练顺序。保留九项张量课程、沉浸阅读/全屏及 Git/Mamba。源码 `e6eea98`，内容 `mvp00zl6-041d931d`；真实 HTTPS 预览及公开验收通过，草稿不变。源代码说明见 `LEARNPYTORCH.md`，部署/回滚见 `RELEASE_HANDOFF.md` 顶部。
 
 ## Immersive reading and browser fullscreen
@@ -27,7 +29,7 @@ The layout preference is stored locally under `folio:learning:immersive`; no ser
 - `https://www.jasonshelter.com/learn/` 是稳定入口，跳转到后台配置的默认语言（当前为简体中文）。无尾斜杠的 `/learn` 由静态服务规范化。
 - 完整语言页为 `/zh-cn/learn/`、`/en/learn/`、`/fr/learn/`，语言切换保持学习栏目。
 - 学习主页复用正式站的深色配色、柔和鼠标光晕、导航、搜索与页底备案链接。
-- 学习主页由 `lib/learning-catalog.ts` 列出源码课程：`mamba-tta-irstd`（11 章 × 3 语言）与 `git-branching`（3 语言及本地模拟器）。现有文章入口保留。
+- 学习主页由 `lib/learning-catalog.ts` 列出源码课程：`mamba-tta-irstd`（13 页 × 3 语言）与 `git-branching`（3 语言及本地模拟器）。现有文章入口保留。
 - 课程详情进入各语言 Pagefind 和 sitemap。Mamba 课程提供公式演示、测验、协议导出及浏览器本地笔记/进度；Git 提供同源 iframe 模拟器。教学模拟不执行真实机器学习训练，也不访问真实 Git 仓库。
 
 ## 文件位置
