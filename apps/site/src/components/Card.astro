@@ -1,6 +1,6 @@
 ---
 import { entryHref, media, dateLabel, copy, type Entry, type Locale } from '../lib/data';
-import Icon from './Icon.astro';
+import IndexCard from './IndexCard.astro';
 const {
   entry,
   locale,
@@ -11,37 +11,22 @@ const content = entry.translations[locale],
   t = copy[locale];
 ---
 
-<article class:list={['content-card', entry.type, { 'wide-card': wide }]}>
-  <div class="card-aside">
-    {entry.type === 'experience' ? (
-      <span class="period">{entry.period}</span>
-    ) : cover ? (
-      <img
-        src={cover.path}
-        alt={cover.alt[locale]}
-        width={cover.width || 600}
-        height={cover.height || 400}
-        loading="lazy"
-      />
-    ) : (
-      <span class="card-year">{entry.date?.slice(0, 4) || '—'}</span>
-    )}
-  </div>
-  <div class="card-body">
-    <h3>
-      <a href={entryHref(locale, entry)}>
-        {content.title}
-        <Icon size={16} />
-      </a>
-    </h3>
-    {entry.type === 'post' && <time datetime={entry.date}>{dateLabel(entry.date, locale)}</time>}
-    <p>{content.summary}</p>
-    {entry.tags.length > 0 && (
-      <ul class="tags" aria-label={t.tags}>
-        {entry.tags.map((tag) => (
-          <li>{tag}</li>
-        ))}
-      </ul>
-    )}
-  </div>
-</article>
+<IndexCard
+  href={entryHref(locale, entry)}
+  title={content.title}
+  summary={content.summary}
+  image={cover?.path}
+  imageAlt={cover?.alt[locale]}
+  imageWidth={cover?.width || 600}
+  imageHeight={cover?.height || 400}
+  aside={
+    entry.type === 'experience' ? entry.period : cover ? undefined : entry.date?.slice(0, 4) || '—'
+  }
+  asideKind={entry.type === 'experience' ? 'period' : 'year'}
+  date={entry.type === 'post' ? entry.date : undefined}
+  dateLabel={entry.type === 'post' ? dateLabel(entry.date, locale) : undefined}
+  tags={entry.tags}
+  tagsLabel={t.tags}
+  kind={entry.type}
+  wide={wide}
+/>

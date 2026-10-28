@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Card from '../components/Card.astro';
+import IndexCard from '../components/IndexCard.astro';
 import Picture from '../components/Picture.astro';
 import Icon from '../components/Icon.astro';
 import LearningHub from '../components/LearningHub.astro';
 import SiteNotes from '../components/SiteNotes.astro';
-import { ucit, ucitPath } from '../lib/ucit';
+import { ucit, ucitCoverAlt, ucitPath } from '../lib/ucit';
 import '../styles/ucit.css';
 import { isBuiltinSection, sectionTitle } from '../../../../shared/sections';
 import {
@@ -21,6 +22,7 @@ import {
   media,
   dateLabel,
   safeUrl,
+  withBase,
   type Locale,
   type Entry,
 } from '../lib/data';
@@ -239,12 +241,26 @@ const sectionEntries = (id: string) =>
       <p class="eyebrow">{t.theme}</p>
       <h1 data-pagefind-meta="title">
         {pageTitle}
-        <span class="archive-count">{String(filtered.length + (route === 'projects' ? 1 : 0)).padStart(2, '0')}</span>
+        <span class="archive-count">
+          {String(filtered.length + (route === 'projects' ? 1 : 0)).padStart(2, '0')}
+        </span>
       </h1>
-      {route === 'projects' && <a class="ucit-project-link" href={href(locale, ucitPath)}>
-        <strong>{ucit.locales[locale].title} ↗</strong><p>{ucit.locales[locale].summary}</p>
-      </a>}
       <div class="archive-list">
+        {route === 'projects' && (
+          <IndexCard
+            href={href(locale, ucitPath)}
+            title={ucit.locales[locale].title}
+            summary={ucit.locales[locale].summary}
+            image={withBase('/media/ucit-home.svg')}
+            imageAlt={ucitCoverAlt[locale]}
+            tags={['Obsidian', 'Local-first', 'Productivity']}
+            tagsLabel={t.tags}
+            kind="project"
+            className="ucit-project-card"
+            linkClass="ucit-project-link"
+            wide
+          />
+        )}
         {filtered.map((item) => (
           <Card entry={item} locale={locale} wide />
         ))}

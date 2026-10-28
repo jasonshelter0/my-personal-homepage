@@ -1,0 +1,86 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  image?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  aside?: string;
+  asideKind?: 'period' | 'year';
+  date?: string;
+  dateLabel?: string;
+  tags?: string[];
+  tagsLabel?: string;
+  wide?: boolean;
+  kind?: string;
+  className?: string;
+  linkClass?: string;
+  headingLevel?: 'h2' | 'h3';
+  detail?: string;
+}
+
+const {
+  href,
+  title,
+  summary,
+  image,
+  imageAlt = '',
+  imageWidth = 1200,
+  imageHeight = 760,
+  aside,
+  asideKind = 'year',
+  date,
+  dateLabel,
+  tags = [],
+  tagsLabel,
+  wide = false,
+  kind,
+  className,
+  linkClass,
+  headingLevel = 'h3',
+  detail,
+} = Astro.props as Props;
+const Heading = headingLevel;
+---
+
+<article class:list={['content-card', 'index-card', kind, { 'wide-card': wide }, className]}>
+  <div
+    class:list={['card-aside', { 'card-aside--empty': !image && !aside }]}
+    aria-hidden={!image && !aside ? 'true' : undefined}
+  >
+    {image ? (
+      <img
+        src={image}
+        alt={imageAlt}
+        width={imageWidth}
+        height={imageHeight}
+        loading="lazy"
+        decoding="async"
+      />
+    ) : aside ? (
+      <span class={asideKind === 'period' ? 'period' : 'card-year'}>{aside}</span>
+    ) : null}
+  </div>
+  <div class="card-body">
+    <Heading>
+      <a href={href} class={linkClass}>
+        {title}
+        <Icon size={16} />
+      </a>
+    </Heading>
+    {date && dateLabel && <time datetime={date}>{dateLabel}</time>}
+    <p>{summary}</p>
+    {detail && <p class="card-detail">{detail}</p>}
+    {tags.length > 0 && (
+      <ul class="tags" aria-label={tagsLabel}>
+        {tags.map((tag) => (
+          <li>{tag}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+</article>

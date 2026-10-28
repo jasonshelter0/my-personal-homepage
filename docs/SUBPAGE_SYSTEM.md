@@ -29,6 +29,12 @@ footer, or theme system. Extend shared primitives if a capability is genuinely r
   visible. Cursor glow is inherited from the shared layout and is not reimplemented per page.
 - Use existing border radii, line colors, button styles, and spacing. A page-specific accent motif is
   acceptable inside its content panel, not as a replacement for the global shell.
+- Every projects, posts, pages, or learning overview uses the shared `IndexCard.astro` primitive
+  (normally through `Card.astro` for managed entries). Do not add a route-specific bordered promo
+  box. At rest, index cards have no visible container border; their quiet hover/focus layer is the
+  common interaction. Covers use the same landscape crop and must have localized alt text. A cover
+  is strongly recommended for projects and optional for writing/learning; when absent, show honest
+  metadata rather than a decorative placeholder.
 
 ## 3. Personal profile and immersive reading
 
