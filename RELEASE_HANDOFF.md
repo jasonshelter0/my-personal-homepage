@@ -1,5 +1,33 @@
 # Folio Studio 生产发布交接
 
+## Latest deployment: UCIT usage website 1.4.1 (2026-10-28)
+
+Verified through real HTTPS at `2026-10-28T09:18:39.536694+00:00`. Earlier current-state sections below are historical.
+
+- Source `72acf1e7a5e8ea81608990c58f4047e4cf4d8b33` pushed to website main; package1.4.1. Three-language usage guide under `/projects/ucit-home/`, Projects entry, default-locale alias, shared immersive reader, search and copyable examples. Plugin remains0.3.0; its docs/release pipeline source is `71c780ce5fa2f0cd7ad3a5b20864c75b8ad48dcc` in `jasonshelter0/obsidian-ucit-home`.
+- Image `sha256:033feb093ab264deff812ee8f6b373949e7cacc9fdae4b18b366281e6f3da9b5`; runtime/current → `/www/dk_project/folio-studio/releases/ucit-20261028-72acf1e`; published content `mvrwehnz-b3aa6f7e`, rebuilt only from published `mvrquvmh-0ff67237`. Authenticated HTTPS preview inspected before the normal publisher published that exact artifact.
+- Persistent `/www/dk_project/folio-studio/shared/data`; private draft19/SHA256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged. No SQL migration, dependency change or environment-name change. Same loopback18080, UID10001, read-only root; healthy, restarts0, noOOM.
+- Consistent stopped-app backup `/www/backup/site/folio-studio/20261028T091336Z-ucit-guide/data.tar.gz`, 78410629 bytes, SHA256 `a31881d0546ea6d5d7182c765aadea4bab86986d22b09c783afa4198e871461e`; directory0700/archive0600. Full archive readability verified; no restore drill. Previous image `sha256:08ce601387caade8c82124146f5d26630d4efbff15e7687a3bd9274cf382cfab`, runtime `/www/dk_project/folio-studio/releases/media-20261028-e600e41`, content and backups retained.
+- Runtime archive121,668,109 bytes, SHA256 `b112d7f7b6265f04196516179e578181d9e250cd67b05a4e0b0261fd7d22dd90`, upload matched. Built with verified official Node24.21.0 base `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397`; final base-layer prefix matched. Local archive retained under website `.folio/deployments/ucit-20261028-72acf1e/`.
+- Validation: typecheck, production build,82 unit/API tests,5 focused browser scenarios (3 existing reader +2 UCIT). Plugin29 tests passed,1 optional vault fixture skipped. Real HTTPS preview and public checks: all3locales, Projects navigation, search, language continuity,320px/wide layouts, reader, copy, alias, canonical,version fingerprint,ICP and existing Attention reader; browser/resource errors0. Real password login and secure cookie flags verified; sessions revoked through logout. Health/admin200, anonymous snapshot/preview401, database404; current release deletion protected.
+- Held the real deployment lock through backup, cutover, preview, publish and verification; released afterward. No Nginx,DNS,certificate,WordPress,RDS/MySQL,port or unrelated service changes. Only this release’s temporary upload and deployment script removed; no historical cleanup.
+- Future docs: plugin `docs/usage.json` → `npm run docs:sync -- /path/to/personal-website` → tested/previewed website deployment → plugin `npm run release:publish`. Publication checks the live guide version and SHA256. This automates synchronization and guards release ordering; it does not install an unattended production deployer. GitHub workflow examples remain inactive. Existing0.3.0 release assets were not replaced.
+
+### Rollback this release
+
+Coordinate one writer and hold `/www/dk_project/folio-studio/config/deployment.lock`. Restore content first, then application; never overwrite current drafts or extract a database backup over live data.
+
+```sh
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvrquvmh-0ff67237')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261028T091336Z-ucit-guide/rollback-application.sh'
+```
+
+The restricted application rollback script restores saved `image.env`, the previous runtime link and its exact image through Compose. Verify loopback/HTTPS health, admin/security boundaries and draft fingerprint again. Health endpoint: `GET /healthz`. Runtime bindings remain `FOLIO_DATA_DIR`, `PUBLIC_ORIGIN`, `PREVIEW_BASE_PATH`, `PORT`, `HOST`, `COOKIE_SECURE`, and existing secret environment bindings; no credentials are recorded here.
+
+
 ## 媒体组织与统一子页面规范 1.4.0（2026-10-28，当前部署）
 
 已于 `2026-10-28T06:56:49.902Z` 发布，并通过真实 HTTPS 私有预览与公网复核。以下状态取代后面的历史部署记录。
