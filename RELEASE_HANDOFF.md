@@ -1,5 +1,35 @@
 # Folio Studio 生产发布交接
 
+## 媒体组织与统一子页面规范 1.4.0（2026-10-28，当前部署）
+
+已于 `2026-10-28T06:56:49.902Z` 发布，并通过真实 HTTPS 私有预览与公网复核。以下状态取代后面的历史部署记录。
+
+- 项目绝对路径：`/home/jasonshelter/Projects/personal-website`；运行源码提交 `e600e41c746f496451cf48cb0375ed40a794bb3f`，已推送 GitHub main；应用版本 `1.4.0`。构建命令为 `npm run typecheck`、`npm test`、`npm run build`、`npm run test:e2e`；本地产物为 `apps/admin/dist/` 与 `apps/site/dist/`。
+- 后台媒体库新增可选集合、最多20个标签、文件名/集合/标签/三语替代文字与题注全文搜索、引用状态筛选及每页24项分页；正文插图选择器复用搜索、集合与分页。旧媒体缺少新字段时归为“未分类”，原ID、路径、文件、引用和历史冻结版本不变；新上传资源才记录`uploadedAt`。没有SQL迁移或数据改写。
+- “预览与发布”继续为每个版本提供删除操作：未发布预览、失败版本及非当前历史发布版本可删；当前线上版本和构建中版本禁用。删除只移除选定冻结版本，不移除草稿或媒体库原文件。真实浏览器验证当前版本不可删、上一版本可删，未实际删除生产历史。
+- 新建 `AGENTS.md` 与 `docs/SUBPAGE_SYSTEM.md`，统一子页面的视觉、路由、三语、搜索、预览、可访问性与测试规范；学习/长文页面复用现有沉浸阅读器，左侧个人资料可滑出隐藏，同时保留语言、搜索、返回和全屏控制。`docs/MEDIA_LIBRARY.md`记录媒体兼容与使用方式。
+- 当前镜像 `sha256:08ce601387caade8c82124146f5d26630d4efbff15e7687a3bd9274cf382cfab`；runtime/current → `/www/dk_project/folio-studio/releases/media-20261028-e600e41`；当前公开内容 `mvrquvmh-0ff67237`，仅从已发布 `mvpfsfeh-bff9adee` 重建并先鉴权预览后发布。运行方式仍为 Compose 项目`folio-studio`/服务`studio`、UID10001、只读根目录、仅监听`127.0.0.1:18080`。
+- 持久数据仍为 `/www/dk_project/folio-studio/shared/data`（SQLite + 媒体 + 冻结版本）。私人草稿始终为revision19，SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92`，发布前后不变。无新增依赖、SQL迁移或环境变量；现有名称仍为`ADMIN_PASSWORD`、`HOST`、`PORT`、`SERVE_PUBLIC`、`COOKIE_SECURE`、`PUBLIC_ORIGIN`、`PRODUCTION_URL`、`PREVIEW_BASE_PATH`、`FOLIO_DATA_DIR`、`FOLIO_CACHE_DIR`、`ASTRO_TELEMETRY_DISABLED`，以及可选翻译配置，秘密值不记录。
+- 停应用一致性备份 `/www/backup/site/folio-studio/20261028T063815Z-media-library/data.tar.gz`，73,233,091字节，SHA-256 `df33cdd6b28fc1a501a604c3a55d072be12e910b510ddd5e775f8b93ad4b945b`；目录0700、归档0600，完整可读性已验证，未做恢复演练。旧镜像、runtime、内容和备份均保留。
+- 运行包 `.folio/deployments/media-20261028-e600e41/runtime.tar.gz`，120,020,912字节，SHA-256 `52e2c1441a2a1326b548ae946044f2757d455356ca9943eae79153ce894832bc`；上传校验一致。使用已验证官方Node24.21.0基础镜像 `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397` 离线构建，最终镜像基础层前缀一致。
+- 验证：typecheck、正式构建、81项单元/API测试和47项Chromium浏览器测试全部通过。真实HTTPS鉴权预览→发布→匿名公网检查覆盖后台媒体索引、版本删除状态、中英法主页、学习页、沉浸阅读、搜索、320px布局、备案与资源；浏览器/资源错误0。实际密码登录、Secure+HttpOnly+SameSite Cookie、预览和退出均200；health/admin200，匿名snapshot/preview401，数据库路径404。容器healthy、restarts0、无OOM；健康检查为`GET /healthz`。
+- 全程独占`config/deployment.lock`；未改Nginx、DNS、证书、WordPress、MySQL/RDS、端口或其他服务，未清理历史镜像、版本、数据或备份。仅删除本次`/tmp`临时上传包和部署脚本。
+
+### 回滚1.4.0
+
+协调唯一生产写入者并持有`/www/dk_project/folio-studio/config/deployment.lock`。上一镜像 `sha256:c0280b4e2aed1443b8b261dc9dfd60f58659f8f727471b222063a7c1df7f2069`、runtime `/www/dk_project/folio-studio/releases/attention-20261026-757ccf3` 和内容 `mvpfsfeh-bff9adee` 均保留。先恢复内容，再恢复应用；不要覆盖持久数据或私人草稿：
+
+```bash
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module -' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvpfsfeh-bff9adee')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261028T063815Z-media-library/rollback-application.sh'
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'curl --fail --silent http://127.0.0.1:18080/healthz'
+```
+
+应用回滚脚本恢复旧`image.env`和runtime链接，并用旧不可变镜像重新创建Compose容器；不会恢复或覆盖数据库。随后重新验证真实HTTPS、后台与权限边界。
+
 ## Attention Detective and the 19-challenge course (2026-10-27, current deployment)
 
 Published and verified through real HTTPS at `2026-10-26T16:12:24.057Z`. Earlier deployment records below are historical.
