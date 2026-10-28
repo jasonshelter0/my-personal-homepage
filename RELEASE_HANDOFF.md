@@ -1,5 +1,32 @@
 # Folio Studio 生产发布交接
 
+## Latest deployment: unified index cards and UCIT cover 1.4.2 (2026-10-28)
+
+Verified through authenticated preview and public HTTPS at `2026-10-28T10:19:31Z`. Earlier current-state sections below are historical.
+
+- Source `c0886d88df13c9a16e0a145d8d186e0d8824dfcb` was pushed to GitHub `main`; package 1.4.2. `IndexCard.astro` is now the shared projects/posts/pages/learning overview primitive. UCIT, Atlas and Constellation have the same borderless card rhythm; UCIT has a localized, preview-safe navy/mint SVG cover. Learning catalog entries use the same primitive. `docs/SUBPAGE_SYSTEM.md` requires future agents to follow this contract.
+- Runtime image `sha256:66e8df5941e32f5a547cf46d560ef74137ea056f33044b517a6924fe3849617f`; `current` → `/www/dk_project/folio-studio/releases/cards-20261028-c0886d8-r2`; published content `mvryl9wb-6e66f98d`, rebuilt only from previously published `mvrwehnz-b3aa6f7e`. The exact authenticated preview was reviewed before normal publication.
+- Runtime archive `.folio/deployments/cards-20261028-c0886d8-r2/runtime.tar.gz`: 120,037,507 bytes, SHA-256 `71338999a6d5849ba38a85eca4df874c05664aa35d72ebabb30891ab088dab6e`; upload matched. It excludes secrets, databases, sessions, Git metadata, private drafts and the user's untracked `LEARN_PAGE_DEPLOYMENT_TASK.md`. Official Node 24.21.0 base image/layer prefix was verified.
+- Persistent data remains `/www/dk_project/folio-studio/shared/data`; SQLite, media and frozen release history remain in place. Private draft revision 19/SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` is unchanged. No SQL migration, dependency change or environment-name change. Runtime bindings remain `FOLIO_DATA_DIR`, `PUBLIC_ORIGIN`, `PREVIEW_BASE_PATH`, `PORT`, `HOST`, `COOKIE_SECURE`, and existing secret bindings; no values are recorded here.
+- Consistent stopped-app backup `/www/backup/site/folio-studio/20261028T101533Z-unified-cards/data.tar.gz`: 21,136,391 bytes, SHA-256 `8cdae252982cec5a1d3397c7da2aefa6c8c78e60d4b4adcc5c24e2f3c431273f`; directory 0700/archive 0600. Full archive readability was verified; no restoration drill. Previous image `sha256:033feb093ab264deff812ee8f6b373949e7cacc9fdae4b18b366281e6f3da9b5`, runtime `/www/dk_project/folio-studio/releases/ucit-20261028-72acf1e`, content and backups are retained.
+- Checks: `npm run typecheck`, 82 unit/API tests, production build, four local browser scenarios plus final two focused reruns. Real HTTPS preview and public verification covered three locales, three project cards, five learning cards, localized alt text, preview-prefixed image/search links, borderless rest state, 320px/wide layouts, ICP footer, login/cookie/logout and anonymous boundaries; browser/resource errors 0. Health/admin 200, anonymous snapshot/preview 401, database path 404. Container is healthy, restarts 0, OOM false, UID/GID 10001, read-only root.
+- The first deployment attempt stopped before preview/publication because its archive omitted `deploy/compose.production.yml`. The guarded script automatically restored the exact 1.4.1 application; content and draft fingerprints stayed unchanged. Its isolated runtime/image and readable backup `/www/backup/site/folio-studio/20261028T101310Z-unified-cards/data.tar.gz` are retained as evidence. The corrected immutable `r2` archive was independently hashed before the successful attempt.
+- The real deployment lock covered backup, cutover, preview, publication and final checks, and is released. Only this release's temporary uploads were removed. Nginx, DNS, certificates, WordPress/RDS/MySQL, ports, firewall and unrelated services were not changed.
+
+### Rollback this release
+
+Coordinate one writer and hold `/www/dk_project/folio-studio/config/deployment.lock`. Restore content first, then the application; do not extract the data backup over live data and do not overwrite the private draft.
+
+```sh
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvrwehnz-b3aa6f7e')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261028T101533Z-unified-cards/rollback-application.sh'
+```
+
+Then verify loopback/public `/healthz`, all three project and learning indexes, admin/security boundaries, current content ID, and draft fingerprint.
+
 ## Latest deployment: UCIT usage website 1.4.1 (2026-10-28)
 
 Verified through real HTTPS at `2026-10-28T09:18:39.536694+00:00`. Earlier current-state sections below are historical.
