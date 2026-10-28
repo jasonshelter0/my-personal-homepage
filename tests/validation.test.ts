@@ -25,6 +25,25 @@ test('glow radius accepts bounded integers and rejects unsafe or invalid values'
     assert.throws(() => parseSnapshot(s));
   }
 });
+test('legacy media remain valid while optional organization metadata is bounded', () => {
+  const legacy = structuredClone(seed);
+  for (const media of legacy.media) {
+    Reflect.deleteProperty(media, 'collection');
+    Reflect.deleteProperty(media, 'tags');
+    Reflect.deleteProperty(media, 'uploadedAt');
+  }
+  assert.equal(parseSnapshot(legacy).media[0].path, legacy.media[0].path);
+
+  const organized = structuredClone(seed);
+  organized.media[0].collection = 'Project artwork';
+  organized.media[0].tags = ['research', 'homepage'];
+  organized.media[0].uploadedAt = '2026-10-28T08:00:00.000Z';
+  assert.deepEqual(parseSnapshot(organized).media[0].tags, ['research', 'homepage']);
+
+  const invalid = structuredClone(organized);
+  invalid.media[0].tags = Array.from({ length: 21 }, (_, i) => `tag-${i}`);
+  assert.throws(() => parseSnapshot(invalid));
+});
 test('complete zh-CN/en/fr seed is publishable', () =>
   assert.deepEqual(validateSnapshot(seed), []));
 test('source edits invalidate other language versions', () => {

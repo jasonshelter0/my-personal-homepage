@@ -165,6 +165,9 @@ export const snapshotSchema = z
             height: z.number().int().positive().max(10000),
             alt: tri(z.string().max(1000)),
             caption: tri(z.string().max(5000)),
+            collection: z.string().trim().max(80).optional(),
+            tags: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
+            uploadedAt: z.iso.datetime().optional(),
           })
           .strict(),
       )

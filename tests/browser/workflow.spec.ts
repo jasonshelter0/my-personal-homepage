@@ -199,6 +199,8 @@ test('author and upload in three languages, publish a new article, restore a pre
     .locator('.media-item')
     .filter({ has: page.getByRole('heading', { name: upload.media.filename, exact: true }) });
   await expect(card).toBeVisible();
+  await card.getByLabel('Collection / category', { exact: true }).fill('Editorial artwork');
+  await card.getByLabel('Media tags (comma separated)', { exact: true }).fill('workflow, mint');
   for (const label of ['简体中文', 'English', 'Français']) {
     await page.locator('.language-tabs').getByRole('button', { name: label, exact: true }).click();
     await card
@@ -208,6 +210,15 @@ test('author and upload in three languages, publish a new article, restore a pre
   }
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await expect(page.getByText('All changes saved', { exact: true })).toBeVisible();
+  await page.getByLabel('Search media', { exact: true }).fill('workflow');
+  await expect(card).toBeVisible();
+  const collectionFilter = page.locator('select:has(option[value="uncategorized"])');
+  await collectionFilter.selectOption('Editorial artwork');
+  await expect(card).toBeVisible();
+  await page.getByLabel('Search media', { exact: true }).fill('does-not-exist');
+  await expect(page.getByText('No media match the current search and filters.')).toBeVisible();
+  await page.getByLabel('Search media', { exact: true }).fill('');
+  await collectionFilter.selectOption('all');
   await nav(/Content/).click();
   await page.getByRole('button', { name: /A browser authored story/ }).click();
   await page

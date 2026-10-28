@@ -185,6 +185,9 @@ test('raster uploads, source-file sanitization, metadata editing and reference-s
   const { snapshot: draft, media } = await upload.json();
   assert.equal(media.width, 16);
   assert.match(media.filename, /\.webp$/);
+  assert.equal(media.collection, '');
+  assert.deepEqual(media.tags, []);
+  assert.match(media.uploadedAt, /^\d{4}-\d{2}-\d{2}T/);
   assert.equal((await fetch(`${base}${media.path}`)).status, 401);
   assert.equal((await fetch(`${base}${media.path}`, { headers: { Cookie: cookie } })).status, 200);
   draft.entries[0].translations.en.body += `\n![test](${media.path})`;

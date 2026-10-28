@@ -19,6 +19,23 @@ import { CursorGlow } from './CursorGlow';
 import { editorMediaUrl } from './media-url';
 import { SocialIconPicker } from './SocialIconPicker';
 import { SectionManager } from './SectionManager';
+import { referencedMediaIds } from '../../../shared/media-references';
+
+const MEDIA_PAGE_SIZE = 24;
+type MediaUsageFilter = 'all' | 'used' | 'unused';
+
+function mediaSearchText(media: Snapshot['media'][number]) {
+  return [
+    media.filename,
+    media.collection,
+    ...(media.tags ?? []),
+    ...Object.values(media.alt),
+    ...Object.values(media.caption),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLocaleLowerCase();
+}
 
 const blankTranslation = () => ({
   title: '',
@@ -232,7 +249,14 @@ function App() {
     [filter, setFilter] = useState<'all' | EntryType>('all'),
     [query, setQuery] = useState(''),
     [preview, setPreview] = useState(false),
-    [imagePicker, setImagePicker] = useState(false);
+    [imagePicker, setImagePicker] = useState(false),
+    [mediaQuery, setMediaQuery] = useState(''),
+    [mediaCollection, setMediaCollection] = useState('all'),
+    [mediaUsage, setMediaUsage] = useState<MediaUsageFilter>('all'),
+    [mediaPage, setMediaPage] = useState(1),
+    [pickerQuery, setPickerQuery] = useState(''),
+    [pickerCollection, setPickerCollection] = useState('all'),
+    [pickerPage, setPickerPage] = useState(1);
   const [issues, setIssues] = useState<ValidationIssue[]>([]),
     [releaseData, setReleaseData] = useState<{ releases: Release[]; currentId: string | null }>({
       releases: [],
@@ -691,6 +715,47 @@ function App() {
         <button onClick={() => void load()}>{t('retry')}</button>
       </main>
     );
+  const referencedMedia = referencedMediaIds(snap, false);
+  const mediaCollections = [
+    ...new Set(snap.media.map((m) => m.collection?.trim()).filter(Boolean)),
+  ].sort((a, b) => a!.localeCompare(b!)) as string[];
+  const filterMedia = (search: string, collection: string, usage: MediaUsageFilter = 'all') => {
+    const normalized = search.trim().toLocaleLowerCase();
+    return [...snap.media]
+      .filter((m) => !normalized || mediaSearchText(m).includes(normalized))
+      .filter((m) =>
+        collection === 'all'
+          ? true
+          : collection === 'uncategorized'
+            ? !m.collection?.trim()
+            : m.collection === collection,
+      )
+      .filter((m) =>
+        usage === 'all'
+          ? true
+          : usage === 'used'
+            ? referencedMedia.has(m.id)
+            : !referencedMedia.has(m.id),
+      )
+      .sort((a, b) => {
+        const byDate = (b.uploadedAt ?? '').localeCompare(a.uploadedAt ?? '');
+        return byDate || a.filename.localeCompare(b.filename);
+      });
+  };
+  const filteredMedia = filterMedia(mediaQuery, mediaCollection, mediaUsage);
+  const mediaPages = Math.max(1, Math.ceil(filteredMedia.length / MEDIA_PAGE_SIZE));
+  const currentMediaPage = Math.min(mediaPage, mediaPages);
+  const visibleMedia = filteredMedia.slice(
+    (currentMediaPage - 1) * MEDIA_PAGE_SIZE,
+    currentMediaPage * MEDIA_PAGE_SIZE,
+  );
+  const filteredPickerMedia = filterMedia(pickerQuery, pickerCollection);
+  const pickerPages = Math.max(1, Math.ceil(filteredPickerMedia.length / MEDIA_PAGE_SIZE));
+  const currentPickerPage = Math.min(pickerPage, pickerPages);
+  const visiblePickerMedia = filteredPickerMedia.slice(
+    (currentPickerPage - 1) * MEDIA_PAGE_SIZE,
+    currentPickerPage * MEDIA_PAGE_SIZE,
+  );
   const navs = ['dashboard', 'content', 'profile', 'appearance', 'media', 'releases'] as const;
   return (
     <div className="studio" style={{ '--accent': snap.settings.accent } as React.CSSProperties}>
@@ -1529,8 +1594,54 @@ function App() {
                 {(metadataSourceLocale ?? snap.settings.sourceLocale) === locale && (
                   <p className="hint">{t('chooseTranslationTarget')}</p>
                 )}
+                <section className="media-organizer" aria-label={t('mediaOrganizer')}>
+                  <Field label={t('mediaSearch')}>
+                    <input
+                      type="search"
+                      value={mediaQuery}
+                      placeholder={t('mediaSearchPlaceholder')}
+                      onChange={(e) => {
+                        setMediaQuery(e.target.value);
+                        setMediaPage(1);
+                      }}
+                    />
+                  </Field>
+                  <Field label={t('mediaCollection')}>
+                    <select
+                      value={mediaCollection}
+                      onChange={(e) => {
+                        setMediaCollection(e.target.value);
+                        setMediaPage(1);
+                      }}
+                    >
+                      <option value="all">{t('allCollections')}</option>
+                      <option value="uncategorized">{t('uncategorized')}</option>
+                      {mediaCollections.map((collection) => (
+                        <option key={collection} value={collection}>
+                          {collection}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label={t('mediaUsage')}>
+                    <select
+                      value={mediaUsage}
+                      onChange={(e) => {
+                        setMediaUsage(e.target.value as MediaUsageFilter);
+                        setMediaPage(1);
+                      }}
+                    >
+                      <option value="all">{t('allMedia')}</option>
+                      <option value="used">{t('usedMedia')}</option>
+                      <option value="unused">{t('unusedMedia')}</option>
+                    </select>
+                  </Field>
+                  <p className="media-result-count">
+                    {filteredMedia.length} {t('mediaResults')}
+                  </p>
+                </section>
                 <div className="media-grid">
-                  {snap.media.map((m) => {
+                  {visibleMedia.map((m) => {
                     const refs = snap.entries.filter(
                       (e) =>
                         e.coverId === m.id ||
@@ -1546,6 +1657,35 @@ function App() {
                           <small>
                             {m.width} × {m.height}
                           </small>
+                          <div className="media-taxonomy">
+                            <Field label={t('mediaCollection')}>
+                              <input
+                                list="media-collections"
+                                value={m.collection ?? ''}
+                                placeholder={t('uncategorized')}
+                                onChange={(e) =>
+                                  update((s) => {
+                                    s.media.find((x) => x.id === m.id)!.collection = e.target.value;
+                                  })
+                                }
+                              />
+                            </Field>
+                            <Field label={t('mediaTags')}>
+                              <input
+                                value={(m.tags ?? []).join(', ')}
+                                placeholder={t('mediaTagsPlaceholder')}
+                                onChange={(e) =>
+                                  update((s) => {
+                                    s.media.find((x) => x.id === m.id)!.tags = e.target.value
+                                      .split(',')
+                                      .map((tag) => tag.trim())
+                                      .filter(Boolean)
+                                      .slice(0, 20);
+                                  })
+                                }
+                              />
+                            </Field>
+                          </div>
                           <Field label={`${t('alt')} · ${localeLabels[locale]}`}>
                             <input
                               value={m.alt[locale]}
@@ -1614,7 +1754,37 @@ function App() {
                     );
                   })}
                 </div>
-                {snap.media.length === 0 && <p className="empty">{t('noMedia')}</p>}
+                <datalist id="media-collections">
+                  {mediaCollections.map((collection) => (
+                    <option key={collection} value={collection} />
+                  ))}
+                </datalist>
+                {filteredMedia.length > MEDIA_PAGE_SIZE && (
+                  <div className="media-pagination" aria-label={t('pagination')}>
+                    <button
+                      type="button"
+                      disabled={currentMediaPage === 1}
+                      onClick={() => setMediaPage((page) => Math.max(1, page - 1))}
+                    >
+                      ← {t('previous')}
+                    </button>
+                    <span>
+                      {currentMediaPage} / {mediaPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={currentMediaPage === mediaPages}
+                      onClick={() => setMediaPage((page) => Math.min(mediaPages, page + 1))}
+                    >
+                      {t('next')} →
+                    </button>
+                  </div>
+                )}
+                {snap.media.length === 0 ? (
+                  <p className="empty">{t('noMedia')}</p>
+                ) : (
+                  filteredMedia.length === 0 && <p className="empty">{t('noMediaMatch')}</p>
+                )}
               </>
             )}
             {tab === 'releases' && (
@@ -1810,8 +1980,38 @@ function App() {
                 ×
               </button>
             </div>
+            <div className="image-picker-filters">
+              <Field label={t('mediaSearch')}>
+                <input
+                  type="search"
+                  value={pickerQuery}
+                  placeholder={t('mediaSearchPlaceholder')}
+                  onChange={(e) => {
+                    setPickerQuery(e.target.value);
+                    setPickerPage(1);
+                  }}
+                />
+              </Field>
+              <Field label={t('mediaCollection')}>
+                <select
+                  value={pickerCollection}
+                  onChange={(e) => {
+                    setPickerCollection(e.target.value);
+                    setPickerPage(1);
+                  }}
+                >
+                  <option value="all">{t('allCollections')}</option>
+                  <option value="uncategorized">{t('uncategorized')}</option>
+                  {mediaCollections.map((collection) => (
+                    <option key={collection} value={collection}>
+                      {collection}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
             <div className="image-picker">
-              {snap.media.map((m) => (
+              {visiblePickerMedia.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => {
@@ -1823,10 +2023,36 @@ function App() {
                 >
                   <img src={editorMediaUrl(m.path)} alt={m.alt[locale]} />
                   <span>{m.filename}</span>
+                  <small>{m.collection?.trim() || t('uncategorized')}</small>
                 </button>
               ))}
             </div>
-            {!snap.media.length && <p>{t('noMedia')}</p>}
+            {filteredPickerMedia.length > MEDIA_PAGE_SIZE && (
+              <div className="media-pagination" aria-label={t('pagination')}>
+                <button
+                  type="button"
+                  disabled={currentPickerPage === 1}
+                  onClick={() => setPickerPage((page) => Math.max(1, page - 1))}
+                >
+                  ← {t('previous')}
+                </button>
+                <span>
+                  {currentPickerPage} / {pickerPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={currentPickerPage === pickerPages}
+                  onClick={() => setPickerPage((page) => Math.min(pickerPages, page + 1))}
+                >
+                  {t('next')} →
+                </button>
+              </div>
+            )}
+            {!snap.media.length ? (
+              <p>{t('noMedia')}</p>
+            ) : (
+              filteredPickerMedia.length === 0 && <p>{t('noMediaMatch')}</p>
+            )}
           </section>
         </div>
       )}

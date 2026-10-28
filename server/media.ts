@@ -43,6 +43,9 @@ export async function uploadMedia(file: Express.Multer.File | undefined) {
       height,
       alt: { 'zh-CN': '', en: '', fr: '' },
       caption: { 'zh-CN': '', en: '', fr: '' },
+      collection: '',
+      tags: [],
+      uploadedAt: new Date().toISOString(),
     };
   await mkdir(join(DATA_DIR, 'media'), { recursive: true });
   const path = join(DATA_DIR, 'media', filename);

@@ -47,6 +47,12 @@ export interface Media {
   height: number;
   alt: Record<Locale, string>;
   caption: Record<Locale, string>;
+  /** Optional, owner-defined grouping. Missing values keep legacy media uncategorized. */
+  collection?: string;
+  /** Searchable, language-neutral organizational labels. */
+  tags?: string[];
+  /** Set for new uploads; legacy assets intentionally remain without a timestamp. */
+  uploadedAt?: string;
 }
 export interface HomeSection {
   id: string;

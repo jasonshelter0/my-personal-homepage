@@ -2,7 +2,7 @@
 
 一个可在本地运行的个人网站与单人编辑后台。深色、极简、柔和鼠标光晕，完整支持简体中文、English 和 Français。示例项目、经历和个人介绍均为演示内容，不代表真实履历。
 
-生产部署使用同域网关：正式站 `https://www.jasonshelter.com/`、后台 `/admin/`、学习入口 `/learn/`。部署记录、SQLite 数据路径、健康检查及回滚见 [RELEASE_HANDOFF.md](RELEASE_HANDOFF.md)；后续扩展学习页面请先读 [LEARN_CODEX_HANDOFF.md](docs/LEARN_CODEX_HANDOFF.md)。
+生产部署使用同域网关：正式站 `https://www.jasonshelter.com/`、后台 `/admin/`、学习入口 `/learn/`。部署记录、SQLite 数据路径、健康检查及回滚见 [RELEASE_HANDOFF.md](RELEASE_HANDOFF.md)；任何新子页面先读 [统一子页面规范](docs/SUBPAGE_SYSTEM.md)，扩展学习页面另读 [LEARN_CODEX_HANDOFF.md](docs/LEARN_CODEX_HANDOFF.md)。
 
 ## 界面预览
 
@@ -123,5 +123,7 @@ npm run test:e2e
 ## 自定义分区与版本整理
 
 1.3.0支持在「外观与导航」新建、命名、排序、隐藏和删除首页分区，并配置三语正文及内容卡片；媒体替代文字、题注和分区文字可使用现有免费翻译服务。预览与发布列表可删除非当前、非构建中的历史版本。公开页面移除演示品牌与底部口号，设计参考集中在独立的三语「设计致谢」页面。操作、数据兼容性及回滚注意事项见 [分区与版本管理](docs/SECTIONS_AND_RELEASES.md)。
+
+媒体库支持集合、标签、三语全文搜索、引用状态筛选与分页；插图选择器使用相同索引。旧资源没有新增元数据时自动归入「未分类」，ID、文件路径和既有引用不会改变。详见 [媒体组织](docs/MEDIA_LIBRARY.md)。
 
 将新文章提炼为与默认项目图、文章图一致的抽象宽幅配图，可使用 [文章主旨配图提示词](docs/PASSAGE_IMAGE_PROMPT.md)。
