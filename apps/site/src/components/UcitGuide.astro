@@ -1,0 +1,53 @@
+---
+import { ucit } from '../lib/ucit';
+import { markdown, href, copy, type Locale } from '../lib/data';
+import '../styles/ucit.css';
+const { locale } = Astro.props as { locale: Locale };
+const c = ucit.locales[locale];
+---
+<article class="ucit-guide" data-ucit-version={ucit.pluginVersion}>
+  <a class="back-link" href={href(locale, 'projects')}>← {copy[locale].projects}</a>
+  <header class="ucit-hero">
+    <p class="eyebrow">{c.labels.eyebrow}</p>
+    <h1 data-pagefind-meta="title">{c.title}</h1>
+    <p class="detail-summary">{c.summary}</p>
+    <p class="ucit-version">{c.labels.version} <strong>{ucit.pluginVersion}</strong><span aria-hidden="true"> / </span>{c.labels.updated} <time datetime={ucit.updated}>{ucit.updated}</time></p>
+    <div class="ucit-actions">
+      <a class="text-link" href={`${ucit.repository}/releases/tag/${ucit.pluginVersion}`}>{c.labels.download} ↗</a>
+      <a class="text-link" href={ucit.repository}>{c.labels.source} ↗</a>
+    </div>
+    <p class="ucit-note">{c.labels.note}</p>
+  </header>
+  <section class="ucit-loop" aria-labelledby="ucit-loop-title">
+    <h2 id="ucit-loop-title">{c.labels.loop}</h2>
+    <p>{c.labels.stateHint}</p>
+    <div class="ucit-states">
+      {c.states.map(s => <details class="ucit-state"><summary><span class="ucit-code" aria-hidden="true">{s.code}</span><span>{s.name}</span></summary><p>{s.body}</p></details>)}
+    </div>
+  </section>
+  <nav class="ucit-toc" aria-label={c.labels.contents} data-pagefind-ignore>
+    <p class="eyebrow">{c.labels.contents}</p>
+    <ol>{c.sections.map(s => <li><a href={`#${s.id}`}>{s.title}</a></li>)}</ol>
+  </nav>
+  <div data-ucit-examples data-copy={c.labels.copy} data-copied={c.labels.copied} data-copy-error={c.labels.copyError}>
+    {c.sections.map(s => <section class="ucit-section" id={s.id} aria-labelledby={`title-${s.id}`}>
+      <h2 id={`title-${s.id}`}>{s.title}</h2>
+      <div class="prose" set:html={markdown(s.body)} />
+    </section>)}
+    <p class="ucit-copy-status" data-ucit-copy-status role="status" aria-live="polite"></p>
+  </div>
+</article>
+<script>
+  const root = document.querySelector<HTMLElement>('[data-ucit-examples]');
+  if (root) for (const pre of root.querySelectorAll('pre')) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'ucit-copy';
+    button.textContent = root.dataset.copy!;
+    button.addEventListener('click', async () => {
+      const status = root.querySelector<HTMLElement>('[data-ucit-copy-status]')!;
+      try { await navigator.clipboard.writeText(pre.querySelector('code')?.textContent || ''); status.textContent = root.dataset.copied!; }
+      catch { status.textContent = root.dataset.copyError!; }
+    });
+    pre.before(button);
+  }
+</script>

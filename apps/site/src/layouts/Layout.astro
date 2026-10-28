@@ -27,6 +27,7 @@ interface Props {
   home?: boolean;
   cover?: string;
   category?: string;
+  readerParent?: 'learn' | 'projects';
 }
 const {
   locale,
@@ -36,6 +37,7 @@ const {
   home = false,
   cover,
   category = 'page',
+  readerParent,
 } = Astro.props;
 const t = copy[locale],
   settings = snapshot.settings,
@@ -55,7 +57,7 @@ const glowRadius =
     : CURSOR_GLOW_RADIUS.default;
 const avatar = media(settings.avatarId);
 const ProfileHeading = home ? 'h1' : 'span';
-const learningPage = path === 'learn' || path.startsWith('learn/');
+const learningPage = Boolean(readerParent) || path === 'learn' || path.startsWith('learn/');
 ---
 
 <!doctype html>
@@ -231,7 +233,7 @@ const learningPage = path === 'learn' || path.startsWith('learn/');
         data-pagefind-body
         data-pagefind-filter={`type:${category}`}
       >
-        {learningPage && <LearningReader locale={locale} path={path} />}
+        {learningPage && <LearningReader locale={locale} path={path} parent={readerParent || 'learn'} />}
         <slot />
       </main>
       <footer class="site-footer" data-pagefind-ignore>

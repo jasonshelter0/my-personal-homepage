@@ -4,7 +4,7 @@ const esc = (s: string) =>
   s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
 export function GET() {
   const urls = LOCALES.flatMap((locale) =>
-    ['', 'projects', 'posts', 'pages', 'resume', 'learn', 'site-notes', ...allLearningPaths]
+    ['', 'projects', 'posts', 'pages', 'resume', 'learn', 'site-notes', 'projects/ucit-home', ...allLearningPaths]
       .map((path) => publicHref(locale, path))
       .concat(entries.map((entry) => withoutBase(entryHref(locale, entry)))),
   );

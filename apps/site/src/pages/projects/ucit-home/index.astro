@@ -1,0 +1,19 @@
+---
+import { href, snapshot } from '../../../lib/data';
+import { ucitPath } from '../../../lib/ucit';
+const url = href(snapshot.settings.defaultLocale, ucitPath);
+---
+<!doctype html>
+<html lang={snapshot.settings.defaultLocale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0;url=${url}`} />
+    <title>UCIT Home · 使用指南 · Usage guide · Guide d’utilisation</title>
+  </head>
+  <body>
+    <a href={url}>UCIT Home · 使用指南 · Usage guide · Guide d’utilisation →</a>
+    <script define:vars={{ url }}>location.replace(url);</script>
+  </body>
+</html>

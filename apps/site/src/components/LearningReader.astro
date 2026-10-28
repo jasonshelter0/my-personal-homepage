@@ -1,11 +1,11 @@
 ---
 import { copy, href, LOCALES, type Locale } from '../lib/data';
 import '../styles/learning-reader.css';
-const { locale, path } = Astro.props as { locale: Locale; path: string };
+const { locale, path, parent = 'learn' } = Astro.props as { locale: Locale; path: string; parent?: 'learn' | 'projects' };
 const labels = {
-  'zh-CN': { enter: '沉浸阅读', exit: '退出沉浸', full: '全屏', leaveFull: '退出全屏', hint: '隐藏个人介绍，展开学习内容', unavailable: '浏览器未能开启全屏，你仍可继续沉浸阅读。', tools: '阅读工具' },
-  en: { enter: 'Immersive reading', exit: 'Exit immersive mode', full: 'Fullscreen', leaveFull: 'Exit fullscreen', hint: 'Hide the profile and expand the lesson', unavailable: 'Fullscreen is unavailable. You can continue in immersive reading mode.', tools: 'Reading tools' },
-  fr: { enter: 'Lecture immersive', exit: 'Quitter le mode immersif', full: 'Plein écran', leaveFull: 'Quitter le plein écran', hint: 'Masquer le profil et agrandir le cours', unavailable: 'Le plein écran est indisponible. Vous pouvez continuer en lecture immersive.', tools: 'Outils de lecture' },
+  'zh-CN': { enter: '沉浸阅读', exit: '退出沉浸', full: '全屏', leaveFull: '退出全屏', hint: '隐藏个人介绍，展开内容', unavailable: '浏览器未能开启全屏，你仍可继续沉浸阅读。', tools: '阅读工具' },
+  en: { enter: 'Immersive reading', exit: 'Exit immersive mode', full: 'Fullscreen', leaveFull: 'Exit fullscreen', hint: 'Hide the profile and expand the content', unavailable: 'Fullscreen is unavailable. You can continue in immersive reading mode.', tools: 'Reading tools' },
+  fr: { enter: 'Lecture immersive', exit: 'Quitter le mode immersif', full: 'Plein écran', leaveFull: 'Quitter le plein écran', hint: 'Masquer le profil et agrandir le contenu', unavailable: 'Le plein écran est indisponible. Vous pouvez continuer en lecture immersive.', tools: 'Outils de lecture' },
 }[locale];
 const t = copy[locale];
 ---
@@ -14,7 +14,7 @@ const t = copy[locale];
   data-leave-full={labels.leaveFull} data-unavailable={labels.unavailable}>
   <div class="reader-bar" role="group" aria-label={labels.tools}>
     <div class="reader-navigation">
-      <a href={href(locale, 'learn')} class="reader-hub" aria-label={t.learn}><span aria-hidden="true">←</span><span class="reader-hub-label">{t.learn}</span></a>
+      <a href={href(locale, parent)} class="reader-hub" aria-label={t[parent]}><span aria-hidden="true">←</span><span class="reader-hub-label">{t[parent]}</span></a>
       <nav class="reader-languages" aria-label={t.language}>
         {LOCALES.map((l) => <a href={href(l, path)} lang={l} hreflang={l} aria-current={l === locale ? 'page' : undefined}>{l === 'zh-CN' ? '中文' : l === 'en' ? 'EN' : 'FR'}</a>)}
       </nav>

@@ -35,7 +35,7 @@ footer, or theme system. Extend shared primitives if a capability is genuinely r
 The profile panel is the common desktop anchor. Normal index and short editorial pages keep it
 visible. Learning and long-form pages must enable the shared reader:
 
-1. Pass a `learn` path through `Layout.astro`; it mounts `LearningReader.astro`.
+1. Pass a `learn` path through `Layout.astro`, or set `readerParent="projects"` for a long-form project guide; it mounts the same `LearningReader.astro`.
 2. The **Immersive reading** action slides/hides the left personal panel and expands the content.
 3. Preserve the sticky reader toolbar with learning-hub return, language switcher, search, mode exit,
    and optional browser fullscreen.
@@ -46,8 +46,8 @@ visible. Learning and long-form pages must enable the shared reader:
 6. On mobile the profile is already compact; reader controls must fit at 320 px without horizontal
    overflow. On large monitors the prose column stays readable while diagrams can expand.
 
-If a future non-learning page genuinely needs the same behavior, generalize the shared reader
-component and storage key in one backward-compatible change. Do not copy its script or CSS.
+If a future non-learning page genuinely needs the same behavior, extend the shared reader
+component in one backward-compatible change. The established `folio:learning:immersive` key is shared across supported reading pages to preserve existing preferences. Do not copy its script or CSS.
 
 ## 4. Routing, links, and assets
 

@@ -1,0 +1,14 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import UcitGuide from '../../../components/UcitGuide.astro';
+import { LOCALES, localePath, type Locale } from '../../../lib/data';
+import { ucit, ucitPath } from '../../../lib/ucit';
+export function getStaticPaths() {
+  return LOCALES.map(locale => ({ params: { locale: localePath(locale) }, props: { locale } }));
+}
+const { locale } = Astro.props as { locale: Locale };
+const c = ucit.locales[locale];
+---
+<Layout locale={locale} title={c.title} description={c.summary} path={ucitPath} category="project" readerParent="projects">
+  <UcitGuide locale={locale} />
+</Layout>

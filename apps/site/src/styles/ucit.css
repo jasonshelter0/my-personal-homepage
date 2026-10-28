@@ -1,0 +1,29 @@
+.ucit-guide { max-width: 76rem; }
+.ucit-hero { padding: 1.5rem 0 2rem; }
+.ucit-hero h1 { max-width: 20ch; }
+.ucit-version, .ucit-note { font-size: .85rem; color: var(--muted, #94a3b8); }
+.ucit-version strong { color: var(--accent); margin-right: .35rem; }
+.ucit-actions { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin: 1.5rem 0; }
+.ucit-loop { border-block: 1px solid rgba(148,163,184,.2); padding-block: 1.5rem; }
+.ucit-loop h2 { margin-top: 0; font-size: 1.25rem; }
+.ucit-loop > p { color: var(--muted, #94a3b8); font-size: .9rem; }
+.ucit-states { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,9rem),1fr)); gap: .6rem; align-items: start; }
+.ucit-state { background: rgba(148,163,184,.045); border: 1px solid rgba(148,163,184,.2); border-radius: .5rem; padding: .8rem; }
+.ucit-state summary { cursor: pointer; font-size: .85rem; }
+.ucit-code { color: var(--accent); font-size: 1.35rem; font-weight: 700; margin-right: .5rem; }
+.ucit-state p { font-size: .88rem; line-height: 1.75; margin-bottom: 0; }
+.ucit-toc { margin: 2rem 0 3rem; }
+.ucit-toc ol { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,15rem),1fr)); gap: .7rem 1.5rem; }
+.ucit-toc a { font-size: .92rem; text-decoration: none; }
+.ucit-toc a:hover { color: var(--accent); }
+.ucit-section { scroll-margin-top: 7rem; margin-block: 3rem; max-width: 76ch; }
+.ucit-section h2 { font-size: 1.4rem; line-height: 1.5; }
+.ucit-section .prose { overflow-wrap: anywhere; }
+.ucit-section pre { max-width: 100%; overflow-x: auto; }
+.ucit-section table { display: block; width: 100%; max-width: 100%; overflow-x: auto; }
+.ucit-copy { border: 1px solid rgba(148,163,184,.3); border-radius: .4rem; padding: .35rem .7rem; color: var(--accent); background: transparent; cursor: pointer; font: inherit; font-size: .8rem; }
+.ucit-copy-status { font-size: .85rem; color: var(--accent); }
+.ucit-project-link { display: block; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(148,163,184,.25); border-radius: .6rem; text-decoration: none; }
+.ucit-project-link strong { color: var(--accent); }
+.ucit-project-link p { color: var(--muted, #94a3b8); margin-bottom: 0; }
+@media (max-width: 480px) { .ucit-states { grid-template-columns: 1fr; } .ucit-hero { padding-top: .5rem; } }
