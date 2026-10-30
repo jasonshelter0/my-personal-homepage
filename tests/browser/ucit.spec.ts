@@ -97,7 +97,7 @@ for (const mode of ['public', 'preview']) {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       ).toBeTruthy();
-      await expect(page.locator('.ucit-copy')).toHaveCount(2);
+      await expect(page.locator('.ucit-copy')).toHaveCount(3);
       await expect(page.getByText('京ICP备2024092234号-1', { exact: true })).toBeVisible();
     }
     await page.locator('[data-reader-toggle]').click();

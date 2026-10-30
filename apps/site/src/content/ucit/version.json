@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "pluginVersion": "0.3.0",
-  "docsSha256": "a71484eb5f0c66d17851e8cc2ea3aab6cafe43114d50afd91a0dc1d3b108efd7",
+  "pluginVersion": "0.4.0",
+  "docsSha256": "c38e17f712a59f9368625c5c5bb81c9388620bae1f370ce156fa22258ca99364",
   "repository": "https://github.com/jasonshelter0/obsidian-ucit-home",
-  "updated": "2026-10-28"
+  "updated": "2026-10-30"
 }
