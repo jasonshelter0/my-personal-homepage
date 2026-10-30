@@ -1,5 +1,32 @@
 # Folio Studio 生产发布交接
 
+## Latest deployment: UCIT 0.4.0 usage guide / website 1.4.3 (2026-10-30)
+
+Verified through real HTTPS at `2026-10-30T05:08:37.031736+00:00`; earlier current-state sections are historical.
+
+- Website source `93891f698267b8fdfd8693e7c0419ce1c9570c3e`, package1.4.3; plugin source `b4304dbbcc59845835538619da12a61c7bdd69cf`, version0.4.0. Guide covers one-line project capture, planned intake, project readiness fields, GC quarter/year panels, shared Sunday-based weekly/daily planning and rescheduling. Existing unified index cards and cover retained. Public guide is a generated copy; the private vault audit/map is not published.
+- Image `sha256:68884ee85ee02c9169e191020660b270e8740bcb82b8dc89256cd943158c6baa`; runtime/current → `/www/dk_project/folio-studio/releases/ucit04-20261030-93891f6`; published `mvuid3lk-c60523d4`, rebuilt only from published `mvryl9wb-6e66f98d`. The exact authenticated preview was inspected and then published through the normal publisher.
+- Persistent `/www/dk_project/folio-studio/shared/data`; draft19/SHA256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92` unchanged. No migration, dependency or environment-name change. Same loopback18080,UID10001,read-only root,host networking,768MiB/1.5CPU/192pids; healthy,restarts0,noOOM.
+- Stopped-app backup `/www/backup/site/folio-studio/20261030T050403Z-ucit04/data.tar.gz`, 26420232 bytes, SHA256 `287c395c2483627b6d174804c988a705403969eb33eab8e2e6971dee2a58423b`; directory0700/archive0600; full archive readability verified, no restoration drill. Previous image `sha256:66e8df5941e32f5a547cf46d560ef74137ea056f33044b517a6924fe3849617f`, runtime `/www/dk_project/folio-studio/releases/cards-20261028-c0886d8-r2`, content and backups retained.
+- Immutable runtime archive121,675,272 bytes,SHA256 `e536fa11f3b90301999b1938f9cb810920c31cacefe84955b09046ac33eefc30`; upload matched. Retained under `.folio/deployments/ucit04-20261030-93891f6/`. Official Node24.21.0 base `sha256:470015c1ab1577c19efce2e80cdad4afd9c682cf8f4dcf3dccae5abfd9113397` and final base-layer prefix verified.
+- Validation: plugin/documentation36 passing tests +1 optional fixture skipped; separate vault run35 passing cases and25 managed records/0 errors. Website typecheck/build,82 unit/API tests and2 comprehensive public/preview Chromium scenarios passed. A fresh-checkout health test initially lacked the built admin bundle; building it and rerunning all82 tests passed without a product workaround. Real HTTPS preview and public verification passed all3locales,search,copy,320px/wide,reader,alias/canonical/version fingerprint,ICP,existing Attention navigation,login/secure-cookie/logout and current-release deletion protection;browser/resource errors0. Health/admin200,anonymous snapshot/preview401,database404. Ephemeral sessions revoked.
+- Real deployment lock held through backup/cutover/preview/publication/final verification, then released. No Nginx,DNS,certificates,WordPress,MySQL/RDS,ports or unrelated services changed; no historical cleanup. Only this release's temporary upload/script removed. Future plugin publishing remains gated on the live guide version/hash.
+
+### Rollback this release
+
+Coordinate one writer and hold `/www/dk_project/folio-studio/config/deployment.lock`. Restore content first, then application; do not overwrite current drafts or extract the backup over live data.
+
+```sh
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'docker exec -i folio-studio-studio-1 node --import tsx --input-type=module' <<'JS'
+import { rollbackRelease } from './server/publisher.ts';
+console.log((await rollbackRelease('mvryl9wb-6e66f98d')).id);
+JS
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261030T050403Z-ucit04/rollback-application.sh'
+```
+
+The rollback script restores saved image.env, prior runtime and exact image through Compose. Verify `/healthz`, real HTTPS, current pointer, admin/security and draft fingerprint. Existing environment bindings remain FOLIO_DATA_DIR,PUBLIC_ORIGIN,PREVIEW_BASE_PATH,HOST,PORT,COOKIE_SECURE and secret bindings; no values are recorded here.
+
+
 ## Latest deployment: unified index cards and UCIT cover 1.4.2 (2026-10-28)
 
 Verified through authenticated preview and public HTTPS at `2026-10-28T10:19:31Z`. Earlier current-state sections below are historical.
