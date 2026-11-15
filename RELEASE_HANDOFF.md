@@ -1,5 +1,26 @@
 # Folio Studio 生产发布交接
 
+## Latest deployment: UCIT 0.5.0 usage guide / website 1.4.4 (2026-11-16)
+
+Verified through authenticated preview and public HTTPS on 2026-11-16 (Asia/Shanghai); earlier sections are historical.
+
+- Source `1c85c5cc089d6bae38a1615cfe76111f1b405c32`; runtime `/www/dk_project/folio-studio/releases/ucit05-20261116-1c85c5c-r2`; image `sha256:4bb8dcc3b2e6599fb2060e456ca056a95d513c1c83c9b24f601c65d59a117fc5`; published content `mwi1xewe-e7516132`, rebuilt only from previously published `mvuid3lk-c60523d4`.
+- Immutable runtime archive 121,192,899 bytes, SHA-256 `c2d27466760bb5672f3f4aa9cbd73ea10fd6aab34a8dcb57a24a475b98566215`. Successful stopped-app backup `/www/backup/site/folio-studio/20261115T163056Z-ucit05/data.tar.gz`, 37,029,136 bytes, SHA-256 `4dabc6c60c4c54d7602498b258856437e25ba5a8f4c73abd9d1273ed5f1998b4`, directory 0700/archive 0600; archive readability verified.
+- Draft remained revision 19 with SHA-256 `9732e4af419b90233f4b4316495dfea0a2b016434e47270b9c8d9a2251284f92`; no building release remains. Final container is healthy, UID/GID `10001:10001`, read-only root filesystem, 0 restarts and no OOM.
+- Validation: website typecheck, 82 unit/API tests, production build of 117 pages and 49 Playwright cases passed. The exact authenticated preview and public release passed all three locales, 320px/wide layouts, search, copy, reader mode, aliases/canonical/version fingerprint, existing Attention navigation, login/cookie/logout and security boundaries with zero browser/resource errors.
+- The first application attempt stopped at the preview gate because the existing RapidSSL certificate had expired on 2026-11-11. The guarded deployment restored the exact prior application and content. TLS was repaired before retry: HTTP-01 was preflighted, separate Let’s Encrypt certificates were issued for `www.jasonshelter.com` and `jasonshelter.com`, Nginx was tested and reloaded, and both SNI names now expire 2027-02-13. The prior certificate and Nginx configuration are restricted under `/www/backup/site/folio-studio/20261115T162738Z-tls-expired`; certificate archive SHA-256 `4d5cfe135570bcc379b017cb34b6a2cbb5afdec22a73da5fc043d9f114a71526`.
+- UCIT Home 0.5.0 is published from plugin commit `4f2dee0bc08aa016f08c1269e3bdf97639725511`; release assets were downloaded and verified byte-for-byte. Live guide fingerprint: `7060c732fead19907e833ae5838d93eeda6bf0272ba30ecf231d47d534656045`.
+
+### Rollback this release
+
+Coordinate one writer and hold `/www/dk_project/folio-studio/config/deployment.lock`, then run:
+
+```sh
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes aliyun-web 'bash /www/backup/site/folio-studio/20261115T163056Z-ucit05/rollback-application.sh'
+```
+
+Verify loopback and public `/healthz`, runtime/image, current content, draft fingerprint, admin/security boundaries and both TLS names. Content rollback is separate and must use the normal publisher; do not extract the data archive over live data. The pre-renewal Nginx configuration points to an expired certificate and is evidence only, not the normal rollback target.
+
 ## Latest deployment: UCIT 0.4.0 usage guide / website 1.4.3 (2026-10-30)
 
 Verified through real HTTPS at `2026-10-30T05:08:37.031736+00:00`; earlier current-state sections are historical.
